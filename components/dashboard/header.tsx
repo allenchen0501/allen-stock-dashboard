@@ -1,4 +1,4 @@
-import { Bell, CalendarDays, ChevronDown, Command, Menu, Search } from "lucide-react";
+import { Bell, CalendarDays, ChevronDown, Command, Gauge, Menu, Search } from "lucide-react";
 import { marketIndices } from "@/lib/mock-data";
 
 export function Header() {
