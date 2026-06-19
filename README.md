@@ -2,7 +2,7 @@
 
 以 Next.js、TypeScript 與 Tailwind CSS 製作的個人台股戰情室，包含市場燈號、持股戰情、V8.5 核心評分、風報比、主升段候選與今日禁碰股。
 
-目前版本為 V3-1.6 資料庫架構基線：Yahoo provider、service/API 契約與三階段 Supabase schema 已建立；部分畫面仍使用 mock data。V8.5 Pro+ 已具備可追溯評分、戰情室發布、績效／風險快照與策略驗證資料模型，但尚未把 UI 切換至 Supabase。
+目前版本為 V3-2 Supabase Client Layer：三階段資料庫 schema 與 browser/server 連線 helper 已建立；部分畫面仍使用 mock data。V3-2 尚未查詢 Supabase、尚未切換 `/api/portfolio`，真實資料流將由後續 Repository Layer 接手。
 
 ## 開始使用
 
@@ -28,11 +28,21 @@ npm run start
 - `components/`：戰情室 UI 元件。
 - `services/`：market、stocks、indices service 與 provider adapter。
 - `lib/api/`：HTTP client、cache、設定與 provider registry。
+- `lib/supabase/`：browser singleton、server factory 與統一 exports。
 - `types/`：UI 與 API 契約。
 - `supabase/`：V3-1 基礎 schema、V3-1.5 Pro+ schema、V3-1.6 補強 schema 與套用說明。
 - `docs/`：資料庫、資料保存、介面用語、技術框架與戰情室架構規範。
 
 ## 版本紀錄
+
+### V3-2
+
+新增 Supabase Client Layer：
+
+- 使用 `NEXT_PUBLIC_SUPABASE_URL` 與 `NEXT_PUBLIC_SUPABASE_ANON_KEY`。
+- 提供 browser-side singleton 與 server-side client factory。
+- 不使用 service-role key，不建立登入或 session。
+- 尚未接入 UI、`/api/portfolio` 或真實資料流。
 
 ### V3-1.6
 
@@ -55,6 +65,7 @@ npm run start
 
 ## 架構文件
 
+- [Supabase Client Layer](docs/supabase-client-layer.md)
 - [Database Architecture](docs/database-architecture.md)
 - [Storage Policy](docs/storage-policy.md)
 - [UI Language Rule](docs/ui-language-rule.md)
