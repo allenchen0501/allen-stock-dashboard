@@ -2,7 +2,7 @@
 
 以 Next.js、TypeScript 與 Tailwind CSS 製作的個人台股戰情室，包含市場燈號、持股戰情、V8.5 核心評分、風報比、主升段候選與今日禁碰股。
 
-目前版本為 V3-2 Supabase Client Layer：三階段資料庫 schema 與 browser/server 連線 helper 已建立；部分畫面仍使用 mock data。V3-2 尚未查詢 Supabase、尚未切換 `/api/portfolio`，真實資料流將由後續 Repository Layer 接手。
+目前版本為 V3-3 Repository Layer：三階段資料庫 schema、Supabase Client Layer、集中資料型別與 repository contracts／skeletons 已建立；部分畫面仍使用 mock data。V3-3 尚未執行 Supabase query、尚未切換 `/api/portfolio`，也沒有改變任何既有資料流。
 
 ## 開始使用
 
@@ -29,11 +29,23 @@ npm run start
 - `services/`：market、stocks、indices service 與 provider adapter。
 - `lib/api/`：HTTP client、cache、設定與 provider registry。
 - `lib/supabase/`：browser singleton、server factory 與統一 exports。
+- `lib/types/`：資料庫 row 與 repository input 型別。
+- `repositories/`：資料存取介面、Supabase skeleton 與統一 exports。
 - `types/`：UI 與 API 契約。
 - `supabase/`：V3-1 基礎 schema、V3-1.5 Pro+ schema、V3-1.6 補強 schema 與套用說明。
 - `docs/`：資料庫、資料保存、介面用語、技術框架與戰情室架構規範。
 
 ## 版本紀錄
+
+### V3-3
+
+新增 Repository Layer：
+
+- 集中定義 Portfolio、Watchlist、Trade Journal、War Room 與績效資料型別。
+- 建立 generic CRUD repository contract 與一致的 repository error。
+- 建立 Portfolio、Watchlist、Trade Journal、War Room 的 Supabase skeleton。
+- 透過 dependency injection 接收 Supabase client，不建立真實連線或切換資料來源。
+- 保留 Yahoo provider、hardcoded stocks、既有 API、UI 與 mock data。
 
 ### V3-2
 
@@ -65,6 +77,7 @@ npm run start
 
 ## 架構文件
 
+- [Repository Layer](docs/repository-layer.md)
 - [Supabase Client Layer](docs/supabase-client-layer.md)
 - [Database Architecture](docs/database-architecture.md)
 - [Storage Policy](docs/storage-policy.md)
