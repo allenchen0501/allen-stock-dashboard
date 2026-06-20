@@ -2,7 +2,7 @@
 
 以 Next.js、TypeScript 與 Tailwind CSS 製作的個人台股戰情室，包含市場燈號、持股戰情、V8.5 核心評分、風報比、主升段候選與今日禁碰股。
 
-目前版本為 V3-3.5 Data Quality Layer：資料庫 schema、Supabase Client Layer、Repository Layer，以及行情完整性／新鮮度／雙來源比對規則已建立；部分畫面仍使用 mock data。V3-3.5 尚未把驗證器接入 provider 或 `/api/portfolio`，也沒有改變任何既有資料流。
+目前版本為 V3-3.6 Free Data ETL Pipeline Architecture：資料庫、Supabase Client、Repository、Data Quality 與免費公開資料源 ETL 規格已建立；部分畫面仍使用 mock data。V3-3.6 只有架構文件，尚未建立 Python ETL、爬蟲、排程或切換任何既有資料流。
 
 ## 開始使用
 
@@ -37,6 +37,17 @@ npm run start
 - `docs/`：資料庫、資料保存、介面用語、技術框架與戰情室架構規範。
 
 ## 版本紀錄
+
+### V3-3.6
+
+新增 Free Data ETL Pipeline Architecture：
+
+- 定義 Free Data Sources → Python ETL → Data Quality → Supabase → Repository → API → War Room → Dashboard 的單向資料流。
+- 第一階段只允許 TWSE、TPEx、TWSE ISIN、MOPS、Yahoo 與低頻 twstock。
+- 定義台股／全球資料源優先級、雙來源校驗、fallback 與禁止來源。
+- 規劃 08:00、12:00、14:30～15:30、20:00、23:00 工作時段。
+- 盤點 stock master、價格、籌碼、營收、基本面、技術、回測、驗證、評分與戰情室目標資料集。
+- 本階段未建立實際 ETL 或修改 provider、repository、API、UI。
 
 ### V3-3.5
 
@@ -88,6 +99,10 @@ npm run start
 
 ## 架構文件
 
+- [Data Pipeline Architecture](docs/data-pipeline-architecture.md)
+- [ETL Source Plan](docs/etl-source-plan.md)
+- [Data Source Priority](docs/data-source-priority.md)
+- [ETL Schedule Plan](docs/etl-schedule-plan.md)
 - [Data Quality Layer](docs/data-quality-layer.md)
 - [Repository Layer](docs/repository-layer.md)
 - [Supabase Client Layer](docs/supabase-client-layer.md)
