@@ -2,7 +2,7 @@
 
 以 Next.js、TypeScript 與 Tailwind CSS 製作的個人台股戰情室，包含市場燈號、持股戰情、V8.5 核心評分、風報比、主升段候選與今日禁碰股。
 
-目前版本為 V3-4 Portfolio Migration Layer：資料庫驅動的 active-only Portfolio use case、domain mapper、Data Quality gate 與 hardcoded audit 已建立；部分畫面仍使用 mock data。V3-4 只建立遷移路徑，尚未切換 `/api/portfolio`、Yahoo provider、UI 或任何既有資料流。
+目前版本為 V3-4.5 Data Source & Security Layer：Portfolio API 切換前的來源 PASS／WARNING／FAIL、data warning、官方收盤價 contract、feature flag／rollback 與 fail-closed RLS 草稿已建立；部分畫面仍使用 mock data。V3-4.5 不套用 RLS、不切換 `/api/portfolio`、UI 或任何既有資料流。
 
 ## 開始使用
 
@@ -38,6 +38,17 @@ npm run start
 - `docs/`：資料庫、資料保存、介面用語、技術框架與戰情室架構規範。
 
 ## 版本紀錄
+
+### V3-4.5
+
+新增 Data Source & Security Layer：
+
+- 定義 Priority 1 TWSE／TPEx／ISIN、Priority 2 Yahoo、Priority 3 其他免費來源。
+- 定義 PASS／WARNING／FAIL 與 `data_warning` 傳遞規則。
+- WARNING／FAIL 禁止輸出買進、賣出、加碼、減碼或等價方向性建議。
+- 所有戰情室輸出未來必須包含收盤價、資料日期、來源與校驗結果。
+- 新增 Portfolio／Watchlist owner-based RLS 草稿；目前不套用且不開放 anon。
+- 定義 V3-4 Migration → V3-4.5 Validation → V3-5 Switch、server feature flag 與 rollback。
 
 ### V3-4
 
@@ -111,6 +122,10 @@ npm run start
 
 ## 架構文件
 
+- [Data Source Validation](docs/data-source-validation.md)
+- [Portfolio Switch Strategy](docs/portfolio-switch-strategy.md)
+- [Data Warning Policy](docs/data-warning-policy.md)
+- [Official Price Validation](docs/official-price-validation.md)
 - [Portfolio Migration](docs/portfolio-migration.md)
 - [Data Pipeline Architecture](docs/data-pipeline-architecture.md)
 - [ETL Source Plan](docs/etl-source-plan.md)
