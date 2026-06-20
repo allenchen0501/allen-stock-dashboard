@@ -2,7 +2,7 @@
 
 以 Next.js、TypeScript 與 Tailwind CSS 製作的個人台股戰情室，包含市場燈號、持股戰情、V8.5 核心評分、風報比、主升段候選與今日禁碰股。
 
-目前版本為 V3-3 Repository Layer：三階段資料庫 schema、Supabase Client Layer、集中資料型別與 repository contracts／skeletons 已建立；部分畫面仍使用 mock data。V3-3 尚未執行 Supabase query、尚未切換 `/api/portfolio`，也沒有改變任何既有資料流。
+目前版本為 V3-3.5 Data Quality Layer：資料庫 schema、Supabase Client Layer、Repository Layer，以及行情完整性／新鮮度／雙來源比對規則已建立；部分畫面仍使用 mock data。V3-3.5 尚未把驗證器接入 provider 或 `/api/portfolio`，也沒有改變任何既有資料流。
 
 ## 開始使用
 
@@ -28,6 +28,7 @@ npm run start
 - `components/`：戰情室 UI 元件。
 - `services/`：market、stocks、indices service 與 provider adapter。
 - `lib/api/`：HTTP client、cache、設定與 provider registry。
+- `lib/data-quality/`：資料品質型別、規則、雙來源比較與決策門檻。
 - `lib/supabase/`：browser singleton、server factory 與統一 exports。
 - `lib/types/`：資料庫 row 與 repository input 型別。
 - `repositories/`：資料存取介面、Supabase skeleton 與統一 exports。
@@ -36,6 +37,16 @@ npm run start
 - `docs/`：資料庫、資料保存、介面用語、技術框架與戰情室架構規範。
 
 ## 版本紀錄
+
+### V3-3.5
+
+新增 Data Quality Layer：
+
+- 統一每筆行情的 symbol、value、台北日期／時間、來源、可信度與模型推論標記。
+- 價格雙來源差異大於 1% 或成交量差異大於 5% 時標記 `suspicious`。
+- 區分今日、本週、歷史與過期資料，stale 資料只能作參考。
+- `invalid`／`suspicious` 不得進入戰情室決策，只有 `valid` 可作主依據。
+- 本階段未修改 provider、API、UI 或資料來源。
 
 ### V3-3
 
@@ -77,6 +88,7 @@ npm run start
 
 ## 架構文件
 
+- [Data Quality Layer](docs/data-quality-layer.md)
 - [Repository Layer](docs/repository-layer.md)
 - [Supabase Client Layer](docs/supabase-client-layer.md)
 - [Database Architecture](docs/database-architecture.md)
