@@ -2,7 +2,7 @@
 
 以 Next.js、TypeScript 與 Tailwind CSS 製作的個人台股戰情室，包含市場燈號、持股戰情、V8.5 核心評分、風報比、主升段候選與今日禁碰股。
 
-目前版本為 V3-4.5 Data Source & Security Layer：Portfolio API 切換前的來源 PASS／WARNING／FAIL、data warning、官方收盤價 contract、feature flag／rollback 與 fail-closed RLS 草稿已建立；部分畫面仍使用 mock data。V3-4.5 不套用 RLS、不切換 `/api/portfolio`、UI 或任何既有資料流。
+目前版本為 V3-4.6 ETL Foundation Layer：ETL job／result contracts、TWSE／TPEx／ISIN／Yahoo no-op sources、price validation plan 與 Supabase dry-run loader 已建立；部分畫面仍使用 mock data。V3-4.6 不抓資料、不寫 Supabase、不建立排程，也不切換任何既有資料流。
 
 ## 開始使用
 
@@ -26,6 +26,7 @@ npm run start
 
 - `app/`：App Router 頁面與 server route。
 - `components/`：戰情室 UI 元件。
+- `etl/`：ETL core contracts、no-op sources、validator 與 dry-run loader。
 - `services/`：market、stocks、indices service 與 provider adapter。
 - `lib/api/`：HTTP client、cache、設定與 provider registry。
 - `lib/data-quality/`：資料品質型別、規則、雙來源比較與決策門檻。
@@ -38,6 +39,17 @@ npm run start
 - `docs/`：資料庫、資料保存、介面用語、技術框架與戰情室架構規範。
 
 ## 版本紀錄
+
+### V3-4.6
+
+新增 ETL Foundation Layer：
+
+- 定義 `job_name`、`source_name`、`run()`、`validate()`、`load()` 的 ETL job contract。
+- 統一 success、records count、warnings、errors 與執行時間結果。
+- 建立 TWSE、TPEx、ISIN、Yahoo fallback no-op source skeleton。
+- 建立 official vs Yahoo 的 pending price validation skeleton。
+- 建立完全不依賴 Supabase client、固定 no-write 的 dry-run loader。
+- 本階段沒有 request、Supabase write、cron、deployment 或新套件。
 
 ### V3-4.5
 
@@ -122,6 +134,8 @@ npm run start
 
 ## 架構文件
 
+- [ETL Foundation](docs/etl-foundation.md)
+- [ETL Data Contract](docs/etl-data-contract.md)
 - [Data Source Validation](docs/data-source-validation.md)
 - [Portfolio Switch Strategy](docs/portfolio-switch-strategy.md)
 - [Data Warning Policy](docs/data-warning-policy.md)
