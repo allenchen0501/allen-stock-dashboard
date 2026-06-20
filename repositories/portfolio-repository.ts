@@ -12,6 +12,8 @@ import {
 } from "./base-repository";
 
 const TABLE_NAME = "portfolio_stocks";
+const PORTFOLIO_COLUMNS =
+  "id, symbol, name, market, cost_price, shares, position_type, is_active, created_at, updated_at";
 
 export interface PortfolioRepository
   extends BaseRepository<
@@ -87,8 +89,9 @@ export class SupabasePortfolioRepository implements PortfolioRepository {
   async getActivePortfolioStocks(): Promise<PortfolioStock[]> {
     const { data, error } = await this.client
       .from(TABLE_NAME)
-      .select("*")
+      .select(PORTFOLIO_COLUMNS)
       .eq("is_active", true)
+      .order("market", { ascending: true })
       .order("symbol", { ascending: true });
 
     raiseOnRepositoryError(error, "portfolio.getActivePortfolioStocks");

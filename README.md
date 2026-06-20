@@ -2,7 +2,7 @@
 
 以 Next.js、TypeScript 與 Tailwind CSS 製作的個人台股戰情室，包含市場燈號、持股戰情、V8.5 核心評分、風報比、主升段候選與今日禁碰股。
 
-目前版本為 V3-3.6 Free Data ETL Pipeline Architecture：資料庫、Supabase Client、Repository、Data Quality 與免費公開資料源 ETL 規格已建立；部分畫面仍使用 mock data。V3-3.6 只有架構文件，尚未建立 Python ETL、爬蟲、排程或切換任何既有資料流。
+目前版本為 V3-4 Portfolio Migration Layer：資料庫驅動的 active-only Portfolio use case、domain mapper、Data Quality gate 與 hardcoded audit 已建立；部分畫面仍使用 mock data。V3-4 只建立遷移路徑，尚未切換 `/api/portfolio`、Yahoo provider、UI 或任何既有資料流。
 
 ## 開始使用
 
@@ -32,11 +32,23 @@ npm run start
 - `lib/supabase/`：browser singleton、server factory 與統一 exports。
 - `lib/types/`：資料庫 row 與 repository input 型別。
 - `repositories/`：資料存取介面、Supabase skeleton 與統一 exports。
+- `use-cases/portfolio/`：active Portfolio orchestration、估值 mapping、品質 gate 與 migration audit。
 - `types/`：UI 與 API 契約。
 - `supabase/`：V3-1 基礎 schema、V3-1.5 Pro+ schema、V3-1.6 補強 schema 與套用說明。
 - `docs/`：資料庫、資料保存、介面用語、技術框架與戰情室架構規範。
 
 ## 版本紀錄
+
+### V3-4
+
+新增 Portfolio Migration Layer：
+
+- Portfolio 名單的目標來源固定為 `portfolio_stocks where is_active = true`。
+- 建立 active-only use case 與未來 `daily_prices`／`stock_snapshots`／Yahoo fallback pricing port。
+- 建立 cost basis、market value、未實現損益與報酬率 mapper。
+- 串接 Data Quality：invalid／suspicious 禁止決策，stale 僅作 reference。
+- 稽核目前 hardcoded `3019`、`4966`、`5347`、`2455`、`4979`，V3-4 保留原樣。
+- 本階段不切換 `/api/portfolio`；V3-5 完成 seed、權限、shadow comparison 後才切換。
 
 ### V3-3.6
 
@@ -99,6 +111,7 @@ npm run start
 
 ## 架構文件
 
+- [Portfolio Migration](docs/portfolio-migration.md)
 - [Data Pipeline Architecture](docs/data-pipeline-architecture.md)
 - [ETL Source Plan](docs/etl-source-plan.md)
 - [Data Source Priority](docs/data-source-priority.md)
