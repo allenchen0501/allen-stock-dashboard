@@ -2,7 +2,7 @@
 
 以 Next.js、TypeScript 與 Tailwind CSS 製作的個人台股戰情室，包含市場燈號、持股戰情、V8.5 核心評分、風報比、主升段候選與今日禁碰股。
 
-目前版本為 V10 Runtime Evidence Layer：已建立 TWSE／TPEx 手動 evidence contract、schema hash 與 fail-closed runtime runner。HTTP 仍預設 disabled，evidence 只輸出 stdout，不寫 Supabase、Git 或 Dashboard。
+目前版本為 V10.5 Real Endpoint Verification：已建立人工驗證流程、pending baseline 規範與 fail-closed schema drift contract。Runtime request 仍須人工明確啟用，本階段未執行真實 endpoint 測試。
 
 ## 開始使用
 
@@ -41,6 +41,17 @@ npm run start
 - `docs/`：資料庫、資料保存、介面用語、技術框架與戰情室架構規範。
 
 ## 版本紀錄
+
+### V10.5
+
+新增 Real Endpoint Verification 與 baseline 準備：
+
+- 定義手動開啟／執行／立即關閉 `CONNECTOR_HTTP_ENABLED` 的安全流程。
+- 建立 TWSE／TPEx payload、日期、時間、價格、來源與 PASS／FAIL 人工檢查規則。
+- 建立 `ApprovedSchemaBaseline` 與 schema hash drift comparison contract。
+- Baseline／current hash 缺失或無效一律 FAIL；mismatch 預設 FAIL，可由人工觀察政策設為 WARNING。
+- Drift 永遠 `auto_fix_applied = false`，不得自動新增 alias 或更新 baseline。
+- Baseline 禁止 key、個資與真實 raw payload；目前 hash 維持 pending，未執行 runtime request。
 
 ### V10
 
