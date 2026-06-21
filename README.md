@@ -2,7 +2,7 @@
 
 以 Next.js、TypeScript 與 Tailwind CSS 製作的個人台股戰情室，包含市場燈號、持股戰情、V8.5 核心評分、風報比、主升段候選與今日禁碰股。
 
-目前版本為 V3-6.5 Free Data Connector Contract Layer：已建立 TWSE／TPEx／Yahoo connector contracts、離線 fixtures、rate-limit 與 Data Quality 規格。所有 transport 維持 disabled，沒有真實 request、Supabase write 或 API data switch。
+目前版本為 V7 Real Free Data Connector：已建立 server-only TWSE／TPEx 官方唯讀 transport、normalization 與 official-vs-Yahoo validator。HTTP 預設 disabled，只有 `CONNECTOR_HTTP_ENABLED=true` 才能連線；目前未接 API 或 Supabase。
 
 ## 開始使用
 
@@ -39,6 +39,17 @@ npm run start
 - `docs/`：資料庫、資料保存、介面用語、技術框架與戰情室架構規範。
 
 ## 版本紀錄
+
+### V7
+
+新增 Real Free Data Connector 第一階段：
+
+- 建立 HTTPS official-host allowlist transport，支援 timeout 與 disabled mode。
+- HTTP 預設禁止，只有 server 明確設定 `CONNECTOR_HTTP_ENABLED=true` 才允許 request。
+- 建立 TWSE 上市與 TPEx 上櫃官方日收盤 price readers，僅 normalize、不寫入資料庫。
+- 建立 official vs Yahoo fixture validator：價差大於 1% 為 WARNING，必要欄位缺失為 FAIL。
+- 新增 `npm run test:official-connectors`，預設 fixtures-only 並確認 readers disabled。
+- 本階段未修改 UI、components、API、repositories、mock-data 或 Yahoo Provider。
 
 ### V3-6.5
 
