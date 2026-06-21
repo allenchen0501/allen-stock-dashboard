@@ -2,7 +2,7 @@
 
 以 Next.js、TypeScript 與 Tailwind CSS 製作的個人台股戰情室，包含市場燈號、持股戰情、V8.5 核心評分、風報比、主升段候選與今日禁碰股。
 
-目前版本為 V3-5 API Portfolio Switch：`/api/portfolio` 已建立 hardcoded／shadow／supabase server-side feature flag 架構；預設及所有不安全狀態仍回傳 hardcoded Portfolio。Supabase 模式目前只是安全 skeleton，尚未讀取資料庫或取代既有資料。
+目前版本為 V3-5.5 Staging Portfolio Seed & RLS Validation：已建立零資料 seed contract、local shape test、RLS checklist 與 staging shadow 流程。API 仍維持 hardcoded，未連接真實 Supabase 或放入持股資料。
 
 ## 開始使用
 
@@ -39,6 +39,17 @@ npm run start
 - `docs/`：資料庫、資料保存、介面用語、技術框架與戰情室架構規範。
 
 ## 版本紀錄
+
+### V3-5.5
+
+新增 Staging Portfolio Seed & RLS Validation 基礎：
+
+- 建立零資料、temporary table、rollback guarded 的 staging seed shape 範本。
+- 新增 `npm run test:portfolio-seed-shape`，驗證 required／duplicate columns、placeholder、market whitelist 與 `is_active`。
+- 定義 owner_id、active Portfolio、已賣出 soft delete 與禁止假值規則。
+- 建立 authenticated owner、anon deny、cross-owner deny 與禁止 hard delete 的 RLS checklist。
+- 定義 staging database snapshot 與 hardcoded baseline 的 PASS／WARNING／FAIL shadow 流程。
+- 本階段不切 API、不連 Supabase、不改 UI、components、services 或 Yahoo Provider。
 
 ### V3-5
 

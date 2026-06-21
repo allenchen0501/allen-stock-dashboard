@@ -7,7 +7,8 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "test:portfolio-shadow": "node --require ./scripts/register-typescript.cjs ./scripts/run-portfolio-shadow-test.ts"
+    "test:portfolio-shadow": "node --require ./scripts/register-typescript.cjs ./scripts/run-portfolio-shadow-test.ts",
+    "test:portfolio-seed-shape": "node --require ./scripts/register-typescript.cjs ./scripts/validate-portfolio-seed-shape.ts"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.108.2",
