@@ -2,7 +2,7 @@
 
 以 Next.js、TypeScript 與 Tailwind CSS 製作的個人台股戰情室，包含市場燈號、持股戰情、V8.5 核心評分、風報比、主升段候選與今日禁碰股。
 
-目前版本為 V8 Official Price Validation Pipeline：已建立 official／Yahoo fallback 純函式 normalizer、quality gate 與 fail-closed result contract。Pipeline 不讀網路、不寫 Supabase，也尚未接 UI、API 或正式 ETL。
+目前版本為 V8.5 War Room Data Input Contract：已建立 primary／reference／rejected 三段式 fail-closed input gate。只有無 warning 且允許 decision 的 PASS 可進 primary；本階段不建立戰情室引擎或交易建議。
 
 ## 開始使用
 
@@ -36,10 +36,22 @@ npm run start
 - `repositories/`：資料存取介面、Supabase skeleton 與統一 exports。
 - `use-cases/portfolio/`：active Portfolio orchestration、估值 mapping、品質 gate 與 migration audit。
 - `types/`：UI 與 API 契約。
+- `war-room/input/`：戰情室 primary、reference、rejected 資料輸入契約與 gate。
 - `supabase/`：V3-1 基礎 schema、V3-1.5 Pro+ schema、V3-1.6 補強 schema 與套用說明。
 - `docs/`：資料庫、資料保存、介面用語、技術框架與戰情室架構規範。
 
 ## 版本紀錄
+
+### V8.5
+
+新增 War Room Data Input Contract：
+
+- 定義 WarRoomInput、status、data source 與 decision eligibility。
+- PASS 且 `decision_allowed = true`、無 warning 才進 `primary_inputs`。
+- WARNING 強制進 `reference_inputs`，只供參考且禁止買賣建議。
+- FAIL 強制進 `rejected_inputs`，完全排除決策流程。
+- PASS 契約不一致或非 PASS 嘗試開啟 decision 時一律 fail closed 並記錄 issue。
+- 統一輸出 data warnings 與 issues；不接 UI、API、Supabase 或網路。
 
 ### V8
 
