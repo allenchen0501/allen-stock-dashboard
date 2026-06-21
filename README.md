@@ -2,7 +2,7 @@
 
 以 Next.js、TypeScript 與 Tailwind CSS 製作的個人台股戰情室，包含市場燈號、持股戰情、V8.5 核心評分、風報比、主升段候選與今日禁碰股。
 
-目前版本為 V8.5 War Room Data Input Contract：已建立 primary／reference／rejected 三段式 fail-closed input gate。只有無 warning 且允許 decision 的 PASS 可進 primary；本階段不建立戰情室引擎或交易建議。
+目前版本為 V9 ETL Write Layer：已建立 disabled／dry-run／staging skeleton、primary-only write gate、quarantine 與 idempotency contract。所有模式仍固定 no-write，未連接 Supabase 或正式 staging table。
 
 ## 開始使用
 
@@ -41,6 +41,18 @@ npm run start
 - `docs/`：資料庫、資料保存、介面用語、技術框架與戰情室架構規範。
 
 ## 版本紀錄
+
+### V9
+
+新增 staging-only ETL Write Layer：
+
+- 定義 disabled、dry_run、staging 三模式；三者均固定 `write_performed = false`。
+- 只有通過二次契約檢查的 War Room primary inputs 能產生 planned upsert。
+- Reference、rejected、invalid primary 與 duplicate primary 全部進記憶體 quarantine。
+- 以 symbol、record date、source 與 data frequency 建立 SHA-256 idempotency key。
+- Dry-run 與 staging skeleton 只輸出 planned operations，不 import Supabase client 或 executor。
+- Audit 保存 input／planned／quarantine counts，written count 固定為 0、無需 rollback。
+- 本階段未修改 UI、API、repositories、services、mock-data 或 War Room 決策內容。
 
 ### V8.5
 
