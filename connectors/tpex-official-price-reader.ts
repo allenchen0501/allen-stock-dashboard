@@ -85,6 +85,21 @@ function normalizeRow(row: OfficialPayloadRow): NormalizedQuoteRecord {
   };
 }
 
+export function normalizeTpexOfficialPayload(
+  payload: unknown,
+  symbols: readonly string[] = [],
+): NormalizedQuoteRecord[] {
+  const requestedSymbols = new Set(
+    symbols.map((symbol) => symbol.trim()).filter(Boolean),
+  );
+  return rowsFromPayload(payload)
+    .map(normalizeRow)
+    .filter(
+      (record) =>
+        requestedSymbols.size === 0 || requestedSymbols.has(record.symbol),
+    );
+}
+
 /** Server-only official OTC-equity reader. It never persists data. */
 export class TpexOfficialPriceReader {
   readonly sourceName = "tpex-openapi" as const;
@@ -107,15 +122,10 @@ export class TpexOfficialPriceReader {
       return this.failureResponse(options, transport);
     }
 
-    const requestedSymbols = new Set(
-      options.symbols.map((symbol) => symbol.trim()).filter(Boolean),
+    const records = normalizeTpexOfficialPayload(
+      transport.data,
+      options.symbols,
     );
-    const records = rowsFromPayload(transport.data)
-      .map(normalizeRow)
-      .filter(
-        (record) =>
-          requestedSymbols.size === 0 || requestedSymbols.has(record.symbol),
-      );
 
     return {
       sourceName: this.sourceName,

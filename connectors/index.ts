@@ -1,4 +1,6 @@
 export * from "./base-connector";
+export * from "./evidence/runtime-evidence";
+export * from "./evidence/runtime-evidence-recorder";
 export * from "./official-price-validator";
 export * from "./runtime-symbol-whitelist";
 export * from "./tpex-connector";

@@ -2,7 +2,7 @@
 
 以 Next.js、TypeScript 與 Tailwind CSS 製作的個人台股戰情室，包含市場燈號、持股戰情、V8.5 核心評分、風報比、主升段候選與今日禁碰股。
 
-目前版本為 V9.5 ETL Dry Run Integration：已用固定 PASS／WARNING／FAIL fixtures 串接 Official Price Pipeline、War Room Input Gate 與 ETL dry-run gate。測試會阻擋非 primary planned write，written count 固定為 0。
+目前版本為 V10 Runtime Evidence Layer：已建立 TWSE／TPEx 手動 evidence contract、schema hash 與 fail-closed runtime runner。HTTP 仍預設 disabled，evidence 只輸出 stdout，不寫 Supabase、Git 或 Dashboard。
 
 ## 開始使用
 
@@ -41,6 +41,18 @@ npm run start
 - `docs/`：資料庫、資料保存、介面用語、技術框架與戰情室架構規範。
 
 ## 版本紀錄
+
+### V10
+
+新增 Official Connector Runtime Evidence Layer：
+
+- 定義 source、symbol、request／response time、latency、HTTP status、schema hash、資料時間與 validation issues。
+- Evidence recorder 只建立 object 並輸出 stdout，不寫檔案、Git 或 Supabase。
+- 新增 `npm run test:runtime-evidence`；只有 `CONNECTOR_HTTP_ENABLED=true` 才允許手動 request。
+- TWSE 2330／2455 共用一次 request；TPEx 4979／5347 共用一次 request。
+- Reader 匯出純 payload normalizer，evidence 使用同一份 response，不額外重送。
+- 無日期、時間、有效價格、來源或 matching record 一律 FAIL，禁止猜值。
+- Schema hash 只描述 payload 結構，不保存完整市場資料。
 
 ### V9.5
 
