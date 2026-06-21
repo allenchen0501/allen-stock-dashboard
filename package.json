@@ -9,7 +9,8 @@
     "lint": "next lint",
     "test:portfolio-shadow": "node --require ./scripts/register-typescript.cjs ./scripts/run-portfolio-shadow-test.ts",
     "test:portfolio-seed-shape": "node --require ./scripts/register-typescript.cjs ./scripts/validate-portfolio-seed-shape.ts",
-    "test:official-connectors": "node scripts/test-official-connectors.ts"
+    "test:official-connectors": "node scripts/test-official-connectors.ts",
+    "test:official-connectors:runtime": "node scripts/run-official-connector-runtime-test.ts"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.108.2",

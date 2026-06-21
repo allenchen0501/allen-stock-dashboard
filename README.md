@@ -2,7 +2,7 @@
 
 以 Next.js、TypeScript 與 Tailwind CSS 製作的個人台股戰情室，包含市場燈號、持股戰情、V8.5 核心評分、風報比、主升段候選與今日禁碰股。
 
-目前版本為 V7 Real Free Data Connector：已建立 server-only TWSE／TPEx 官方唯讀 transport、normalization 與 official-vs-Yahoo validator。HTTP 預設 disabled，只有 `CONNECTOR_HTTP_ENABLED=true` 才能連線；目前未接 API 或 Supabase。
+目前版本為 V7.5 Official Connector Runtime Test：已建立 TWSE／TPEx 白名單、低頻、手動 runtime test。HTTP 仍預設 disabled，只有 server 明確設定 `CONNECTOR_HTTP_ENABLED=true` 才能執行；目前未接 API、Supabase 或正式 ETL。
 
 ## 開始使用
 
@@ -39,6 +39,17 @@ npm run start
 - `docs/`：資料庫、資料保存、介面用語、技術框架與戰情室架構規範。
 
 ## 版本紀錄
+
+### V7.5
+
+新增 Official Connector Runtime Test：
+
+- 新增 `npm run test:official-connectors:runtime` 手動測試入口，未啟用開關時輸出 disabled 並 exit 0。
+- Runtime symbols 僅允許 2330、2455、4979、5347，拒絕非白名單、重複與超量輸入。
+- 每次執行對 TWSE／TPEx 各最多讀取一次，沒有 polling、cron 或自動重跑。
+- 每檔輸出 symbol、source、date、time、close、volume、status、warning 與 issues。
+- 缺日期、時間、價格、來源或 record 一律 FAIL，禁止猜值。
+- 本階段未修改 UI、components、API、repositories、mock-data 或 Yahoo Provider。
 
 ### V7
 

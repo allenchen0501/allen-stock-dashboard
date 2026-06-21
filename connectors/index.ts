@@ -1,5 +1,6 @@
 export * from "./base-connector";
 export * from "./official-price-validator";
+export * from "./runtime-symbol-whitelist";
 export * from "./tpex-connector";
 export * from "./tpex-official-price-reader";
 export * from "./twse-connector";
