@@ -2,7 +2,7 @@
 
 以 Next.js、TypeScript 與 Tailwind CSS 製作的個人台股戰情室，包含市場燈號、持股戰情、V8.5 核心評分、風報比、主升段候選與今日禁碰股。
 
-目前版本為 V7.5 Official Connector Runtime Test：已建立 TWSE／TPEx 白名單、低頻、手動 runtime test。HTTP 仍預設 disabled，只有 server 明確設定 `CONNECTOR_HTTP_ENABLED=true` 才能執行；目前未接 API、Supabase 或正式 ETL。
+目前版本為 V8 Official Price Validation Pipeline：已建立 official／Yahoo fallback 純函式 normalizer、quality gate 與 fail-closed result contract。Pipeline 不讀網路、不寫 Supabase，也尚未接 UI、API 或正式 ETL。
 
 ## 開始使用
 
@@ -32,6 +32,7 @@ npm run start
 - `lib/data-quality/`：資料品質型別、規則、雙來源比較與決策門檻。
 - `lib/supabase/`：browser singleton、server factory 與統一 exports。
 - `lib/types/`：資料庫 row 與 repository input 型別。
+- `pipelines/`：官方行情 normalization、quality gate 與 validation result orchestration。
 - `repositories/`：資料存取介面、Supabase skeleton 與統一 exports。
 - `use-cases/portfolio/`：active Portfolio orchestration、估值 mapping、品質 gate 與 migration audit。
 - `types/`：UI 與 API 契約。
@@ -39,6 +40,17 @@ npm run start
 - `docs/`：資料庫、資料保存、介面用語、技術框架與戰情室架構規範。
 
 ## 版本紀錄
+
+### V8
+
+新增 Official Price Validation Pipeline：
+
+- 統一輸入 TWSE／TPEx official quote 與 Yahoo fallback quote。
+- Normalizer 只映射已知欄位，缺日期、時間、價格或來源時保持空值並 FAIL，禁止猜值。
+- Official／fallback symbol 與 record date 必須一致，且來源角色必須正確。
+- 價差不超過 1% 為 PASS；大於 1% 為 WARNING 並設 `data_warning = true`。
+- 只有 PASS 的 `decision_allowed = true`；WARNING／FAIL 均禁止決策。
+- Pipeline 不 import reader／transport，不發 request、不寫 Supabase、不修改 API 或 UI。
 
 ### V7.5
 
