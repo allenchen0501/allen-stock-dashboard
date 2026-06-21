@@ -2,7 +2,7 @@
 
 以 Next.js、TypeScript 與 Tailwind CSS 製作的個人台股戰情室，包含市場燈號、持股戰情、V8.5 核心評分、風報比、主升段候選與今日禁碰股。
 
-目前版本為 V3-5.5 Staging Portfolio Seed & RLS Validation：已建立零資料 seed contract、local shape test、RLS checklist 與 staging shadow 流程。API 仍維持 hardcoded，未連接真實 Supabase 或放入持股資料。
+目前版本為 V3-6 Staging Supabase Portfolio Shadow：已建立 repository-driven active row shadow skeleton、fail-closed result contract 與 Supabase readiness checklist。API 仍維持 hardcoded，尚未建立真實 Supabase client 或 production data switch。
 
 ## 開始使用
 
@@ -39,6 +39,17 @@ npm run start
 - `docs/`：資料庫、資料保存、介面用語、技術框架與戰情室架構規範。
 
 ## 版本紀錄
+
+### V3-6
+
+新增 Staging Supabase Portfolio Shadow 架構：
+
+- 建立注入 `PortfolioRepository.getActivePortfolioStocks()` 的 server-side shadow skeleton，不實例化 Supabase client。
+- Staging active rows 與 V3-4.8 hardcoded fixture 執行 identity parity comparison。
+- Missing、empty、RLS blocked、repository error 與 validation failure 一律輸出 FAIL。
+- Result 包含 mode、source、status、issues、parity、fallback、decision 與 data warning contract。
+- `source = hardcoded` 與 `fallback_used = true` 固定不變，Supabase rows 不會成為主 API data。
+- 建立 Seed／RLS／Shadow／Data Quality／Rollback 五組 readiness gates。
 
 ### V3-5.5
 
