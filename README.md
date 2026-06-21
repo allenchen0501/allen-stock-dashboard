@@ -2,7 +2,7 @@
 
 以 Next.js、TypeScript 與 Tailwind CSS 製作的個人台股戰情室，包含市場燈號、持股戰情、V8.5 核心評分、風報比、主升段候選與今日禁碰股。
 
-目前版本為 V9 ETL Write Layer：已建立 disabled／dry-run／staging skeleton、primary-only write gate、quarantine 與 idempotency contract。所有模式仍固定 no-write，未連接 Supabase 或正式 staging table。
+目前版本為 V9.5 ETL Dry Run Integration：已用固定 PASS／WARNING／FAIL fixtures 串接 Official Price Pipeline、War Room Input Gate 與 ETL dry-run gate。測試會阻擋非 primary planned write，written count 固定為 0。
 
 ## 開始使用
 
@@ -41,6 +41,17 @@ npm run start
 - `docs/`：資料庫、資料保存、介面用語、技術框架與戰情室架構規範。
 
 ## 版本紀錄
+
+### V9.5
+
+新增 fixture-only ETL Dry Run Integration：
+
+- 新增 `npm run test:etl-dry-run`，完整串接 Official Pipeline → War Room Gate → ETL Write Gate。
+- 固定建立 PASS／WARNING／FAIL 三種資料，分別流向 primary／reference／rejected。
+- 只有 primary 產生 dry-run planned operation；WARNING／FAIL 必須進 quarantine。
+- Runner 以 symbol 反向檢查 planned payload，任何 reference／rejected 洩漏立即 exit 1。
+- `written_count` 永遠為 0、`write_performed` 永遠為 false，並輸出 audit summary。
+- 全流程只使用 fixtures，不發 request、不寫 Supabase、不修改 UI 或 API。
 
 ### V9
 
