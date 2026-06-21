@@ -2,7 +2,7 @@
 
 以 Next.js、TypeScript 與 Tailwind CSS 製作的個人台股戰情室，包含市場燈號、持股戰情、V8.5 核心評分、風報比、主升段候選與今日禁碰股。
 
-目前版本為 V3-4.6 ETL Foundation Layer：ETL job／result contracts、TWSE／TPEx／ISIN／Yahoo no-op sources、price validation plan 與 Supabase dry-run loader 已建立；部分畫面仍使用 mock data。V3-4.6 不抓資料、不寫 Supabase、不建立排程，也不切換任何既有資料流。
+目前版本為 V3-4.8 Shadow Runner Validation：固定五檔 hardcoded fixture、七種 database scenarios、deterministic runner 與 PASS／WARNING／FAIL result contract 已建立；部分畫面仍使用 mock data。V3-4.8 不讀 Supabase、不發 request、不切 API，所有 response 仍由 hardcoded path 提供。
 
 ## 開始使用
 
@@ -39,6 +39,28 @@ npm run start
 - `docs/`：資料庫、資料保存、介面用語、技術框架與戰情室架構規範。
 
 ## 版本紀錄
+
+### V3-4.8
+
+新增 deterministic Shadow Runner Validation：
+
+- 固定 3019、4966、5347、2455、4979 hardcoded identity fixture。
+- 建立 exact、名稱不同、market 不同、duplicate、inactive、missing、extra 七種 database scenarios。
+- Runner 固定 context／時間／scenario 順序，可重複輸出 PASS／WARNING／FAIL。
+- Fixture suite 以 actual status 是否符合 expected status 判定，不把預期 FAIL 誤認為 suite failure。
+- `decision_allowed` 只代表可進 rollout review，不是交易決策或 API switch。
+- 本階段不接 Supabase、API、Yahoo Provider、UI 或真實 seed。
+
+### V3-4.7
+
+新增 Portfolio Seed／Shadow Contracts：
+
+- 定義 owner、成本、股數、來源、人工確認與 checksum 的 secure seed manifest；不含真實資料。
+- 建立 hardcoded 與 database active rows 的 symbol／market identity comparison。
+- 定義 PASS／WARNING／FAIL differences，name mismatch 不改變 identity parity。
+- Shadow report 不含 cost、shares、owner 或 token，response source 永遠為 hardcoded。
+- Mode resolver 預設 hardcoded，未通過 gates 時禁止 Supabase mode。
+- 本階段不讀 Supabase、不修改 API、Yahoo Provider、UI 或資料流。
 
 ### V3-4.6
 
@@ -134,6 +156,11 @@ npm run start
 
 ## 架構文件
 
+- [Shadow Runner Validation](docs/shadow-runner-validation.md)
+- [Portfolio Parity Rules](docs/portfolio-parity-rules.md)
+- [Portfolio Seed Contract](docs/portfolio-seed-contract.md)
+- [Portfolio Shadow Comparison](docs/portfolio-shadow-comparison.md)
+- [Portfolio Rollout Plan](docs/portfolio-rollout-plan.md)
 - [ETL Foundation](docs/etl-foundation.md)
 - [ETL Data Contract](docs/etl-data-contract.md)
 - [Data Source Validation](docs/data-source-validation.md)
