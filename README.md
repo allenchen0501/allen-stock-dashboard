@@ -2,7 +2,7 @@
 
 以 Next.js、TypeScript 與 Tailwind CSS 製作的個人台股戰情室，包含市場燈號、持股戰情、V8.5 核心評分、風報比、主升段候選與今日禁碰股。
 
-目前版本為 V3-4.8 Shadow Runner Validation：固定五檔 hardcoded fixture、七種 database scenarios、deterministic runner 與 PASS／WARNING／FAIL result contract 已建立；部分畫面仍使用 mock data。V3-4.8 不讀 Supabase、不發 request、不切 API，所有 response 仍由 hardcoded path 提供。
+目前版本為 V3-4.9 Portfolio Shadow Test Contract：V3-4.8 deterministic runner 已加入本地一鍵測試命令，可重複驗證七種 scenarios、PASS／WARNING／FAIL 與 `decision_allowed`；部分畫面仍使用 mock data。本階段不讀 Supabase、不發 request、不切 API，所有 response 仍由 hardcoded path 提供。
 
 ## 開始使用
 
@@ -39,6 +39,17 @@ npm run start
 - `docs/`：資料庫、資料保存、介面用語、技術框架與戰情室架構規範。
 
 ## 版本紀錄
+
+### V3-4.9
+
+新增 Portfolio Shadow Test Contract：
+
+- 新增 `npm run test:portfolio-shadow` 本地測試命令。
+- 固定執行 V3-4.8 七種 fixtures，核對 actual 與 expected status。
+- 驗證 `decision_allowed` 僅能在有效 PASS scenario 成立。
+- Suite 或 decision contract 失敗時以 exit code 1 阻擋後續 switch。
+- 專案未安裝 `tsx`；使用既有 `typescript` 執行，不新增套件或編譯產物。
+- V3-5 切換 `/api/portfolio` 前必須通過此測試，並另行通過 staging rollout gates。
 
 ### V3-4.8
 
