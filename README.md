@@ -2,7 +2,7 @@
 
 以 Next.js、TypeScript 與 Tailwind CSS 製作的個人台股戰情室，包含市場燈號、持股戰情、V8.5 核心評分、風報比、主升段候選與今日禁碰股。
 
-目前版本為 V3-6 Staging Supabase Portfolio Shadow：已建立 repository-driven active row shadow skeleton、fail-closed result contract 與 Supabase readiness checklist。API 仍維持 hardcoded，尚未建立真實 Supabase client 或 production data switch。
+目前版本為 V3-6.5 Free Data Connector Contract Layer：已建立 TWSE／TPEx／Yahoo connector contracts、離線 fixtures、rate-limit 與 Data Quality 規格。所有 transport 維持 disabled，沒有真實 request、Supabase write 或 API data switch。
 
 ## 開始使用
 
@@ -39,6 +39,18 @@ npm run start
 - `docs/`：資料庫、資料保存、介面用語、技術框架與戰情室架構規範。
 
 ## 版本紀錄
+
+### V3-6.5
+
+新增 Free Data Connector Contract Layer：
+
+- 定義 connector source、market、status、request／response、error 與 normalized quote contracts。
+- 建立 TWSE 上市官方 close、TPEx 上櫃官方 close 與 Yahoo fallback／global no-request skeletons。
+- 三個 connector 的 `fetchQuotes()` 固定 disabled，V7 前只能使用 fixtures。
+- 建立正常、缺值、stale、market error、volume anomaly 與 0.5%／1.5% price divergence fixtures。
+- 定義 timeout、retry、rate limit、fallback、IP 風險與禁止高頻輪詢規範。
+- 串接既有 Data Quality 規則，invalid／suspicious 為 FAIL、stale 為 WARNING。
+- 本階段未修改 app、components、API、repositories、mock-data 或 Yahoo Provider。
 
 ### V3-6
 
