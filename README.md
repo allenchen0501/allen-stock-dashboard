@@ -2,7 +2,7 @@
 
 以 Next.js、TypeScript 與 Tailwind CSS 製作的個人台股戰情室，包含市場燈號、持股戰情、V8.5 核心評分、風報比、主升段候選與今日禁碰股。
 
-目前版本為 V3-4.9 Portfolio Shadow Test Contract：V3-4.8 deterministic runner 已加入本地一鍵測試命令，可重複驗證七種 scenarios、PASS／WARNING／FAIL 與 `decision_allowed`；部分畫面仍使用 mock data。本階段不讀 Supabase、不發 request、不切 API，所有 response 仍由 hardcoded path 提供。
+目前版本為 V3-5 API Portfolio Switch：`/api/portfolio` 已建立 hardcoded／shadow／supabase server-side feature flag 架構；預設及所有不安全狀態仍回傳 hardcoded Portfolio。Supabase 模式目前只是安全 skeleton，尚未讀取資料庫或取代既有資料。
 
 ## 開始使用
 
@@ -39,6 +39,17 @@ npm run start
 - `docs/`：資料庫、資料保存、介面用語、技術框架與戰情室架構規範。
 
 ## 版本紀錄
+
+### V3-5
+
+新增 API Portfolio Switch 架構：
+
+- 支援 `PORTFOLIO_SOURCE_MODE=hardcoded | shadow | supabase`，未設定或無效值 fallback hardcoded。
+- Shadow mode 保留原有 `data`，只附加 non-decision shadow metadata。
+- Supabase mode 本階段為 no-query skeleton，固定 fallback hardcoded，空資料不得覆蓋既有 Portfolio。
+- Active Portfolio use case 新增 repository error、empty、inactive 與 Data Quality failure 的 hardcoded fallback contract。
+- 正式 Supabase response 必須先通過 Shadow Test、RLS、Data Quality 與 rollback gates。
+- 未修改 UI、components、mock-data 或 Yahoo Provider，未加入 key、登入或 service role。
 
 ### V3-4.9
 

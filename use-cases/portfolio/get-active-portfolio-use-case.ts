@@ -24,6 +24,52 @@ export interface GetActivePortfolioOptions {
   freshness?: QuoteFreshnessOptions;
 }
 
+export type PortfolioFallbackReason =
+  | "repository_error"
+  | "empty_portfolio"
+  | "inactive_record"
+  | "validation_failed";
+
+export interface ActivePortfolioExecutionResult {
+  data: PortfolioDomainModel[];
+  source: "supabase" | "hardcoded";
+  fallback_applied: boolean;
+  fallback_reason: PortfolioFallbackReason | null;
+  validation_passed: boolean;
+  warnings: string[];
+}
+
+export type HardcodedPortfolioFallback = () => Promise<PortfolioDomainModel[]>;
+
+interface PortfolioLoadResult {
+  data: PortfolioDomainModel[];
+  inactiveRecordDetected: boolean;
+}
+
+function assertServerRuntime(): void {
+  if (typeof window !== "undefined") {
+    throw new Error("GetActivePortfolioUseCase is server-only.");
+  }
+}
+
+function passesSupabaseValidation(
+  portfolio: readonly PortfolioDomainModel[],
+): boolean {
+  return portfolio.every(
+    (stock) =>
+      stock.is_active &&
+      stock.symbol.trim().length > 0 &&
+      stock.market.trim().length > 0 &&
+      Number.isFinite(stock.cost_price) &&
+      stock.cost_price >= 0 &&
+      Number.isFinite(stock.quantity) &&
+      stock.quantity > 0 &&
+      stock.data_quality_status === "valid" &&
+      stock.decision_ready &&
+      !stock.reference_only,
+  );
+}
+
 export class GetActivePortfolioUseCase {
   constructor(
     private readonly portfolioRepository: PortfolioRepository,
@@ -33,10 +79,70 @@ export class GetActivePortfolioUseCase {
   async execute(
     options: GetActivePortfolioOptions = {},
   ): Promise<PortfolioDomainModel[]> {
+    assertServerRuntime();
+    return (await this.loadActivePortfolio(options)).data;
+  }
+
+  /**
+   * Safe V3-5 composition contract. Empty, inactive, invalid, suspicious,
+   * stale, unavailable, or repository failures must retain hardcoded data.
+   */
+  async executeWithHardcodedFallback(
+    hardcodedFallback: HardcodedPortfolioFallback,
+    options: GetActivePortfolioOptions = {},
+  ): Promise<ActivePortfolioExecutionResult> {
+    assertServerRuntime();
+
+    try {
+      const result = await this.loadActivePortfolio(options);
+      if (result.inactiveRecordDetected) {
+        return this.fallback(
+          hardcodedFallback,
+          "inactive_record",
+          "Supabase returned an inactive Portfolio record.",
+        );
+      }
+      if (result.data.length === 0) {
+        return this.fallback(
+          hardcodedFallback,
+          "empty_portfolio",
+          "Supabase active Portfolio is empty.",
+        );
+      }
+      if (!passesSupabaseValidation(result.data)) {
+        return this.fallback(
+          hardcodedFallback,
+          "validation_failed",
+          "Supabase Portfolio did not pass Data Quality validation.",
+        );
+      }
+
+      return {
+        data: result.data,
+        source: "supabase",
+        fallback_applied: false,
+        fallback_reason: null,
+        validation_passed: true,
+        warnings: [],
+      };
+    } catch (error) {
+      return this.fallback(
+        hardcodedFallback,
+        "repository_error",
+        error instanceof Error
+          ? `Supabase Portfolio failed: ${error.message}`
+          : "Supabase Portfolio failed with an unknown error.",
+      );
+    }
+  }
+
+  private async loadActivePortfolio(
+    options: GetActivePortfolioOptions,
+  ): Promise<PortfolioLoadResult> {
     const stocks = await this.portfolioRepository.getActivePortfolioStocks();
     const activeStocks = stocks.filter((stock) => stock.is_active);
 
-    return Promise.all(
+    const data = await Promise.all(
       activeStocks.map(async (stock) => {
         if (!this.priceSource) return mapPortfolioStock(stock);
 
@@ -66,5 +172,25 @@ export class GetActivePortfolioUseCase {
         return mapPortfolioStock(stock, valuation);
       }),
     );
+
+    return {
+      data,
+      inactiveRecordDetected: activeStocks.length !== stocks.length,
+    };
+  }
+
+  private async fallback(
+    hardcodedFallback: HardcodedPortfolioFallback,
+    reason: PortfolioFallbackReason,
+    warning: string,
+  ): Promise<ActivePortfolioExecutionResult> {
+    return {
+      data: await hardcodedFallback(),
+      source: "hardcoded",
+      fallback_applied: true,
+      fallback_reason: reason,
+      validation_passed: false,
+      warnings: [warning],
+    };
   }
 }
