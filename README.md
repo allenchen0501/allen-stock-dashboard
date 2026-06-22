@@ -2,7 +2,7 @@
 
 以 Next.js、TypeScript 與 Tailwind CSS 製作的個人台股戰情室，包含市場燈號、持股戰情、V8.5 核心評分、風報比、主升段候選與今日禁碰股。
 
-目前版本為 V12 Portfolio Production Readiness：建立 `portfolio_stocks` 正式上線前的 schema / RLS / seed / shadow / switch / rollback 六項 gate 文件，並新增 `npm run test:portfolio-production-readiness` fixture-only 本機 shape checker。本階段未切換 `/api/portfolio`、未寫入 Supabase、未提交真實持股資料，仍以 hardcoded 為預設 source。
+目前版本為 V13 Portfolio Staging RLS Validation：建立 `portfolio_stocks` 在 isolated Supabase staging project 的 RLS / grants / owner-scoped access 驗證計畫文件，並新增 `npm run test:portfolio-staging-rls` fixture-only 本機 checklist checker。本階段未連 Supabase、未套用 migration、未寫入資料、未切換 `/api/portfolio`，仍以 hardcoded 為預設 source。
 
 ## 開始使用
 
@@ -41,6 +41,19 @@ npm run start
 - `docs/`：資料庫、資料保存、介面用語、技術框架與戰情室架構規範。
 
 ## 版本紀錄
+
+### V13
+
+Portfolio Staging RLS Validation：
+
+- 新增 `docs/portfolio-staging-rls-validation.md`：定義 `portfolio_stocks` 在 isolated Supabase staging project 的 RLS / grants / owner-scoped access 驗證計畫，包含 staging 環境需求、人工操作步驟、RLS Test Matrix（anon deny、Owner A/B 隔離、hard delete deny、soft delete、inactive rows leakage）、PASS/FAIL 標準、三層 rollback plan 與進入 V14 的 promotion gate。
+- 新增 `scripts/validate-portfolio-staging-rls.ts`：fixture-only 本機 RLS checklist checker，不連 Supabase、不讀 env key、不發 request、不讀寫真實持股，輸出 JSON summary。
+- 新增 `npm run test:portfolio-staging-rls` npm script。
+- 本階段只做 staging RLS validation layer 文件與驗證腳本。
+- 未連 Supabase；未套用 migration 到任何 Supabase project。
+- 未寫入資料；未提交真實持股（cost / quantity / owner_id）。
+- 未切換 `/api/portfolio`；仍以 hardcoded 為預設 source。
+- 未修改 UI、components、repositories、services 或任何既有 `supabase/*.sql`。
 
 ### V12
 
@@ -366,6 +379,7 @@ War Room Reports Migration Fix：
 - [Supabase Client Layer](docs/supabase-client-layer.md)
 - [Database Architecture](docs/database-architecture.md)
 - [Schema Boundary Decisions](docs/schema-boundary-decisions.md)
+- [Portfolio Staging RLS Validation](docs/portfolio-staging-rls-validation.md)
 - [Portfolio Production Readiness](docs/portfolio-production-readiness.md)
 - [Storage Policy](docs/storage-policy.md)
 - [UI Language Rule](docs/ui-language-rule.md)
