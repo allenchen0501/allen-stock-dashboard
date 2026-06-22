@@ -42,6 +42,16 @@ npm run start
 
 ## 版本紀錄
 
+### V11
+
+新增 Schema Descriptor Verification：
+
+- 新增 `npm run test:schema-descriptor` 人工驗證指令；預設 disabled，僅在 `CONNECTOR_HTTP_ENABLED=true` 時允許 request。
+- TWSE 與 TPEx 每來源最多一次 request，不重試、不輪詢、不建立排程。
+- Descriptor 僅輸出 field name、field type、present 狀態、matched alias 與 schema hash，不輸出或保存 raw values。
+- `record_time` alias 未命中時維持 FAIL，不猜值、不自動修改 mapping。
+- 本階段不寫 Supabase、不影響 reader、Dashboard、components 或 API。
+
 ### V10.5
 
 新增 Real Endpoint Verification 與 baseline 準備：

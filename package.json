@@ -12,7 +12,8 @@
     "test:official-connectors": "node scripts/test-official-connectors.ts",
     "test:official-connectors:runtime": "node scripts/run-official-connector-runtime-test.ts",
     "test:etl-dry-run": "node scripts/run-etl-dry-run-integration.ts",
-    "test:runtime-evidence": "node scripts/run-runtime-evidence.ts"
+    "test:runtime-evidence": "node scripts/run-runtime-evidence.ts",
+    "test:schema-descriptor": "node scripts/run-schema-descriptor-verification.ts"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.108.2",
