@@ -2,7 +2,7 @@
 
 以 Next.js、TypeScript 與 Tailwind CSS 製作的個人台股戰情室，包含市場燈號、持股戰情、V8.5 核心評分、風報比、主升段候選與今日禁碰股。
 
-目前版本為 V11.7 Schema Boundary Decisions：新增 schema boundary 決策文件，釐清技術訊號／技術原始數值、已持股風險／候選股風報比、個股評分／未來 N 日預測三組高度重疊資料表的責任邊界，並明確暫緩 `technical_snapshots`／`risk_reward_snapshots`／`predictions` 建表。本階段未新增 migration，Runtime request、Supabase 寫入、UI/API 串接仍未啟用。
+目前版本為 V12 Portfolio Production Readiness：建立 `portfolio_stocks` 正式上線前的 schema / RLS / seed / shadow / switch / rollback 六項 gate 文件，並新增 `npm run test:portfolio-production-readiness` fixture-only 本機 shape checker。本階段未切換 `/api/portfolio`、未寫入 Supabase、未提交真實持股資料，仍以 hardcoded 為預設 source。
 
 ## 開始使用
 
@@ -41,6 +41,18 @@ npm run start
 - `docs/`：資料庫、資料保存、介面用語、技術框架與戰情室架構規範。
 
 ## 版本紀錄
+
+### V12
+
+Portfolio Production Readiness：
+
+- 新增 `docs/portfolio-production-readiness.md`：定義正式切換 `portfolio_stocks` 前必須通過的六項 gate（Schema、Seed、RLS/Grants、Shadow Parity、API Switch、Rollback），以及 Allowed/Forbidden actions 與最小上線排序。
+- 新增 `scripts/validate-portfolio-production-readiness.ts`：fixture-only 本機 readiness checker，不連 Supabase、不讀 env key、不發 request、不讀寫真實持股，輸出 JSON summary。
+- 新增 `npm run test:portfolio-production-readiness` npm script。
+- 本階段只做 Portfolio production readiness 文件與驗證腳本。
+- 未切換 `/api/portfolio`；仍以 `hardcoded` 為預設 source。
+- 未寫入 Supabase，未提交真實持股（cost / quantity / owner_id）。
+- 未修改 UI、components、repositories、services 或任何既有 supabase/*.sql。
 
 ### V11.7
 
@@ -354,6 +366,7 @@ War Room Reports Migration Fix：
 - [Supabase Client Layer](docs/supabase-client-layer.md)
 - [Database Architecture](docs/database-architecture.md)
 - [Schema Boundary Decisions](docs/schema-boundary-decisions.md)
+- [Portfolio Production Readiness](docs/portfolio-production-readiness.md)
 - [Storage Policy](docs/storage-policy.md)
 - [UI Language Rule](docs/ui-language-rule.md)
 - [Technical Framework](docs/technical-framework.md)
