@@ -3,10 +3,11 @@ import { YahooStockProvider } from "@/services/stocks";
 import {
   resolvePortfolioModeFromEnvironment,
 } from "@/use-cases/portfolio/portfolio-mode";
-import type {
-  PortfolioMode,
-  PortfolioModeResolution,
-} from "@/use-cases/portfolio/types";
+import {
+  buildSwitchGuardMetadata,
+  type PortfolioSwitchGuardMetadata,
+} from "@/use-cases/portfolio/portfolio-switch-guard";
+import type { PortfolioModeResolution } from "@/use-cases/portfolio/types";
 import type { ApiMetadata, ApiResult, StockSnapshot } from "@/types/api";
 
 export const runtime = "nodejs";
@@ -14,25 +15,8 @@ export const dynamic = "force-dynamic";
 
 const stocksService = new YahooStockProvider();
 
-interface PortfolioShadowMetadata {
-  reportVersion: "v3-5";
-  status: "not_run";
-  responseSource: "hardcoded";
-  decisionAllowed: false;
-  reason: "supabase_shadow_adapter_not_configured";
-}
-
-interface PortfolioSwitchMetadata {
-  requestedMode: string | null;
-  resolvedMode: PortfolioMode;
-  responseSource: "hardcoded";
-  fallbackApplied: boolean;
-  warnings: string[];
-  shadowReport?: PortfolioShadowMetadata;
-}
-
 type PortfolioApiMetadata = ApiMetadata & {
-  portfolioMode: PortfolioSwitchMetadata;
+  portfolioMode: PortfolioSwitchGuardMetadata;
 };
 
 interface PortfolioApiSuccess {
@@ -110,44 +94,8 @@ export async function GET() {
 
 function createPortfolioSwitchMetadata(
   mode: PortfolioModeResolution,
-): PortfolioSwitchMetadata {
-  const warnings = [...mode.warnings];
-  let fallbackApplied = mode.fallback_applied;
-
-  if (mode.effective_mode === "shadow") {
-    warnings.push(
-      "Shadow metadata is pending a staging Supabase adapter; response data remains hardcoded.",
-    );
-    return {
-      requestedMode: mode.requested_mode,
-      resolvedMode: mode.effective_mode,
-      responseSource: "hardcoded",
-      fallbackApplied,
-      warnings,
-      shadowReport: {
-        reportVersion: "v3-5",
-        status: "not_run",
-        responseSource: "hardcoded",
-        decisionAllowed: false,
-        reason: "supabase_shadow_adapter_not_configured",
-      },
-    };
-  }
-
-  if (mode.effective_mode === "supabase") {
-    fallbackApplied = true;
-    warnings.push(
-      "Supabase Portfolio is a V3-5 skeleton; using hardcoded fallback until rollout gates pass.",
-    );
-  }
-
-  return {
-    requestedMode: mode.requested_mode,
-    resolvedMode: mode.effective_mode,
-    responseSource: "hardcoded",
-    fallbackApplied,
-    warnings,
-  };
+): PortfolioSwitchGuardMetadata {
+  return buildSwitchGuardMetadata(mode);
 }
 
 function failureStatus(code: string): number {

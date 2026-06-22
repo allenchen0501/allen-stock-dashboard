@@ -2,7 +2,7 @@
 
 以 Next.js、TypeScript 與 Tailwind CSS 製作的個人台股戰情室，包含市場燈號、持股戰情、V8.5 核心評分、風報比、主升段候選與今日禁碰股。
 
-目前版本為 V13 Portfolio Staging RLS Validation：建立 `portfolio_stocks` 在 isolated Supabase staging project 的 RLS / grants / owner-scoped access 驗證計畫文件，並新增 `npm run test:portfolio-staging-rls` fixture-only 本機 checklist checker。本階段未連 Supabase、未套用 migration、未寫入資料、未切換 `/api/portfolio`，仍以 hardcoded 為預設 source。
+目前版本為 V14 Portfolio API Switch Guard：為所有 `PORTFOLIO_SOURCE_MODE` 值新增 snake_case response metadata guard，提取 `buildSwitchGuardMetadata()` pure function，並新增 `npm run test:portfolio-api-switch-guard` fixture-only checker（5 個 scenario）。本階段未連 Supabase、未建立 Supabase client、未讀 secret env key、未寫入資料、未切換 `/api/portfolio` 為真實 Supabase 路徑，仍以 hardcoded 為預設 source。
 
 ## 開始使用
 
@@ -41,6 +41,20 @@ npm run start
 - `docs/`：資料庫、資料保存、介面用語、技術框架與戰情室架構規範。
 
 ## 版本紀錄
+
+### V14
+
+Portfolio API Switch Guard：
+
+- 新增 `use-cases/portfolio/portfolio-switch-guard.ts`：`buildSwitchGuardMetadata()` pure function，將 `PortfolioModeResolution` 對應為 V14 snake_case switch guard metadata 契約；無 Supabase 依賴、無 env 讀取、無 HTTP。
+- 修改 `app/api/portfolio/route.ts`：移除舊版 camelCase metadata 介面（`PortfolioSwitchMetadata`、`PortfolioShadowMetadata`），改用 `PortfolioSwitchGuardMetadata`；`createPortfolioSwitchMetadata()` 委派給 `buildSwitchGuardMetadata()`。`supabase` mode 在 V14 被 guard 攔截，不建立 Supabase client，fallback 到 hardcoded 並標示 `fallback_used: true`。預設行為（`hardcoded`）維持不變。
+- 新增 `scripts/validate-portfolio-api-switch-guard.ts`：fixture-only switch guard checker，測試 5 個 scenario（env unset / hardcoded / shadow / supabase / invalid），驗證 metadata 契約，不連 Supabase、不讀 env key、不發 request，輸出 JSON summary。
+- 新增 `docs/portfolio-api-switch-guard.md`：定義 source mode contract 表、response metadata 契約（必填與條件欄位）、safety rules（7 條）與進入 V15 的 promotion gate。
+- 新增 `npm run test:portfolio-api-switch-guard` npm script。
+- 未連 Supabase；未建立 Supabase client；未讀取 Supabase secret env key。
+- 未寫入資料；未提交真實持股（cost / quantity / owner_id）。
+- 未切換 `/api/portfolio` 為真實 Supabase 路徑；仍以 hardcoded 為預設 source。
+- 未新增 SQL migration；未修改 UI、components、repositories 或 services。
 
 ### V13
 
@@ -379,6 +393,7 @@ War Room Reports Migration Fix：
 - [Supabase Client Layer](docs/supabase-client-layer.md)
 - [Database Architecture](docs/database-architecture.md)
 - [Schema Boundary Decisions](docs/schema-boundary-decisions.md)
+- [Portfolio API Switch Guard](docs/portfolio-api-switch-guard.md)
 - [Portfolio Staging RLS Validation](docs/portfolio-staging-rls-validation.md)
 - [Portfolio Production Readiness](docs/portfolio-production-readiness.md)
 - [Storage Policy](docs/storage-policy.md)
