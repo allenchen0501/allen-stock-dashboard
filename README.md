@@ -2,7 +2,7 @@
 
 以 Next.js、TypeScript 與 Tailwind CSS 製作的個人台股戰情室，包含市場燈號、持股戰情、V8.5 核心評分、風報比、主升段候選與今日禁碰股。
 
-目前版本為 V15 Portfolio Valuation Radar Spec：建立 Allen 個人版 Portfolio Valuation Radar 產品規格，定義五大模組（持股估值雷達、市場溫度計、個股研究快照、事件雷達、風險提醒）、API contract proposal（`portfolio.valuationSummary` 完整 TypeScript shape）、短期不建表方案、長期 `stock_valuation_snapshots` 建表條件與 `valuationTier` 六層語意（含特價≠可立即買進、高股價≠昂貴等誤解說明）。本階段未新增 SQL migration、未新增 `stock_valuation_snapshots`、未新增 API route、未連 Supabase、未修改 UI。
+目前版本為 V16 Portfolio Valuation Summary API Contract：新增 `GET /api/portfolio/valuation-summary` spec-only route、`PortfolioValuationSummaryItem` TypeScript contract、spec-only mock builder 與 `resolvePortfolioValuationTier()` / `resolvePortfolioActionSignal()` pure function skeletons（V16 預設保守回傳 `資料不足`）。本階段未連 Supabase、未讀 secret env、未新增 SQL migration、未新增 `stock_valuation_snapshots`、未寫入資料、未修改 UI、不產生買賣指令。
 
 ## 開始使用
 
@@ -41,6 +41,24 @@ npm run start
 - `docs/`：資料庫、資料保存、介面用語、技術框架與戰情室架構規範。
 
 ## 版本紀錄
+
+### V16
+
+Portfolio Valuation Summary API Contract：
+
+- 新增 `use-cases/portfolio/valuation-summary-contract.ts`：完整 TypeScript contract（`PortfolioValuationTier`、`PortfolioActionSignal`、`PortfolioValuationSummaryItem`、`PortfolioValuationSummaryMetadata`、`PortfolioValuationSummaryResponse`），不依賴 DB 型別或 Supabase。
+- 新增 `use-cases/portfolio/build-valuation-summary-contract.ts`：spec-only mock builder `buildPortfolioValuationSummaryContract()`，以 hardcoded 股票 identity 生成 5 筆 spec-only items，所有估值欄位為 `null`，`valuationTier / actionSignal` 預設 `資料不足`，`dataQualityStatus` 預設 `WARNING`，metadata 固定 `source_mode: "spec_only"`。
+- 新增 `use-cases/portfolio/valuation-tier.ts`：`resolvePortfolioValuationTier()` 與 `resolvePortfolioActionSignal()` pure function skeletons，V16 保守預設（缺 EPS / price / formula 回 `資料不足`；WARNING / FAIL 品質不得輸出 `可分批`；不輸出買進 / 賣出）。
+- 新增 `app/api/portfolio/valuation-summary/route.ts`：`GET /api/portfolio/valuation-summary` spec-only route，`Cache-Control: no-store`，不讀 env key、不建 Supabase client、不產生買賣建議。
+- 新增 `scripts/validate-portfolio-valuation-summary-api.ts`：fixture-only checker，4 gates（required files / contract shape / metadata / pure functions），不啟動 Next server、不發 request、不連 Supabase，輸出 JSON summary。
+- 新增 `docs/portfolio-valuation-summary-api.md`：endpoint contract、response shape、保守預設說明與 V17 Promotion Gate。
+- 新增 `npm run test:portfolio-valuation-summary-api` npm script。
+- 本階段仍不連 Supabase；未讀取 Supabase secret env key。
+- 未新增 SQL migration。
+- 未新增 `stock_valuation_snapshots`（建表條件尚未滿足）。
+- 未修改 UI / components / repositories / services。
+- 未寫入資料；未提交真實持股（cost / quantity / owner_id）。
+- 不產生買賣指令；`actionSignal` 只作 Allen 個人決策輔助。
 
 ### V15
 
@@ -409,6 +427,7 @@ War Room Reports Migration Fix：
 - [Supabase Client Layer](docs/supabase-client-layer.md)
 - [Database Architecture](docs/database-architecture.md)
 - [Schema Boundary Decisions](docs/schema-boundary-decisions.md)
+- [Portfolio Valuation Summary API](docs/portfolio-valuation-summary-api.md)
 - [Portfolio Valuation Radar Spec](docs/portfolio-valuation-radar-spec.md)
 - [Portfolio API Switch Guard](docs/portfolio-api-switch-guard.md)
 - [Portfolio Staging RLS Validation](docs/portfolio-staging-rls-validation.md)
