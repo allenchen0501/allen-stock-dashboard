@@ -2,7 +2,7 @@
 
 以 Next.js、TypeScript 與 Tailwind CSS 製作的個人台股戰情室，包含市場燈號、持股戰情、V8.5 核心評分、風報比、主升段候選與今日禁碰股。
 
-目前版本為 V17B Portfolio Valuation Radar UI Polish：將 V17A 的寬表 UI 改為 compact radar card layout（summary cards + 個股雷達卡 grid），並將 `PortfolioValuationRadar` 上移至 holdings 頁主要決策區（`HoldingsTable` 之前）。本階段未連 Supabase、未讀 secret env、未新增 SQL migration、未新增 `stock_valuation_snapshots`、未寫入資料、不產生買賣指令。
+目前版本為 V17C Portfolio Valuation Radar Dashboard Integration：新增 `components/portfolio-valuation-radar-summary.tsx`，在 Dashboard 首頁 HoldingsTable 之後顯示持股估值雷達精簡摘要（summary cards + 前 5 檔 preview list + CTA 連結至 `/holdings`）。Holdings 頁仍保留完整 radar。本階段未連 Supabase、未讀 secret env、未新增 SQL migration、未新增 `stock_valuation_snapshots`、未寫入資料、不產生買賣指令。
 
 ## 開始使用
 
@@ -38,9 +38,26 @@ npm run start
 - `types/`：UI 與 API 契約。
 - `war-room/input/`：戰情室 primary、reference、rejected 資料輸入契約與 gate。
 - `supabase/`：V3-1 基礎 schema、V3-1.5 Pro+ schema、V3-1.6 補強 schema 與套用說明。
-- `docs/`：資料庫、資料保存、介面用語、技術框架與戰情室架構規範。
+- `docs/`：資料庫、資料保存、介面用語、技術框架、戰情室架構規範與 Portfolio Valuation Radar Dashboard 規格（[docs/portfolio-valuation-radar-ui.md](docs/portfolio-valuation-radar-ui.md)）。
 
 ## 版本紀錄
+
+### V17C
+
+Portfolio Valuation Radar Dashboard Integration：
+
+- 新增 `components/portfolio-valuation-radar-summary.tsx`：Dashboard 首頁用的精簡摘要 Server Component，直接呼叫 `buildPortfolioValuationSummaryContract()`，不 fetch / 不連 Supabase / 不讀 env key。顯示標題「持股估值雷達摘要」、4 個 summary stat chips（合約階段 / 資料不足 / WARNING / 公式啟用）、前 5 檔股票 preview list（`公式未啟用` / `合約階段` / `等待資料` 狀態標籤）、compact status bar（`spec_only · mock_or_contract · Supabase disabled · Write false`）與 CTA 連結「查看完整持股估值雷達」→ `/holdings`。
+- 修改 `app/page.tsx`：在 `HoldingsTable` 之後、`RiskRanking + BreakoutPool` 之前加入 `<PortfolioValuationRadarSummary />`。不移除既有任何 Dashboard 模組。
+- 新增 `scripts/validate-portfolio-valuation-radar-dashboard.ts`：fixture-only Dashboard integration checker，4 gates（required_files / dashboard_summary_phrases / integration / safety），驗證 summary component 含 10 個必要文字、不含 7 個禁用短語、dashboard page 有 import 且渲染 PortfolioValuationRadarSummary、holdings page 仍保留完整 PortfolioValuationRadar、CTA 連結指向 `/holdings`、builder metadata 符合安全常數。
+- 新增 `npm run test:portfolio-valuation-radar-dashboard` npm script。
+- 更新 `docs/portfolio-valuation-radar-ui.md`：新增 V17C Section H（H1–H4）+ V18 Promotion Gate（Section I）。
+- Holdings 頁完整 radar（`PortfolioValuationRadar`）完整保留，未移除。
+- 未連 Supabase；未讀取 Supabase secret env key。
+- 未新增 SQL migration。
+- 未新增 `stock_valuation_snapshots`（建表條件尚未滿足）。
+- 未修改 repositories / services / lib/types/database.ts / supabase/*.sql。
+- 未寫入資料；未提交真實持股（cost / quantity / owner_id）。
+- 不產生買賣指令；summary component source 不含 推薦買進、強力買進、立即進場、明確買進、明確賣出、停損價、目標價。
 
 ### V17B
 

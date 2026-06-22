@@ -187,20 +187,87 @@ Layout：
 
 ---
 
-## G. Promotion Gate to V17C / V18
+## G. Promotion Gate to V17C / V18（V17B 原版 — 已達成）
 
-（取代 V17A 的 Section E）
+V17C 已完成以下確認：
 
-進入 V17C 或 V18 前，ALL 必須通過：
+- [x] `test:portfolio-valuation-radar-ui` PASS（5 gates）
+- [x] build PASS
+- [x] Allen 確認 compact card layout 可讀
+- [x] Allen 選擇 V17C：把 radar 掛到 Dashboard 首頁
 
-1. `test:portfolio-valuation-radar-ui` PASS（5 gates）。
-2. `npm run build` PASS。
-3. Allen 確認 compact card layout 可讀，summary cards 資訊夠用。
-4. Allen 選擇下一步：
-   - **V17C**：把 radar 掛到 Dashboard 首頁（`app/page.tsx`）。
-   - **V18**：接入官方 price pipeline（TWSE/TPEx OpenAPI），enriching `price` / `changePercent`。
-   - **V18-alt**：先完成 valuation formula 文件化（`cheapPrice / fairPrice / expensivePrice` 計算邏輯寫入 docs）。
-5. 若接真實資料（price / EPS），需保持 data quality gate（`dataQualityStatus` pipeline 定義），不得因接資料而移除 WARNING 顯示。
-6. 若接真實持股（`avgCost` / `quantity`）：需 Supabase staging RLS gates 通過，且不得將真實數值 commit 到 Git。
-7. `PORTFOLIO_SOURCE_MODE` 預設仍為 `hardcoded`。
-8. 不得新增 `stock_valuation_snapshots`（建表條件尚未滿足）。
+---
+
+## H. V17C — Dashboard Integration
+
+V17C 將 Portfolio Valuation Radar 的精簡摘要版掛到 Dashboard 首頁（`app/page.tsx`）。
+
+### H1. 新增 Component
+
+`components/portfolio-valuation-radar-summary.tsx`
+
+- Server Component（無 "use client"）
+- 直接呼叫 `buildPortfolioValuationSummaryContract()`
+- 不 fetch、不連 Supabase、不讀 env key、不寫資料
+
+### H2. Dashboard 頁面位置
+
+```tsx
+// app/page.tsx
+<div className="mb-5"><HoldingsTable /></div>
+
+<div className="mb-5">
+  <PortfolioValuationRadarSummary />    {/* ← V17C 新增，HoldingsTable 之後 */}
+</div>
+
+<div className="mb-5 grid gap-5 xl:grid-cols-[0.8fr_1.2fr]">
+  <RiskRanking />
+  <BreakoutPool />
+</div>
+```
+
+### H3. Summary Component 顯示內容
+
+| 區塊 | 內容 |
+|---|---|
+| 標題 | `持股估值雷達摘要` |
+| 副標 / 提示 | `V17C Dashboard preview：目前仍為 spec-only contract data。` |
+| Compact Status Bar | `spec_only · mock_or_contract · Supabase disabled · Write false` |
+| Summary Stats（4 個） | 合約階段檔數 / 資料不足檔數 / WARNING 檔數 / 公式啟用檔數 |
+| Preview List（前 5 檔） | stockName + stockId + market + 估值層級 + 資料狀態 + 操作訊號 |
+| CTA Link | `查看完整持股估值雷達` → `/holdings` |
+
+Display mapping：
+- `valuationTier = 資料不足` → 顯示「公式未啟用」
+- `dataQualityStatus = WARNING` → 顯示「合約階段」
+- `actionSignal = 資料不足` → 顯示「等待資料」
+
+### H4. V17C 安全規則
+
+| Rule | V17C 狀態 |
+|---|---|
+| 未連 Supabase | ✓ |
+| 未讀 env key | ✓ |
+| 未新增 SQL migration | ✓ |
+| 未建 `stock_valuation_snapshots` | ✓ |
+| 不產生買賣指令 | ✓ 無 推薦買進、強力買進、立即進場、明確買進、明確賣出、停損價、目標價 |
+| Holdings 完整 Radar 保留 | ✓ `PortfolioValuationRadar` 仍在 `app/holdings/page.tsx` |
+| Dashboard 只顯示 compact preview | ✓ 不搬完整 card grid |
+
+---
+
+## I. Promotion Gate to V18
+
+進入 V18 前，ALL 必須通過：
+
+1. `test:portfolio-valuation-radar-dashboard` PASS（4 gates）。
+2. `test:portfolio-valuation-radar-ui` PASS（5 gates）。
+3. `npm run build` PASS。
+4. Allen 確認 Dashboard summary 位置與資訊密度合適。
+5. Allen 選擇下一步：
+   - **V18**：接入官方 price pipeline（TWSE/TPEx OpenAPI），enriching `price` / `changePercent`，讓 summary card 現價欄位顯示真實數值。
+   - **V18-alt**：先完成 valuation formula 文件化（`cheapPrice / fairPrice / expensivePrice` 計算邏輯寫入 `docs/portfolio-valuation-radar-spec.md`）。
+6. 若接真實資料（price / EPS），需保持 data quality gate（`dataQualityStatus` pipeline 定義）。
+7. 若接真實持股（`avgCost` / `quantity`）：需 Supabase staging RLS gates 通過。
+8. `PORTFOLIO_SOURCE_MODE` 預設仍為 `hardcoded`。
+9. 不得新增 `stock_valuation_snapshots`（建表條件尚未滿足）。

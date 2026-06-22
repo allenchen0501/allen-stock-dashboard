@@ -6,6 +6,7 @@ import { HoldingsTable } from "@/components/dashboard/holdings-table";
 import { MarketSignal } from "@/components/dashboard/market-signal";
 import { PageHeading } from "@/components/dashboard/page-heading";
 import { RiskRanking } from "@/components/dashboard/risk-ranking";
+import { PortfolioValuationRadarSummary } from "@/components/portfolio-valuation-radar-summary";
 
 export default function DashboardPage() {
   return (
@@ -18,6 +19,10 @@ export default function DashboardPage() {
       </div>
 
       <div className="mb-5"><HoldingsTable /></div>
+
+      <div className="mb-5">
+        <PortfolioValuationRadarSummary />
+      </div>
 
       <div className="mb-5 grid gap-5 xl:grid-cols-[0.8fr_1.2fr]">
         <RiskRanking />

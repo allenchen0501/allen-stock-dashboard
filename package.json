@@ -19,7 +19,8 @@
     "test:portfolio-api-switch-guard": "node --require ./scripts/register-typescript.cjs ./scripts/validate-portfolio-api-switch-guard.ts",
     "test:portfolio-valuation-radar-spec": "node --require ./scripts/register-typescript.cjs ./scripts/validate-portfolio-valuation-radar-spec.ts",
     "test:portfolio-valuation-summary-api": "node --require ./scripts/register-typescript.cjs ./scripts/validate-portfolio-valuation-summary-api.ts",
-    "test:portfolio-valuation-radar-ui": "node --require ./scripts/register-typescript.cjs ./scripts/validate-portfolio-valuation-radar-ui.ts"
+    "test:portfolio-valuation-radar-ui": "node --require ./scripts/register-typescript.cjs ./scripts/validate-portfolio-valuation-radar-ui.ts",
+    "test:portfolio-valuation-radar-dashboard": "node --require ./scripts/register-typescript.cjs ./scripts/validate-portfolio-valuation-radar-dashboard.ts"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.108.2",
