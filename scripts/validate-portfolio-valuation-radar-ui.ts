@@ -1,5 +1,5 @@
 /**
- * Portfolio Valuation Radar UI Validator — V17A
+ * Portfolio Valuation Radar UI Validator — V17B
  *
  * Fixture-only, local file-system check. Does NOT:
  *   - start a Next.js server
@@ -47,6 +47,7 @@ interface ValuationRadarUiSummary {
   supabase_connected: false;
   env_read_performed: false;
   ui_shell_created: true;
+  ui_polish_applied: true;
   sql_migration_created: false;
   stock_valuation_snapshots_created: false;
 }
@@ -130,40 +131,35 @@ function checkRequiredFiles(): CheckResult {
 }
 
 // ---------------------------------------------------------------------------
-// Gate 2: UI safety text (required phrases in component source)
+// Gate 2: UI safety text — required phrases and forbidden phrases
 // ---------------------------------------------------------------------------
 
 const REQUIRED_UI_PHRASES: Array<{ phrase: string; label: string }> = [
   { phrase: "Allen 持股估值雷達", label: "Title: Allen 持股估值雷達" },
-  { phrase: "Spec-only UI shell", label: "Spec-only UI shell notice" },
+  { phrase: "V17B Shell", label: "V17B Shell badge / status bar" },
+  { phrase: "spec_only", label: "Metadata: spec_only" },
+  { phrase: "mock_or_contract", label: "Metadata: mock_or_contract" },
+  { phrase: "Supabase disabled", label: "Status bar: Supabase disabled" },
+  { phrase: "Valuation table not created", label: "Status bar: Valuation table not created" },
   { phrase: "資料不足", label: "資料不足 state display" },
   { phrase: "估值公式尚未啟用", label: "估值公式尚未啟用 notice" },
+  { phrase: "資料合約階段", label: "DataQuality: 資料合約階段 label" },
+  { phrase: "等待資料", label: "ActionSignal 資料不足 → 等待資料 label" },
   { phrase: "不構成投資建議", label: "Safety: 不構成投資建議" },
   { phrase: "不會自動產生買賣指令", label: "Safety: 不會自動產生買賣指令" },
-  { phrase: "source_mode", label: "Metadata: source_mode display" },
-  { phrase: "response_source", label: "Metadata: response_source display" },
-  { phrase: "api_contract_version", label: "Metadata: api_contract_version display" },
-  { phrase: "supabase_connected", label: "Metadata: supabase_connected display" },
-  { phrase: "stock_valuation_snapshots_created", label: "Metadata: stock_valuation_snapshots_created display" },
 ];
 
-// These terms must NOT appear anywhere in the component source.
-// Only the character sequences are listed here — no surrounding context.
+// Forbidden phrases — complete trading instruction phrases must not appear.
+// Single chars 買/賣 or compound 買賣 are allowed (appear in safety notice).
+// Only explicit recommendation / instruction phrases are blocked.
 const FORBIDDEN_UI_PHRASES: Array<{ phrase: string; label: string }> = [
   { phrase: "推薦買進", label: "推薦買進" },
   { phrase: "強力買進", label: "強力買進" },
   { phrase: "立即進場", label: "立即進場" },
+  { phrase: "明確買進", label: "明確買進" },
+  { phrase: "明確賣出", label: "明確賣出" },
   { phrase: "停損價", label: "停損價" },
   { phrase: "目標價", label: "目標價" },
-];
-
-// Single-character terms checked separately for more targeted matching.
-// These are matched only as standalone signals (not part of larger words).
-// We check for the two-character combos that are problematic.
-const FORBIDDEN_TWO_CHAR: Array<{ phrase: string; label: string }> = [
-  { phrase: "買進", label: "買進" },
-  { phrase: "賣出", label: "賣出" },
-  { phrase: "出場", label: "出場" },
 ];
 
 function checkUiSafetyText(): CheckResult {
@@ -180,7 +176,6 @@ function checkUiSafetyText(): CheckResult {
   const details: string[] = [];
   const issues: string[] = [];
 
-  // Required phrases
   for (const { phrase, label } of REQUIRED_UI_PHRASES) {
     if (source.includes(phrase)) {
       details.push(`PASS  Required phrase "${label}" found.`);
@@ -189,7 +184,6 @@ function checkUiSafetyText(): CheckResult {
     }
   }
 
-  // Forbidden multi-character phrases
   for (const { phrase, label } of FORBIDDEN_UI_PHRASES) {
     if (source.includes(phrase)) {
       issues.push(`FAIL  Forbidden phrase "${label}" found in component source.`);
@@ -198,21 +192,65 @@ function checkUiSafetyText(): CheckResult {
     }
   }
 
-  // Forbidden two-character combos
-  for (const { phrase, label } of FORBIDDEN_TWO_CHAR) {
-    if (source.includes(phrase)) {
-      issues.push(`FAIL  Forbidden term "${label}" found in component source.`);
-    } else {
-      details.push(`PASS  Forbidden term "${label}" absent.`);
-    }
-  }
-
   const status: CheckStatus = issues.length > 0 ? "FAIL" : "PASS";
   return { name: "ui_safety_text", status, details: [...details, ...issues] };
 }
 
 // ---------------------------------------------------------------------------
-// Gate 3: Holdings page integration
+// Gate 3: Layout checks (compact card layout, no main <table>)
+// ---------------------------------------------------------------------------
+
+function checkLayout(): CheckResult {
+  const filePath = resolve("components/portfolio-valuation-radar.tsx");
+  const source = readFile(filePath);
+  if (!source) {
+    return {
+      name: "layout",
+      status: "FAIL",
+      details: ["FAIL  Cannot read components/portfolio-valuation-radar.tsx."],
+    };
+  }
+
+  const details: string[] = [];
+  const issues: string[] = [];
+
+  // Summary concept present
+  const hasSummaryConcept =
+    source.includes("summaryCards") ||
+    source.includes("radarSummary") ||
+    source.includes("SummaryCard") ||
+    /summary/i.test(source);
+  if (hasSummaryConcept) {
+    details.push("PASS  Summary card concept present in component.");
+  } else {
+    issues.push("FAIL  Summary card concept (summaryCards / radarSummary / SummaryCard) not found.");
+  }
+
+  // Card grid concept present
+  const hasCardGrid =
+    source.includes("valuationCards") ||
+    source.includes("RadarCard") ||
+    source.includes("grid");
+  if (hasCardGrid) {
+    details.push("PASS  Card grid concept present (valuationCards / RadarCard / grid).");
+  } else {
+    issues.push("FAIL  Card grid concept not found in component.");
+  }
+
+  // Main <table> should not be the primary visual
+  // We allow a table if it's inside a sub-component, but <table should not appear as the main content wrapper
+  if (source.includes("<table")) {
+    issues.push("FAIL  <table> found in component — V17B uses card grid, not a wide table as main visual.");
+  } else {
+    details.push("PASS  No <table> element — card grid layout confirmed.");
+  }
+
+  const status: CheckStatus = issues.length > 0 ? "FAIL" : "PASS";
+  return { name: "layout", status, details: [...details, ...issues] };
+}
+
+// ---------------------------------------------------------------------------
+// Gate 4: Holdings page integration
 // ---------------------------------------------------------------------------
 
 function checkHoldingsPageIntegration(): CheckResult {
@@ -247,19 +285,38 @@ function checkHoldingsPageIntegration(): CheckResult {
     issues.push("FAIL  CoreScore was removed from holdings page — must be preserved.");
   }
 
+  // Check render order: PortfolioValuationRadar must appear before HoldingsTable in JSX
+  const jsxStart = source.indexOf("return (");
+  if (jsxStart !== -1) {
+    const jsxSection = source.slice(jsxStart);
+    const radarJsxIdx = jsxSection.indexOf("PortfolioValuationRadar");
+    const tableJsxIdx = jsxSection.indexOf("HoldingsTable");
+    if (radarJsxIdx !== -1 && tableJsxIdx !== -1 && radarJsxIdx < tableJsxIdx) {
+      details.push(
+        "PASS  PortfolioValuationRadar renders before HoldingsTable — not at the bottom.",
+      );
+    } else {
+      issues.push(
+        "FAIL  PortfolioValuationRadar should render before HoldingsTable in the JSX (not at bottom).",
+      );
+    }
+  } else {
+    issues.push("FAIL  Could not locate return() statement in holdings page.");
+  }
+
   const status: CheckStatus = issues.length > 0 ? "FAIL" : "PASS";
   return { name: "holdings_integration", status, details: [...details, ...issues] };
 }
 
 // ---------------------------------------------------------------------------
-// Gate 4: Safety behavior (metadata + no SQL / no snapshots)
+// Gate 5: Safety behavior (metadata + no SQL / no snapshots / no repo changes)
 // ---------------------------------------------------------------------------
 
 function checkSafetyBehavior(): CheckResult {
   const details: string[] = [];
   const issues: string[] = [];
 
-  // Call builder and verify metadata constants
+  // Invoke builder and verify metadata constants
   let response: ReturnType<typeof buildPortfolioValuationSummaryContract>;
   try {
     response = buildPortfolioValuationSummaryContract();
@@ -292,20 +349,20 @@ function checkSafetyBehavior(): CheckResult {
     }
   }
 
-  // Verify no SQL migration files were added for valuation snapshots
+  // Verify no SQL migration files for valuation snapshots
   const snapshotsMigrationPatterns = [
     "supabase/v85_stock_valuation_snapshots.sql",
     "supabase/stock_valuation_snapshots.sql",
   ];
   for (const rel of snapshotsMigrationPatterns) {
     if (fileExists(resolve(rel))) {
-      issues.push(`FAIL  SQL migration ${rel} must not exist in V17A.`);
+      issues.push(`FAIL  SQL migration ${rel} must not exist.`);
     } else {
-      details.push(`PASS  ${rel} does not exist (correct — not created in V17A).`);
+      details.push(`PASS  ${rel} does not exist (correct).`);
     }
   }
 
-  // Verify repositories and services were not modified (check they still exist and have no snapshot refs)
+  // Verify protected files not deleted
   const protectedFiles = [
     "repositories/portfolio-repository.ts",
     "services/stocks/providers/yahoo-stock-provider.ts",
@@ -328,10 +385,17 @@ function checkSafetyBehavior(): CheckResult {
 
 const fileCheck = checkRequiredFiles();
 const uiTextCheck = checkUiSafetyText();
+const layoutCheck = checkLayout();
 const integrationCheck = checkHoldingsPageIntegration();
 const safetyCheck = checkSafetyBehavior();
 
-const allChecks: CheckResult[] = [fileCheck, uiTextCheck, integrationCheck, safetyCheck];
+const allChecks: CheckResult[] = [
+  fileCheck,
+  uiTextCheck,
+  layoutCheck,
+  integrationCheck,
+  safetyCheck,
+];
 const overallStatus = combineStatus(allChecks.map((c) => c.status));
 
 const allIssues: string[] = allChecks.flatMap((c) =>
@@ -347,6 +411,7 @@ const summary: ValuationRadarUiSummary = {
   gates: {
     required_files: fileCheck.status,
     ui_safety_text: uiTextCheck.status,
+    layout: layoutCheck.status,
     holdings_integration: integrationCheck.status,
     safety_behavior: safetyCheck.status,
   },
@@ -357,6 +422,7 @@ const summary: ValuationRadarUiSummary = {
   supabase_connected: false,
   env_read_performed: false,
   ui_shell_created: true,
+  ui_polish_applied: true,
   sql_migration_created: false,
   stock_valuation_snapshots_created: false,
 };

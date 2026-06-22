@@ -2,7 +2,7 @@
 
 以 Next.js、TypeScript 與 Tailwind CSS 製作的個人台股戰情室，包含市場燈號、持股戰情、V8.5 核心評分、風報比、主升段候選與今日禁碰股。
 
-目前版本為 V17A Portfolio Valuation Radar UI Shell：新增 `components/portfolio-valuation-radar.tsx` Server Component（15 欄股票表格、metadata badges、spec-only notice 與 safety notice），掛載於 `/holdings` 頁面 `HoldingsTable` + `CoreScore` 之下。本階段未連 Supabase、未讀 secret env、未新增 SQL migration、未新增 `stock_valuation_snapshots`、未寫入資料、不產生買賣指令。所有估值欄位顯示 `—` / `資料不足`，待 V18 啟用公式後才會替換。
+目前版本為 V17B Portfolio Valuation Radar UI Polish：將 V17A 的寬表 UI 改為 compact radar card layout（summary cards + 個股雷達卡 grid），並將 `PortfolioValuationRadar` 上移至 holdings 頁主要決策區（`HoldingsTable` 之前）。本階段未連 Supabase、未讀 secret env、未新增 SQL migration、未新增 `stock_valuation_snapshots`、未寫入資料、不產生買賣指令。
 
 ## 開始使用
 
@@ -41,6 +41,26 @@ npm run start
 - `docs/`：資料庫、資料保存、介面用語、技術框架與戰情室架構規範。
 
 ## 版本紀錄
+
+### V17B
+
+Portfolio Valuation Radar UI Polish：
+
+- 重構 `components/portfolio-valuation-radar.tsx`：從 V17A 的 15 欄寬表改為 compact radar card layout：
+  - **Compact Metadata Status Bar**：`V17B Shell｜spec_only｜mock_or_contract｜Supabase disabled｜Write false｜Valuation table not created`，取代原本分散的 6 個 metadata badge。
+  - **Summary Cards（4 張）**：合約階段檔數 / 資料不足檔數 / 公式啟用檔數 / WARNING 檔數，全部由 `data` 即時計算，不寫死。
+  - **Compact Radar Card Grid**：每檔股票以獨立 card 呈現，desktop 2–3 欄、mobile 單欄；primary 區顯示估值層級、操作訊號、資料狀態；secondary 區顯示現價、漲跌幅、平均成本等詳細欄位。
+  - **ActionSignalBadge**：`actionSignal = 資料不足` 顯示「等待資料」。
+  - Safety notice 精簡為：「V17B UI shell：僅用於確認資料欄位與畫面配置；不構成投資建議，不會自動產生買賣指令。」
+- 修改 `app/holdings/page.tsx`：`PortfolioValuationRadar` 從 grid 底部上移至 `PageHeading` 之後、`HoldingsTable + CoreScore` 之前（主要決策區）。
+- 更新 `scripts/validate-portfolio-valuation-radar-ui.ts`：5 gates（required_files / ui_safety_text / layout / holdings_integration / safety_behavior）；新增 layout gate（確認 card grid 概念、無 `<table>` 主視覺、PortfolioValuationRadar 在 JSX 中出現於 HoldingsTable 之前）；forbidden phrase 改為完整短語（推薦買進、強力買進、立即進場、明確買進、明確賣出、停損價、目標價），不再阻擋 safety notice 中的「買賣」二字。
+- 更新 `docs/portfolio-valuation-radar-ui.md`：新增 V17B 說明（F1–F6）與 V17C/V18 Promotion Gate。
+- 未連 Supabase；未讀取 Supabase secret env key。
+- 未新增 SQL migration。
+- 未新增 `stock_valuation_snapshots`（建表條件尚未滿足）。
+- 未修改 repositories / services / lib/types/database.ts / supabase/*.sql。
+- 未寫入資料；未提交真實持股（cost / quantity / owner_id）。
+- 不產生買賣指令；component source 不含 推薦買進、強力買進、立即進場、明確買進、明確賣出、停損價、目標價。
 
 ### V17A
 

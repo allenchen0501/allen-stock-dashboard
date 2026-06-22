@@ -1,4 +1,4 @@
-# Portfolio Valuation Radar UI — V17A
+# Portfolio Valuation Radar UI — V17A / V17B
 
 ## A. Purpose
 
@@ -103,15 +103,104 @@ A fixed-format footer block containing:
 
 ---
 
-## E. Promotion Gate to V17B / V18
+## F. V17B — Compact Radar Card Layout
 
-Before attaching real price or valuation data, ALL of the following must be satisfied:
+V17B 將 V17A 的寬表 UI polish 成一眼決策型的 compact card layout，並將模組上移至 holdings 頁主要決策區。
 
-1. `resolvePortfolioValuationTier()` formula implemented and tested with real EPS / price data.
-2. `resolvePortfolioActionSignal()` logic reviewed and confirmed to not produce forbidden words.
-3. `dataQualityStatus` pipeline defined (source of truth for PASS / WARNING / FAIL).
-4. At least one stock with `valuationTier !== "資料不足"` validated in a staging fixture.
-5. All 15 columns confirmed to display non-null values for at least one stock in a test dataset.
-6. Checker script `validate-portfolio-valuation-radar-ui.ts` continues to PASS with any new data.
-7. No real `avgCost`, `quantity`, or `owner_id` committed to Git.
-8. `PORTFOLIO_SOURCE_MODE` default remains `hardcoded`.
+### F1. 頁面位置變更
+
+V17A 位置：`HoldingsTable + CoreScore` grid **下方**。
+
+V17B 位置：`HoldingsTable + CoreScore` grid **上方**（緊接在 `PageHeading` 之後）：
+
+```tsx
+<div className="page-wrap">
+  <PageHeading ... />
+  <div className="mt-5">
+    <PortfolioValuationRadar />          {/* ← 上移到決策區 */}
+  </div>
+  <div className="mt-5 grid gap-5 xl:grid-cols-[1fr_410px]">
+    <HoldingsTable full />
+    <CoreScore />
+  </div>
+</div>
+```
+
+### F2. Summary Cards（4 張）
+
+位於 SectionCard 頂部，以 2×1（mobile）/ 4×1（desktop）grid 排列：
+
+| Card | 計算方式 | V17B 預期值 |
+|---|---|---|
+| 合約階段檔數 | `data.length` | 5 |
+| 資料不足檔數 | `data.filter(d => d.valuationTier === "資料不足").length` | 5 |
+| 公式啟用檔數 | `data.filter(d => d.valuationTier !== "資料不足").length` | 0 |
+| WARNING 檔數 | `data.filter(d => d.dataQualityStatus === "WARNING").length` | 5 |
+
+所有數值由 `data` 即時計算，不得寫死。
+
+### F3. Compact Metadata Status Bar
+
+將 V17A 的六個獨立 badge 收斂成單行 status bar：
+
+```
+V17B Shell｜spec_only｜mock_or_contract｜Supabase disabled｜Write false｜Valuation table not created
+```
+
+### F4. Compact Radar Card Grid
+
+每檔股票以獨立 card 呈現，不再使用 `<table>` 作為主視覺。
+
+Layout：
+- **Mobile**：1 欄
+- **Desktop (md)**：2 欄
+- **Desktop (xl)**：3 欄
+
+每張 card 包含：
+
+**Primary（主要）**：stockName、stockId、market、ValuationTierBadge、ActionSignalBadge、DataQualityBadge、估值公式尚未啟用 sub-label（tier = 資料不足 時）
+
+**Secondary（次要，2-col 欄位格）**：現價、漲跌幅、平均成本、未實現損益、損益率、風報比、技術訊號、籌碼訊號、新聞訊號、事件風險
+
+**Null 顯示**：`—`
+
+**Signal 顯示規則**：
+- `valuationTier = 資料不足` → badge 顯示「資料不足」，sub-label 顯示「估值公式尚未啟用」
+- `actionSignal = 資料不足` → badge 顯示「等待資料」
+- `dataQualityStatus = WARNING` → badge 顯示「資料合約階段」
+
+### F5. Safety Notice（精簡版）
+
+> V17B UI shell：僅用於確認資料欄位與畫面配置；不構成投資建議，不會自動產生買賣指令。
+
+### F6. V17B 安全規則
+
+| Rule | V17B 狀態 |
+|---|---|
+| 未連 Supabase | ✓ status bar 顯示「Supabase disabled」 |
+| 未讀 env key | ✓ 無 `process.env` 存取 |
+| 未新增 SQL migration | ✓ metadata `sql_migration_created: false` |
+| 未建 `stock_valuation_snapshots` | ✓ metadata `stock_valuation_snapshots_created: false` |
+| 不產生買賣指令 | ✓ 無 推薦買進、強力買進、立即進場、明確買進、明確賣出、停損價、目標價 |
+| 不使用 `<table>` 作為主視覺 | ✓ 改為 compact card grid |
+| HoldingsTable / CoreScore 保留 | ✓ |
+
+---
+
+## G. Promotion Gate to V17C / V18
+
+（取代 V17A 的 Section E）
+
+進入 V17C 或 V18 前，ALL 必須通過：
+
+1. `test:portfolio-valuation-radar-ui` PASS（5 gates）。
+2. `npm run build` PASS。
+3. Allen 確認 compact card layout 可讀，summary cards 資訊夠用。
+4. Allen 選擇下一步：
+   - **V17C**：把 radar 掛到 Dashboard 首頁（`app/page.tsx`）。
+   - **V18**：接入官方 price pipeline（TWSE/TPEx OpenAPI），enriching `price` / `changePercent`。
+   - **V18-alt**：先完成 valuation formula 文件化（`cheapPrice / fairPrice / expensivePrice` 計算邏輯寫入 docs）。
+5. 若接真實資料（price / EPS），需保持 data quality gate（`dataQualityStatus` pipeline 定義），不得因接資料而移除 WARNING 顯示。
+6. 若接真實持股（`avgCost` / `quantity`）：需 Supabase staging RLS gates 通過，且不得將真實數值 commit 到 Git。
+7. `PORTFOLIO_SOURCE_MODE` 預設仍為 `hardcoded`。
+8. 不得新增 `stock_valuation_snapshots`（建表條件尚未滿足）。
