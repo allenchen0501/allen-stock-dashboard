@@ -2,7 +2,7 @@
 
 以 Next.js、TypeScript 與 Tailwind CSS 製作的個人台股戰情室，包含市場燈號、持股戰情、V8.5 核心評分、風報比、主升段候選與今日禁碰股。
 
-目前版本為 V14 Portfolio API Switch Guard：為所有 `PORTFOLIO_SOURCE_MODE` 值新增 snake_case response metadata guard，提取 `buildSwitchGuardMetadata()` pure function，並新增 `npm run test:portfolio-api-switch-guard` fixture-only checker（5 個 scenario）。本階段未連 Supabase、未建立 Supabase client、未讀 secret env key、未寫入資料、未切換 `/api/portfolio` 為真實 Supabase 路徑，仍以 hardcoded 為預設 source。
+目前版本為 V15 Portfolio Valuation Radar Spec：建立 Allen 個人版 Portfolio Valuation Radar 產品規格，定義五大模組（持股估值雷達、市場溫度計、個股研究快照、事件雷達、風險提醒）、API contract proposal（`portfolio.valuationSummary` 完整 TypeScript shape）、短期不建表方案、長期 `stock_valuation_snapshots` 建表條件與 `valuationTier` 六層語意（含特價≠可立即買進、高股價≠昂貴等誤解說明）。本階段未新增 SQL migration、未新增 `stock_valuation_snapshots`、未新增 API route、未連 Supabase、未修改 UI。
 
 ## 開始使用
 
@@ -41,6 +41,22 @@ npm run start
 - `docs/`：資料庫、資料保存、介面用語、技術框架與戰情室架構規範。
 
 ## 版本紀錄
+
+### V15
+
+Portfolio Valuation Radar Spec：
+
+- 新增 `docs/portfolio-valuation-radar-spec.md`：定義五大模組（Portfolio Valuation Radar、Market Temperature、Stock Research Snapshot、Event Radar、Warm Risk Reminder）、`portfolio.valuationSummary` 完整 TypeScript response shape、`market.temperature` / `stock.researchSnapshot` 摘要 shape、短期不建表方案（`portfolio_stocks` / `v85_pro_plus_scores` / `technical_signals` / `war_room_items` 資料來源 mapping）、長期 `stock_valuation_snapshots` 欄位候選與六大建表條件、`valuationTier` 六層語意（`特價 / 便宜 / 合理 / 昂貴 / 瘋狂 / 資料不足`，含「高股價不等於昂貴」、「低股價不等於便宜」、「特價不等於可立即買進」說明）、個人版 scope 邊界與 V16 Promotion Gate。
+- 新增 `scripts/validate-portfolio-valuation-radar-spec.ts`：fixture-only spec completeness checker，3 gates（required files / spec completeness / boundary alignment），25 個 term 驗證，不連 Supabase、不讀 env key、不發 request、不建 API route、不建 SQL migration，輸出 JSON summary。
+- 新增 `npm run test:portfolio-valuation-radar-spec` npm script。
+- 本階段只做 Portfolio Valuation Radar 產品規格與 API contract 定義。
+- 未新增 SQL migration。
+- 未新增 `stock_valuation_snapshots`（已定義建表條件但標記「現在不建」）。
+- 未新增 API route（`/api/valuation` 為 proposal，V16 才實作）。
+- 未修改 UI / components / repositories / services。
+- 未連 Supabase；未讀取 Supabase secret env key。
+- 未寫入資料；未提交真實持股（cost / quantity / owner_id）。
+- 個人版不做 VIP / search limit，但保留 `owner_id` / RLS / hardcoded fallback 設計。
 
 ### V14
 
@@ -393,6 +409,7 @@ War Room Reports Migration Fix：
 - [Supabase Client Layer](docs/supabase-client-layer.md)
 - [Database Architecture](docs/database-architecture.md)
 - [Schema Boundary Decisions](docs/schema-boundary-decisions.md)
+- [Portfolio Valuation Radar Spec](docs/portfolio-valuation-radar-spec.md)
 - [Portfolio API Switch Guard](docs/portfolio-api-switch-guard.md)
 - [Portfolio Staging RLS Validation](docs/portfolio-staging-rls-validation.md)
 - [Portfolio Production Readiness](docs/portfolio-production-readiness.md)

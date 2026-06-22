@@ -16,7 +16,8 @@
     "test:schema-descriptor": "node scripts/run-schema-descriptor-verification.ts",
     "test:portfolio-production-readiness": "node --require ./scripts/register-typescript.cjs ./scripts/validate-portfolio-production-readiness.ts",
     "test:portfolio-staging-rls": "node --require ./scripts/register-typescript.cjs ./scripts/validate-portfolio-staging-rls.ts",
-    "test:portfolio-api-switch-guard": "node --require ./scripts/register-typescript.cjs ./scripts/validate-portfolio-api-switch-guard.ts"
+    "test:portfolio-api-switch-guard": "node --require ./scripts/register-typescript.cjs ./scripts/validate-portfolio-api-switch-guard.ts",
+    "test:portfolio-valuation-radar-spec": "node --require ./scripts/register-typescript.cjs ./scripts/validate-portfolio-valuation-radar-spec.ts"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.108.2",
