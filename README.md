@@ -2,7 +2,7 @@
 
 以 Next.js、TypeScript 與 Tailwind CSS 製作的個人台股戰情室，包含市場燈號、持股戰情、V8.5 核心評分、風報比、主升段候選與今日禁碰股。
 
-目前版本為 V10.5 Real Endpoint Verification：已建立人工驗證流程、pending baseline 規範與 fail-closed schema drift contract。Runtime request 仍須人工明確啟用，本階段未執行真實 endpoint 測試。
+目前版本為 V11.6 War Room Reports Migration Fix：已新增獨立 war_room_reports migration 與文件，修補 WarRoomReport 型別／repository 已存在但缺少實體資料表的 schema gap。Runtime request、Supabase 寫入、UI/API 串接仍未啟用。
 
 ## 開始使用
 
@@ -41,6 +41,15 @@ npm run start
 - `docs/`：資料庫、資料保存、介面用語、技術框架與戰情室架構規範。
 
 ## 版本紀錄
+
+### V11.6
+
+War Room Reports Migration Fix：
+
+- 新增 `supabase/v85_war_room_reports.sql`：建立 `public.war_room_reports` 實體資料表，補齊自 V3-3 起存在的 schema gap；RLS 啟用（fail-closed），未建立 policy，revoke anon/authenticated。
+- 新增 `docs/war-room-reports-migration.md`：說明 war_room_reports 角色、與 war_room_snapshots／war_room_items／war_room_decisions 的分工、欄位差異（WarRoomReport 繼承 TimestampedRecord 非 SourcedRecord）、本階段限制與正式接 API 前必須補 RLS／grants 的要求。
+- 未修改 repository、app、components、services 或 API。
+- 未寫入資料，未加入 key，未套用至遠端 Supabase。
 
 ### V11
 
