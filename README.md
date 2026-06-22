@@ -2,7 +2,7 @@
 
 以 Next.js、TypeScript 與 Tailwind CSS 製作的個人台股戰情室，包含市場燈號、持股戰情、V8.5 核心評分、風報比、主升段候選與今日禁碰股。
 
-目前版本為 V16 Portfolio Valuation Summary API Contract：新增 `GET /api/portfolio/valuation-summary` spec-only route、`PortfolioValuationSummaryItem` TypeScript contract、spec-only mock builder 與 `resolvePortfolioValuationTier()` / `resolvePortfolioActionSignal()` pure function skeletons（V16 預設保守回傳 `資料不足`）。本階段未連 Supabase、未讀 secret env、未新增 SQL migration、未新增 `stock_valuation_snapshots`、未寫入資料、未修改 UI、不產生買賣指令。
+目前版本為 V17A Portfolio Valuation Radar UI Shell：新增 `components/portfolio-valuation-radar.tsx` Server Component（15 欄股票表格、metadata badges、spec-only notice 與 safety notice），掛載於 `/holdings` 頁面 `HoldingsTable` + `CoreScore` 之下。本階段未連 Supabase、未讀 secret env、未新增 SQL migration、未新增 `stock_valuation_snapshots`、未寫入資料、不產生買賣指令。所有估值欄位顯示 `—` / `資料不足`，待 V18 啟用公式後才會替換。
 
 ## 開始使用
 
@@ -41,6 +41,21 @@ npm run start
 - `docs/`：資料庫、資料保存、介面用語、技術框架與戰情室架構規範。
 
 ## 版本紀錄
+
+### V17A
+
+Portfolio Valuation Radar UI Shell：
+
+- 新增 `components/portfolio-valuation-radar.tsx`：Server Component，直接呼叫 `buildPortfolioValuationSummaryContract()` 取得 spec-only 合約資料（無 fetch、無 HTTP、無 Supabase）；渲染 metadata badges（`source_mode`、`response_source`、`api_contract_version`、`supabase_connected`、`production_write_performed`、`stock_valuation_snapshots_created`）、spec-only notice bar、15 欄股票表格（持股 / 市場 / 現價 / 漲跌幅 / 估值層級 / 平均成本 / 未實現損益 / 損益率 / 風報比 / 技術訊號 / 籌碼訊號 / 新聞訊號 / 事件風險 / 操作訊號 / 資料狀態）、估值說明 footer 與 safety notice。所有估值欄位顯示 `—` / `資料不足`；估值公式尚未啟用。
+- 修改 `app/holdings/page.tsx`：在 `HoldingsTable` + `CoreScore` grid 下方加入 `<PortfolioValuationRadar />`，不移除或重排既有元件。
+- 新增 `scripts/validate-portfolio-valuation-radar-ui.ts`：fixture-only UI shell checker，4 gates（required_files / ui_safety_text / holdings_integration / safety_behavior），驗證 component 含有 11 個必要文字、不含 8 個禁用詞彙、holdings page 保留 HoldingsTable 與 CoreScore、builder metadata 均符合安全常數，不啟動 Next server、不發 request、不連 Supabase，輸出 JSON summary。
+- 新增 `docs/portfolio-valuation-radar-ui.md`：頁面配置、欄位顯示規則、安全規則與進入 V17B / V18 的 promotion gate。詳見 [docs/portfolio-valuation-radar-ui.md](docs/portfolio-valuation-radar-ui.md)。
+- 新增 `npm run test:portfolio-valuation-radar-ui` npm script。
+- 未連 Supabase；未讀取 Supabase secret env key。
+- 未新增 SQL migration。
+- 未新增 `stock_valuation_snapshots`（建表條件尚未滿足）。
+- 未寫入資料；未提交真實持股（cost / quantity / owner_id）。
+- 不產生買賣指令；component source 不含 推薦買進、買進、賣出、強力買進、立即進場、出場、停損價、目標價。
 
 ### V16
 
