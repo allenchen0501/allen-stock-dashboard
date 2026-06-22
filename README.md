@@ -2,7 +2,7 @@
 
 以 Next.js、TypeScript 與 Tailwind CSS 製作的個人台股戰情室，包含市場燈號、持股戰情、V8.5 核心評分、風報比、主升段候選與今日禁碰股。
 
-目前版本為 V11.6 War Room Reports Migration Fix：已新增獨立 war_room_reports migration 與文件，修補 WarRoomReport 型別／repository 已存在但缺少實體資料表的 schema gap。Runtime request、Supabase 寫入、UI/API 串接仍未啟用。
+目前版本為 V11.7 Schema Boundary Decisions：新增 schema boundary 決策文件，釐清技術訊號／技術原始數值、已持股風險／候選股風報比、個股評分／未來 N 日預測三組高度重疊資料表的責任邊界，並明確暫緩 `technical_snapshots`／`risk_reward_snapshots`／`predictions` 建表。本階段未新增 migration，Runtime request、Supabase 寫入、UI/API 串接仍未啟用。
 
 ## 開始使用
 
@@ -41,6 +41,16 @@ npm run start
 - `docs/`：資料庫、資料保存、介面用語、技術框架與戰情室架構規範。
 
 ## 版本紀錄
+
+### V11.7
+
+Schema Boundary Decisions：
+
+- 新增 `docs/schema-boundary-decisions.md`：釐清三組高度重疊資料表的責任邊界（技術訊號 vs 技術原始數值、已持股風險 vs 候選股風報比、個股評分 vs 未來 N 日預測），定義單一權威來源原則、Authoritative Source Rules 表與 Phase 2 建議排序。
+- 本階段只做 schema boundary decision，未新增任何 SQL migration。
+- 未修改 repository / API / UI / components，未修改 `lib/types/database.ts` 或任何既有 `supabase/*.sql`。
+- 明確暫緩 `technical_snapshots` / `risk_reward_snapshots` / `predictions` 建表，除非各自符合文件結論列出的明確條件；候選股短期風報比改用 `v85_pro_plus_scores.risk_reward_score`。
+- Phase 2 建議優先打通 `portfolio_stocks` 真實 API（沿用既有 shadow／RLS／rollback gates，不擴表），其後才接 `chip_snapshots`；暫不做 `global_leader_snapshots`。
 
 ### V11.6
 
@@ -343,6 +353,7 @@ War Room Reports Migration Fix：
 - [Repository Layer](docs/repository-layer.md)
 - [Supabase Client Layer](docs/supabase-client-layer.md)
 - [Database Architecture](docs/database-architecture.md)
+- [Schema Boundary Decisions](docs/schema-boundary-decisions.md)
 - [Storage Policy](docs/storage-policy.md)
 - [UI Language Rule](docs/ui-language-rule.md)
 - [Technical Framework](docs/technical-framework.md)
