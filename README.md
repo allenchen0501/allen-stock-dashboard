@@ -2,7 +2,7 @@
 
 以 Next.js、TypeScript 與 Tailwind CSS 製作的個人台股戰情室，包含市場燈號、持股戰情、V8.5 核心評分、風報比、主升段候選與今日禁碰股。
 
-目前版本為 V18D Institutional Research Center Spec：新增 `docs/institutional-research-center-spec.md` 與 type contract `use-cases/research/research-center-contract.ts`，定義法人研究中心規格，含八條件研究評分、TOP5 Research Ranking、1080x1920 手機研究卡、FactSet / consensus / broker target price 授權資料邊界與 AI 供應鏈 taxonomy。本階段只做規格與 fixture-only checker，未查資料、未建立 API route、未建立 UI、未建立 image / PDF renderer、未連 Supabase、未新增 SQL migration、未寫入資料、不產生買賣指令、未修改 repositories / services。
+目前版本為 V18E Technical + Risk Reward Strategy Spec：新增 `docs/technical-risk-reward-strategy-spec.md` 與 type contract `use-cases/technical-strategy/technical-risk-reward-contract.ts`，定義低檔高風報比技術策略引擎規格，含扣三低、KD / KDJ、MACD 動能、均線（5MA/10MA/20MA/60MA/日 200MA/週 30MA）、量價、支撐 / 壓力 / invalidLevel、風報比 1:3 / 1:4 / 1:5 與低檔高風報比候選 TOP5。本階段只做規格與 fixture-only checker，未查資料、未建立 API route、未建立 UI、未建立 technical / K-line runtime、未連 Supabase、未新增 SQL migration、未寫入資料、不產生買賣指令、未修改 repositories / services。
 
 ## 開始使用
 
@@ -38,12 +38,38 @@ npm run start
 - `types/`：UI 與 API 契約。
 - `war-room/input/`：戰情室 primary、reference、rejected 資料輸入契約與 gate。
 - `supabase/`：V3-1 基礎 schema、V3-1.5 Pro+ schema、V3-1.6 補強 schema 與套用說明。
-- `docs/`：資料庫、資料保存、介面用語、技術框架、戰情室架構規範、Portfolio Valuation Radar Dashboard 規格（[docs/portfolio-valuation-radar-ui.md](docs/portfolio-valuation-radar-ui.md)）、Portfolio Valuation Formula 方法論（[docs/portfolio-valuation-formula.md](docs/portfolio-valuation-formula.md)）、War Room Intelligence Architecture（[docs/war-room-intelligence-architecture.md](docs/war-room-intelligence-architecture.md)）、Intraday Risk Crisis Alert Spec（[docs/intraday-risk-crisis-alert-spec.md](docs/intraday-risk-crisis-alert-spec.md)）與 Institutional Research Center Spec（[docs/institutional-research-center-spec.md](docs/institutional-research-center-spec.md)）。
+- `docs/`：資料庫、資料保存、介面用語、技術框架、戰情室架構規範、Portfolio Valuation Radar Dashboard 規格（[docs/portfolio-valuation-radar-ui.md](docs/portfolio-valuation-radar-ui.md)）、Portfolio Valuation Formula 方法論（[docs/portfolio-valuation-formula.md](docs/portfolio-valuation-formula.md)）、War Room Intelligence Architecture（[docs/war-room-intelligence-architecture.md](docs/war-room-intelligence-architecture.md)）、Intraday Risk Crisis Alert Spec（[docs/intraday-risk-crisis-alert-spec.md](docs/intraday-risk-crisis-alert-spec.md)）、Institutional Research Center Spec（[docs/institutional-research-center-spec.md](docs/institutional-research-center-spec.md)）與 Technical + Risk Reward Strategy Spec（[docs/technical-risk-reward-strategy-spec.md](docs/technical-risk-reward-strategy-spec.md)）。
 - `use-cases/war-room/`：War Room Intelligence read-model type contract（types-only，無 runtime）。
 - `use-cases/intraday-alert/`：Intraday Alert read-model type contract（types-only，無 runtime）。
 - `use-cases/research/`：Institutional Research Center read-model type contract（types-only，無 runtime）。
+- `use-cases/technical-strategy/`：Technical + Risk Reward read-model type contract（types-only，無 runtime）。
 
 ## 版本紀錄
+
+### V18E
+
+Technical + Risk Reward Strategy Spec：
+
+- 新增 `docs/technical-risk-reward-strategy-spec.md`：定義 Allen Stock Dashboard 低檔高風報比技術策略引擎規格（A–P 十六節），含：
+  - **Purpose**：本模組回答「哪一些股票具備技術低檔、轉強跡象、支撐明確、風報比合理，值得列入觀察」，不回答基本面是否優秀；不取代 Research Center / Valuation Radar / Intraday Alert，不直接產生買點、不產生買賣指令。
+  - **Core Boundary**：Technical Strategy Engine 不假裝基本面良好、估值便宜不等於高風報比、高風報比不等於基本面好、技術轉強不等於可以追價、KD 低檔不等於買點、MACD 轉強不等於買點。
+  - **Data Requirements**：daily / weekly / intraday OHLCV、均線、KD / KDJ、MACD、量能、支撐壓力、market regime、sector strength 等；缺 K 線 / 成交量 / weekly / 支撐壓力時必須降級。
+  - **Technical Setup Taxonomy**：15 種 `TechnicalSetupType`（扣三低 / KD / KDJ / MACD / 均線 / 週 30MA / 日 200MA / 量縮回測 / 爆量突破 / 回測支撐 / 突破壓力 / 低檔打底 / 風報比達標 / 資料不足）。
+  - **扣三低 / KD / KDJ / MACD / 均線 / 量價 Rules**：逐項定義觀察條件、限制與未來輸出欄位；均線支援 5MA / 10MA / 20MA / 60MA / 日 200MA / 週 30MA。
+  - **Support / Resistance / Invalid Level**：supportZone / resistanceZone / invalidLevel / observationZone / breakoutConfirmationZone；皆為觀察區，非買賣價。
+  - **Risk Reward Engine**：`risk = observationPrice - invalidLevel`、`reward = targetZone - observationPrice`、`riskRewardRatio = reward / risk`；1:3 合格、1:4 佳、1:5 以上優；風報比不是勝率。
+  - **Candidate Ranking**：低檔高風報比候選 TOP5 13 條排序規則；TOP5 Technical Candidates 不等於 TOP5 Research、不等於買進清單。
+  - **Avoid / No Touch Rules**：marketStatus DANGER / dataQualityStatus FAIL / 放量破底 / 跌破 invalidLevel / intraday DANGER / 量價背離等禁碰提醒（非賣出指令）。
+  - **War Room Integration**：War Room 首頁只顯示候選 TOP5 + setupTags + 風報比 + 支撐 / invalid / target + dataQualityStatus + 一句 observationSummary；不輸出法人評級 / actionSignal / 買賣指令。
+  - **Safety Boundary** 與 **Future Implementation Gate**：V19（Technical Signal Contract）→ V20（Risk Reward Engine Contract）→ V21（Technical Candidate Radar UI）→ V22（K-line Data Pipeline）→ V23（Research + Technical Merge）。
+- 新增 `use-cases/technical-strategy/technical-risk-reward-contract.ts`：技術策略 + 風報比 read-model TypeScript type contract（`TechnicalSetupType` / `TechnicalDataQualityStatus` / `RiskRewardGrade` / `CandidateDecisionBoundary` / `TechnicalSetupSnapshot` / `RiskRewardSnapshot` / `TechnicalRiskRewardCandidate`），types-only，不放 runtime、不 import Supabase、不 fetch、不讀 env、不算指標，並帶有 `requestPerformed` / `supabaseConnected` / `productionWritePerformed` / `notEntrySignal` / `notTradeAdvice` 等 read-only invariant。
+- 新增 `scripts/validate-technical-risk-reward-spec.ts`：fixture-only 規格完整性 checker，5 gates（required_files / required_phrases / contract_checks / architecture_alignment / safety），驗證文件含 27 個必要 phrase、contract 含 23 個必要型別 / 欄位、架構文件對齊 5 個必要 phrase，並掃描 contract 不含 fetch / Supabase / env / yfinance / FinMind / TradingView runtime token。
+- 新增 `npm run test:technical-risk-reward-spec` npm script。
+- 本階段只定義技術策略 + 風報比規格，未查資料、未算技術指標。
+- 未建立 API route；未建立 UI；未建立 technical / K-line runtime。
+- 未連 Supabase；未讀取 Supabase secret env key。
+- 未新增 SQL migration；未寫入資料。
+- 不產生買賣指令；未修改 repositories / services。
 
 ### V18D
 
