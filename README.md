@@ -2,7 +2,7 @@
 
 以 Next.js、TypeScript 與 Tailwind CSS 製作的個人台股戰情室，包含市場燈號、持股戰情、V8.5 核心評分、風報比、主升段候選與今日禁碰股。
 
-目前版本為 V21 War Room UI Integration：新增 `docs/war-room-ui-integration.md` 與 client component `components/war-room-dashboard.tsx`，並在 Dashboard 首頁 `app/page.tsx` 主要決策區整合 `<WarRoomDashboard />`。UI 只讀內部 `/api/war-room?mode=<MODE>` 合約端點，支援 PREMARKET / INTRADAY / POSTMARKET / REALTIME_ALERT 四模式切換，顯示七大 War Room sections、sourceSummary、dataQualitySummary 與 mock_or_contract / spec_only / DATA_INSUFFICIENT 狀態，並提供 loading / error 安全 fallback。本階段只新增 UI 與 fixture-only checker，未新增新的 API route、未接資料源、未建立 runtime、未 import runtime builder、未 fetch 外部 URL、未連 Supabase、未讀 env、未新增 SQL migration、未新增 chart library、未新增 mock data、未寫入資料、不產生買賣指令、未修改 repositories / services。
+目前版本為 V22 War Room Engine Fixture Adapters：新增 `docs/war-room-engine-fixture-adapters.md` 與 fixture-only adapter `use-cases/war-room/war-room-engine-fixture-adapters.ts`，並改寫 `use-cases/war-room/build-war-room-read-model-contract.ts` 使 `/api/war-room` 從 spec-only 空陣列升級為 fixture-only sample output（`sourceMode = fixture`、新增 `fixtureAdapterVersion = V22`，`apiContractVersion` 仍為 V20、`responseSource` 仍為 `mock_or_contract`）。portfolioRiskItems / researchTopPickItems / technicalCandidateItems / intradayAlertItems / avoidItems / observationPoints 變成非空 sample（皆標示 fixture / 非即時資料），`highConfidenceConclusionAllowed` 仍為 false、不產生 DANGER。本階段只新增 fixture adapter 與 checker、改寫 builder，未新增新的 API route、未新增新的 UI、未接資料源、未建立 runtime、未 import runtime builder、未連 Supabase、未發外部 request、未讀 env、未新增 SQL migration、未新增 mock data、未寫入資料、不產生買賣指令、未修改 repositories / services。
 
 ## 開始使用
 
@@ -38,13 +38,29 @@ npm run start
 - `types/`：UI 與 API 契約。
 - `war-room/input/`：戰情室 primary、reference、rejected 資料輸入契約與 gate。
 - `supabase/`：V3-1 基礎 schema、V3-1.5 Pro+ schema、V3-1.6 補強 schema 與套用說明。
-- `docs/`：資料庫、資料保存、介面用語、技術框架、戰情室架構規範、Portfolio Valuation Radar Dashboard 規格（[docs/portfolio-valuation-radar-ui.md](docs/portfolio-valuation-radar-ui.md)）、Portfolio Valuation Formula 方法論（[docs/portfolio-valuation-formula.md](docs/portfolio-valuation-formula.md)）、War Room Intelligence Architecture（[docs/war-room-intelligence-architecture.md](docs/war-room-intelligence-architecture.md)）、Intraday Risk Crisis Alert Spec（[docs/intraday-risk-crisis-alert-spec.md](docs/intraday-risk-crisis-alert-spec.md)）、Institutional Research Center Spec（[docs/institutional-research-center-spec.md](docs/institutional-research-center-spec.md)）、Technical + Risk Reward Strategy Spec（[docs/technical-risk-reward-strategy-spec.md](docs/technical-risk-reward-strategy-spec.md)）、War Room Read Model Contract（[docs/war-room-read-model-contract.md](docs/war-room-read-model-contract.md)）、War Room API Contract（[docs/war-room-api-contract.md](docs/war-room-api-contract.md)）與 War Room UI Integration（[docs/war-room-ui-integration.md](docs/war-room-ui-integration.md)）。
-- `use-cases/war-room/`：War Room Intelligence read-model type contract（types-only，無 runtime；V19 起以 type-only import 聚合四大引擎型別）與 V20 fixture-only `/api/war-room` builder。
+- `docs/`：資料庫、資料保存、介面用語、技術框架、戰情室架構規範、Portfolio Valuation Radar Dashboard 規格（[docs/portfolio-valuation-radar-ui.md](docs/portfolio-valuation-radar-ui.md)）、Portfolio Valuation Formula 方法論（[docs/portfolio-valuation-formula.md](docs/portfolio-valuation-formula.md)）、War Room Intelligence Architecture（[docs/war-room-intelligence-architecture.md](docs/war-room-intelligence-architecture.md)）、Intraday Risk Crisis Alert Spec（[docs/intraday-risk-crisis-alert-spec.md](docs/intraday-risk-crisis-alert-spec.md)）、Institutional Research Center Spec（[docs/institutional-research-center-spec.md](docs/institutional-research-center-spec.md)）、Technical + Risk Reward Strategy Spec（[docs/technical-risk-reward-strategy-spec.md](docs/technical-risk-reward-strategy-spec.md)）、War Room Read Model Contract（[docs/war-room-read-model-contract.md](docs/war-room-read-model-contract.md)）、War Room API Contract（[docs/war-room-api-contract.md](docs/war-room-api-contract.md)）、War Room UI Integration（[docs/war-room-ui-integration.md](docs/war-room-ui-integration.md)）與 War Room Engine Fixture Adapters（[docs/war-room-engine-fixture-adapters.md](docs/war-room-engine-fixture-adapters.md)）。
+- `use-cases/war-room/`：War Room Intelligence read-model type contract（types-only，無 runtime；V19 起以 type-only import 聚合四大引擎型別）、V20 fixture-only `/api/war-room` builder 與 V22 engine fixture adapters。
 - `use-cases/intraday-alert/`：Intraday Alert read-model type contract（types-only，無 runtime）。
 - `use-cases/research/`：Institutional Research Center read-model type contract（types-only，無 runtime）。
 - `use-cases/technical-strategy/`：Technical + Risk Reward read-model type contract（types-only，無 runtime）。
 
 ## 版本紀錄
+
+### V22
+
+War Room Engine Fixture Adapters：
+
+- 新增 `docs/war-room-engine-fixture-adapters.md`：定義戰情室引擎 fixture 介接層（A–I 九節），含 Fixture Data Policy（不是即時 / 不是投資建議 / 不得 PASS / highConfidenceConclusionAllowed=false / 真實代號須標 fixture only）、四大引擎 + Avoid / Observation / Source / DataQuality fixture scope、四模式 fixture 差異、Section / Source / Data Quality fixture rules、Safety Language 與 Future Implementation Gate（V23 Runtime Pipeline Spec → V24 Runtime Pilot → V25 Intraday Runtime → V26 Push Notification）。
+- 新增 `use-cases/war-room/war-room-engine-fixture-adapters.ts`：deterministic fixture-only adapter，export `buildWarRoomEngineFixtureBundle(mode)` 與 `WarRoomEngineFixtureBundle`，產生非空 sample（portfolioRiskItems≥3 / researchTopPickItems≥3 / technicalCandidateItems≥3 / intradayAlertItems≥2 / avoidItems≥2 / observationPoints≥4 / sourceSummary≥4）；所有 sample 以「fixture / 非即時資料 / not trade advice」標示，研究目標價一律 `LICENSE_REQUIRED`、價格欄位優先 null、alertLevel 不得 DANGER、`notEntrySignal` / `notTradeAdvice` / `notExitSignal` 齊備、`sourceName = "Fixture only"`、dataQualityStatus 不得 PASS；不 fetch、不 axios、不 Supabase、不讀 env、不 Date.now、不 import runtime builder。
+- 改寫 `use-cases/war-room/build-war-room-read-model-contract.ts`：import `buildWarRoomEngineFixtureBundle`，sections / items / sourceSummary / dataQualitySummary 改用 fixture bundle，`sourceMode = fixture`、新增 `fixtureAdapterVersion = V22`、`apiContractVersion = V20`、`responseSource = mock_or_contract`、三個 read-only flag 仍為 false、`highConfidenceConclusionAllowed` 仍為 false、invalid mode 仍 fallback PREMARKET、不產生 DANGER。
+- 更新 `scripts/validate-war-room-api-contract.ts`：builder term 改為期待 `fixture` / `fixtureAdapterVersion` / `V22`（不再要求 spec_only），payload 斷言 `sourceMode === "fixture"`、`fixtureAdapterVersion === "V22"`、六大聚合陣列達非空門檻、`sourceSummary.length >= 4` 且無 DANGER；其餘安全不變（apiContractVersion=V20 / responseSource=mock_or_contract / flags false / highConfidence false / no runtime / no external fetch）。
+- 新增 `scripts/validate-war-room-engine-fixture-adapters.ts`：fixture-only checker，6 gates（required_files / required_phrases / adapter_checks / builder_checks / payload_checks / safety），import builder 實際呼叫驗證 5 種 mode、metadata、非空陣列門檻、無 DANGER、每筆 item 的 notEntrySignal / notTradeAdvice / notExitSignal，並掃描 adapter / builder 不含 fetch / axios / Supabase / env / yahoo / yfinance / finmind / factset / tradingview / broker / twse / tpex / runtime builder / DB write token。
+- 新增 `npm run test:war-room-engine-fixture-adapters`；同步 `npm run test:war-room-api-contract`。
+- `/api/war-room` 從 spec_only 空陣列升級為 fixture-only sample output；新增 `fixtureAdapterVersion: V22`、`sourceMode = fixture`；六大聚合陣列變成非空 sample。
+- 未接資料源；未建立 runtime；未新增新的 API route；未新增新的 UI。
+- 未連 Supabase；未讀取 Supabase secret env key；未發外部 request。
+- 未新增 SQL migration；未寫入資料；未新增 mock data。
+- 不產生買賣指令；未修改 repositories / services。
 
 ### V21
 

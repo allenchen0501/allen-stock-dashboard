@@ -1,9 +1,9 @@
 /**
- * War Room API Contract Validator — V20
+ * War Room Engine Fixture Adapters Validator — V22
  *
- * Fixture-only check. Imports the pure builder and inspects the payload shape;
- * it does NOT start a Next.js server, make any HTTP request, connect to
- * Supabase, read env keys, or write data.
+ * Fixture-only check. Imports the pure builder + fixture adapter and inspects
+ * the payload shape; it does NOT start a Next.js server, make any HTTP request,
+ * connect to Supabase, read env keys, or write data.
  *
  * Exit 0 → PASS or WARNING
  * Exit 1 → FAIL
@@ -29,7 +29,7 @@ interface CheckResult {
   details: string[];
 }
 
-interface WarRoomApiContractSummary {
+interface FixtureAdaptersSummary {
   status: CheckStatus;
   checked_files: string[];
   gates: Record<string, CheckStatus>;
@@ -39,7 +39,7 @@ interface WarRoomApiContractSummary {
   request_performed: false;
   supabase_connected: false;
   env_read_performed: false;
-  api_route_created: true;
+  api_route_created: false;
   ui_created: false;
   runtime_created: false;
   sql_migration_created: false;
@@ -105,11 +105,11 @@ function checkTerms(
 // Paths
 // ---------------------------------------------------------------------------
 
-const DOC_REL = "docs/war-room-api-contract.md";
+const DOC_REL = "docs/war-room-engine-fixture-adapters.md";
+const ADAPTER_REL = "use-cases/war-room/war-room-engine-fixture-adapters.ts";
 const BUILDER_REL = "use-cases/war-room/build-war-room-read-model-contract.ts";
-const CONTRACT_REL = "use-cases/war-room/war-room-intelligence-contract.ts";
-const ROUTE_REL = "app/api/war-room/route.ts";
-const READ_MODEL_DOC_REL = "docs/war-room-read-model-contract.md";
+const API_CHECKER_REL = "scripts/validate-war-room-api-contract.ts";
+const COMPONENT_REL = "components/war-room-dashboard.tsx";
 
 // ---------------------------------------------------------------------------
 // Gate 1: Required files
@@ -117,11 +117,11 @@ const READ_MODEL_DOC_REL = "docs/war-room-read-model-contract.md";
 
 function checkRequiredFiles(): CheckResult {
   const required: Array<{ label: string; rel: string }> = [
-    { label: "War Room API Contract doc (new)", rel: DOC_REL },
-    { label: "War Room read model builder (new)", rel: BUILDER_REL },
-    { label: "War Room Intelligence contract", rel: CONTRACT_REL },
-    { label: "War Room API route (new)", rel: ROUTE_REL },
-    { label: "War Room Read Model Contract doc", rel: READ_MODEL_DOC_REL },
+    { label: "Fixture adapters doc (new)", rel: DOC_REL },
+    { label: "Fixture adapters (new)", rel: ADAPTER_REL },
+    { label: "War Room read model builder", rel: BUILDER_REL },
+    { label: "War Room API contract checker", rel: API_CHECKER_REL },
+    { label: "War Room dashboard component", rel: COMPONENT_REL },
   ];
 
   const details: string[] = [];
@@ -144,144 +144,73 @@ function checkRequiredFiles(): CheckResult {
 // ---------------------------------------------------------------------------
 
 const REQUIRED_DOC_PHRASES: string[] = [
-  "War Room API Contract",
-  "GET /api/war-room",
-  "mock_or_contract",
-  "apiContractVersion = V20",
-  "sourceMode = spec_only",
-  "PREMARKET",
-  "INTRADAY",
-  "POSTMARKET",
-  "REALTIME_ALERT",
-  "dataQualitySummary",
+  "War Room Engine Fixture Adapters",
+  "fixture data 不是即時資料",
+  "fixture data 不是投資建議",
+  "Portfolio Valuation Fixture",
+  "Research Top Picks Fixture",
+  "Technical + Risk Reward Fixture",
+  "Intraday Alert Fixture",
+  "Avoid List Fixture",
+  "Observation Points Fixture",
   "sourceSummary",
+  "dataQualitySummary",
   "highConfidenceConclusionAllowed",
   "不自動下單",
   "不產生買賣指令",
-  "War Room API 不得成為資料權威",
-  "Research Rating 不等於 actionSignal",
   "TOP5 Research 不等於 TOP5 Entry",
   "TOP5 Technical Candidates 不等於買進清單",
-  "Valuation Tier 不等於 actionSignal",
   "Intraday Alert 不等於出場",
   "資料不足就顯示資料不足",
 ];
 
 // ---------------------------------------------------------------------------
-// Gate 3: Builder checks
+// Gate 3: Adapter checks
 // ---------------------------------------------------------------------------
 
-// Updated in V22: the builder now delegates section/item/summary data to the
-// fixture adapter, so sourceMode is "fixture" and fixtureAdapterVersion is V22.
-// (responseSource stays mock_or_contract; apiContractVersion stays V20.)
-const BUILDER_TERMS: string[] = [
-  "buildWarRoomReadModelContract",
-  "BuildWarRoomReadModelContractInput",
-  "BuildWarRoomReadModelContractOutput",
+const ADAPTER_TERMS: string[] = [
   "buildWarRoomEngineFixtureBundle",
-  "apiContractVersion",
-  "V20",
-  "mock_or_contract",
-  "fixture",
-  "fixtureAdapterVersion",
-  "V22",
+  "WarRoomEngineFixtureBundle",
+  "portfolioRiskItems",
+  "researchTopPickItems",
+  "technicalCandidateItems",
+  "intradayAlertItems",
+  "avoidItems",
+  "observationPoints",
+  "sourceSummary",
+  "dataQualitySummary",
+  "notEntrySignal",
+  "notTradeAdvice",
+  "notExitSignal",
   "requestPerformed: false",
   "supabaseConnected: false",
   "productionWritePerformed: false",
+  "Fixture only",
+  "非即時資料",
 ];
 
 // ---------------------------------------------------------------------------
-// Gate 4: Route checks
+// Gate 4: Builder checks
 // ---------------------------------------------------------------------------
 
-const ROUTE_TERMS: string[] = [
-  "GET",
-  "NextResponse.json",
-  "buildWarRoomReadModelContract",
-  "searchParams.get('mode')",
-  "dynamic = 'force-dynamic'",
+const BUILDER_TERMS: string[] = [
+  "buildWarRoomEngineFixtureBundle",
+  "fixtureAdapterVersion",
+  "V22",
+  "sourceMode",
+  "fixture",
+  "mock_or_contract",
+  "apiContractVersion",
+  "V20",
 ];
 
 // ---------------------------------------------------------------------------
-// Gate 5: Runtime safety checks (route + builder, comments stripped)
-// ---------------------------------------------------------------------------
-
-const FORBIDDEN_RUNTIME_TOKENS: Array<{ token: string; label: string }> = [
-  { token: "fetch(", label: "fetch( call" },
-  { token: "axios", label: "axios import/usage" },
-  { token: "createClient", label: "Supabase createClient" },
-  { token: "@supabase", label: "@supabase import" },
-  { token: "process.env", label: "env secret read" },
-  { token: "yfinance", label: "yfinance runtime" },
-  { token: "yahoo", label: "Yahoo runtime" },
-  { token: "finmind", label: "FinMind runtime" },
-  { token: "tradingview", label: "TradingView runtime" },
-  { token: "factset", label: "FactSet runtime" },
-  { token: "buildportfoliovaluationsummarycontract", label: "runtime builder import" },
-  { token: "insert(", label: "database insert" },
-  { token: "upsert(", label: "database upsert" },
-  { token: "update(", label: "database update" },
-  { token: "delete(", label: "database delete" },
-];
-
-function checkRuntimeSafety(): CheckResult {
-  const details: string[] = [];
-  const issues: string[] = [];
-
-  for (const rel of [ROUTE_REL, BUILDER_REL]) {
-    const source = readFile(resolve(rel));
-    if (source == null) {
-      issues.push(`FAIL  Cannot read ${rel}.`);
-      continue;
-    }
-    const lower = stripComments(source).toLowerCase();
-    for (const { token, label } of FORBIDDEN_RUNTIME_TOKENS) {
-      if (lower.includes(token.toLowerCase())) {
-        issues.push(`FAIL  Forbidden "${label}" found in ${rel}.`);
-      } else {
-        details.push(`PASS  No "${label}" in ${rel} code.`);
-      }
-    }
-  }
-
-  // No new SQL migration / UI component for war-room API.
-  const forbiddenArtifacts = [
-    "supabase/war_room_api.sql",
-    "components/war-room-api.tsx",
-    "components/war-room.tsx",
-  ];
-  for (const rel of forbiddenArtifacts) {
-    if (fileExists(resolve(rel))) {
-      issues.push(`FAIL  Artifact ${rel} must not exist in V20.`);
-    } else {
-      details.push(`PASS  ${rel} does not exist (correct).`);
-    }
-  }
-
-  // Only the war-room API route may be added; no extra API routes for this feature.
-  const forbiddenExtraRoutes = [
-    "app/api/war-room-read-model/route.ts",
-    "app/api/war-room/snapshot/route.ts",
-  ];
-  for (const rel of forbiddenExtraRoutes) {
-    if (fileExists(resolve(rel))) {
-      issues.push(`FAIL  Extra API route ${rel} must not exist in V20.`);
-    } else {
-      details.push(`PASS  ${rel} does not exist (correct).`);
-    }
-  }
-
-  const status: CheckStatus = issues.length > 0 ? "FAIL" : "PASS";
-  return { name: "runtime_safety", status, details: [...details, ...issues] };
-}
-
-// ---------------------------------------------------------------------------
-// Gate 6: Payload shape checks (import builder, call pure function)
+// Gate 5: Payload checks (import builder, call pure function)
 // ---------------------------------------------------------------------------
 
 const FIXED_TS = "2026-06-23T00:00:00.000Z";
 
-function checkPayloadShape(): CheckResult {
+function checkPayload(): CheckResult {
   const details: string[] = [];
   const issues: string[] = [];
 
@@ -295,33 +224,32 @@ function checkPayloadShape(): CheckResult {
     }
   }
 
-  // Invalid mode → PREMARKET fallback.
   const badPayload = buildWarRoomReadModelContract({
     mode: "BAD_MODE",
     generatedAt: FIXED_TS,
   });
   if (badPayload.warRoomMode === "PREMARKET") {
-    details.push(`PASS  invalid mode falls back to PREMARKET.`);
+    details.push("PASS  invalid mode falls back to PREMARKET.");
   } else {
     issues.push(`FAIL  invalid mode returned "${badPayload.warRoomMode}".`);
   }
 
-  // Metadata constants.
   const probe = buildWarRoomReadModelContract({ mode: "PREMARKET", generatedAt: FIXED_TS });
 
   const expectEq = (label: string, actual: unknown, expected: unknown): void => {
     if (actual === expected) {
       details.push(`PASS  ${label} === ${JSON.stringify(expected)}.`);
     } else {
-      issues.push(`FAIL  ${label} === ${JSON.stringify(actual)}, expected ${JSON.stringify(expected)}.`);
+      issues.push(
+        `FAIL  ${label} === ${JSON.stringify(actual)}, expected ${JSON.stringify(expected)}.`,
+      );
     }
   };
 
   expectEq("apiContractVersion", probe.apiContractVersion, "V20");
-  expectEq("responseSource", probe.responseSource, "mock_or_contract");
-  // V22: builder now serves fixture sample data.
-  expectEq("sourceMode", probe.sourceMode, "fixture");
   expectEq("fixtureAdapterVersion", probe.fixtureAdapterVersion, "V22");
+  expectEq("responseSource", probe.responseSource, "mock_or_contract");
+  expectEq("sourceMode", probe.sourceMode, "fixture");
   expectEq("requestPerformed", probe.requestPerformed, false);
   expectEq("supabaseConnected", probe.supabaseConnected, false);
   expectEq("productionWritePerformed", probe.productionWritePerformed, false);
@@ -331,78 +259,138 @@ function checkPayloadShape(): CheckResult {
     false,
   );
 
-  // V22: fixture arrays must now be non-empty so the UI shows content.
-  const minCounts: Array<{ key: keyof typeof probe; min: number }> = [
-    { key: "portfolioRiskItems", min: 3 },
-    { key: "researchTopPickItems", min: 3 },
-    { key: "technicalCandidateItems", min: 3 },
-    { key: "intradayAlertItems", min: 2 },
-    { key: "avoidItems", min: 2 },
-    { key: "observationPoints", min: 4 },
-    { key: "sourceSummary", min: 4 },
+  // Non-empty fixture arrays.
+  const lenChecks: Array<{ label: string; len: number; min: number }> = [
+    { label: "portfolioRiskItems", len: probe.portfolioRiskItems.length, min: 3 },
+    { label: "researchTopPickItems", len: probe.researchTopPickItems.length, min: 3 },
+    { label: "technicalCandidateItems", len: probe.technicalCandidateItems.length, min: 3 },
+    { label: "intradayAlertItems", len: probe.intradayAlertItems.length, min: 2 },
+    { label: "avoidItems", len: probe.avoidItems.length, min: 2 },
+    { label: "observationPoints", len: probe.observationPoints.length, min: 4 },
+    { label: "sourceSummary", len: probe.sourceSummary.length, min: 4 },
   ];
-  for (const { key, min } of minCounts) {
-    const arr = probe[key];
-    if (Array.isArray(arr) && arr.length >= min) {
-      details.push(`PASS  ${String(key)}.length = ${arr.length} (>= ${min}).`);
+  for (const { label, len, min } of lenChecks) {
+    if (len >= min) {
+      details.push(`PASS  ${label}.length = ${len} (>= ${min}).`);
     } else {
-      issues.push(`FAIL  ${String(key)} must have >= ${min} fixture entries.`);
+      issues.push(`FAIL  ${label}.length = ${len}, expected >= ${min}.`);
     }
   }
 
-  // V22: no DANGER alert level may appear in fixture mode.
+  // No DANGER alert in fixture mode.
   if (probe.intradayAlertItems.some((a) => a.alertLevel === "DANGER")) {
     issues.push("FAIL  fixture intradayAlertItems must not contain a DANGER alert.");
   } else {
     details.push("PASS  No DANGER alert in fixture intradayAlertItems.");
   }
 
-  // Seven sections present.
-  const sectionKeys = [
-    "marketStatusLight",
-    "realtimeAlerts",
-    "portfolioRiskRadar",
-    "researchTopPicks",
-    "technicalRiskRewardCandidates",
-    "avoidList",
-    "nextObservationPoints",
-  ] as const;
-  const probeRecord = probe as unknown as Record<string, unknown>;
-  for (const key of sectionKeys) {
-    const section = probeRecord[key];
-    if (section != null && typeof section === "object") {
-      details.push(`PASS  section "${key}" present.`);
-    } else {
-      issues.push(`FAIL  section "${key}" missing.`);
+  // Safety flags on items.
+  if (probe.researchTopPickItems.every((r) => r.notEntrySignal === true)) {
+    details.push("PASS  every researchTopPickItems item has notEntrySignal === true.");
+  } else {
+    issues.push("FAIL  some researchTopPickItems item missing notEntrySignal === true.");
+  }
+  if (
+    probe.technicalCandidateItems.every(
+      (t) => t.notEntrySignal === true && t.notTradeAdvice === true,
+    )
+  ) {
+    details.push(
+      "PASS  every technicalCandidateItems item has notEntrySignal & notTradeAdvice === true.",
+    );
+  } else {
+    issues.push("FAIL  some technicalCandidateItems item missing notEntrySignal/notTradeAdvice.");
+  }
+  if (probe.avoidItems.every((a) => a.notExitSignal === true && a.notTradeAdvice === true)) {
+    details.push("PASS  every avoidItems item has notExitSignal & notTradeAdvice === true.");
+  } else {
+    issues.push("FAIL  some avoidItems item missing notExitSignal/notTradeAdvice.");
+  }
+  if (probe.observationPoints.every((o) => o.notTradeAdvice === true)) {
+    details.push("PASS  every observationPoints item has notTradeAdvice === true.");
+  } else {
+    issues.push("FAIL  some observationPoints item missing notTradeAdvice === true.");
+  }
+
+  const status: CheckStatus = issues.length > 0 ? "FAIL" : "PASS";
+  return { name: "payload_checks", status, details: [...details, ...issues] };
+}
+
+// ---------------------------------------------------------------------------
+// Gate 6: Safety checks
+// ---------------------------------------------------------------------------
+
+const FORBIDDEN_TOKENS: Array<{ token: string; label: string }> = [
+  { token: "fetch(", label: "fetch( call" },
+  { token: "axios", label: "axios usage" },
+  { token: "createclient", label: "Supabase createClient" },
+  { token: "@supabase", label: "@supabase import" },
+  { token: "process.env", label: "env secret read" },
+  { token: "yahoo", label: "Yahoo source" },
+  { token: "yfinance", label: "yfinance source" },
+  { token: "finmind", label: "FinMind source" },
+  { token: "factset", label: "FactSet source" },
+  { token: "tradingview", label: "TradingView source" },
+  { token: "broker", label: "broker source" },
+  { token: "twse", label: "TWSE source" },
+  { token: "tpex", label: "TPEx source" },
+  { token: "buildportfoliovaluationsummarycontract", label: "runtime builder import" },
+  { token: "insert(", label: "database insert" },
+  { token: "upsert(", label: "database upsert" },
+  { token: "update(", label: "database update" },
+  { token: "delete(", label: "database delete" },
+];
+
+function checkSafety(): CheckResult {
+  const details: string[] = [];
+  const issues: string[] = [];
+
+  for (const rel of [ADAPTER_REL, BUILDER_REL]) {
+    const source = readFile(resolve(rel));
+    if (source == null) {
+      issues.push(`FAIL  Cannot read ${rel}.`);
+      continue;
+    }
+    const lower = stripComments(source).toLowerCase();
+    for (const { token, label } of FORBIDDEN_TOKENS) {
+      if (lower.includes(token.toLowerCase())) {
+        issues.push(`FAIL  Forbidden "${label}" found in ${rel}.`);
+      } else {
+        details.push(`PASS  No "${label}" in ${rel} code.`);
+      }
     }
   }
 
-  // sourceSummary.length >= 4.
-  if (Array.isArray(probe.sourceSummary) && probe.sourceSummary.length >= 4) {
-    details.push(`PASS  sourceSummary.length = ${probe.sourceSummary.length} (>= 4).`);
-  } else {
-    issues.push(`FAIL  sourceSummary must have >= 4 entries.`);
+  // No new API route / UI component / SQL migration for fixture adapters.
+  const forbiddenArtifacts = [
+    "app/api/war-room-fixture/route.ts",
+    "components/war-room-fixture.tsx",
+    "supabase/war_room_fixture.sql",
+  ];
+  for (const rel of forbiddenArtifacts) {
+    if (fileExists(resolve(rel))) {
+      issues.push(`FAIL  Artifact ${rel} must not exist in V22.`);
+    } else {
+      details.push(`PASS  ${rel} does not exist (correct).`);
+    }
   }
 
-  // Converged arrays present.
-  const arrayKeys = [
-    "portfolioRiskItems",
-    "researchTopPickItems",
-    "technicalCandidateItems",
-    "intradayAlertItems",
-    "avoidItems",
-    "observationPoints",
-  ] as const;
-  for (const key of arrayKeys) {
-    if (Array.isArray(probeRecord[key])) {
-      details.push(`PASS  array "${key}" present.`);
+  // Protected layers must still be present.
+  const protectedFiles = [
+    "repositories/portfolio-repository.ts",
+    "services/stocks/providers/yahoo-stock-provider.ts",
+    "app/api/war-room/route.ts",
+  ];
+  for (const rel of protectedFiles) {
+    if (fileExists(resolve(rel))) {
+      details.push(`PASS  ${rel} still present.`);
     } else {
-      issues.push(`FAIL  array "${key}" missing or not an array.`);
+      issues.push(`FAIL  ${rel} missing — must not be modified or deleted.`);
     }
   }
 
   const status: CheckStatus = issues.length > 0 ? "FAIL" : "PASS";
-  return { name: "payload_shape", status, details: [...details, ...issues] };
+  return { name: "safety", status, details: [...details, ...issues] };
 }
 
 // ---------------------------------------------------------------------------
@@ -410,23 +398,23 @@ function checkPayloadShape(): CheckResult {
 // ---------------------------------------------------------------------------
 
 const docBody = readFile(resolve(DOC_REL));
+const adapterBody = readFile(resolve(ADAPTER_REL));
 const builderBody = readFile(resolve(BUILDER_REL));
-const routeBody = readFile(resolve(ROUTE_REL));
 
 const fileCheck = checkRequiredFiles();
 const phraseCheck = checkTerms("required_phrases", docBody, DOC_REL, REQUIRED_DOC_PHRASES);
+const adapterCheck = checkTerms("adapter_checks", adapterBody, ADAPTER_REL, ADAPTER_TERMS);
 const builderCheck = checkTerms("builder_checks", builderBody, BUILDER_REL, BUILDER_TERMS);
-const routeCheck = checkTerms("route_checks", routeBody, ROUTE_REL, ROUTE_TERMS);
-const runtimeSafetyCheck = checkRuntimeSafety();
-const payloadCheck = checkPayloadShape();
+const payloadCheck = checkPayload();
+const safetyCheck = checkSafety();
 
 const allChecks: CheckResult[] = [
   fileCheck,
   phraseCheck,
+  adapterCheck,
   builderCheck,
-  routeCheck,
-  runtimeSafetyCheck,
   payloadCheck,
+  safetyCheck,
 ];
 const overallStatus = combineStatus(allChecks.map((c) => c.status));
 
@@ -437,16 +425,16 @@ const allWarnings: string[] = allChecks.flatMap((c) =>
   c.details.filter((d) => d.startsWith("WARNING")),
 );
 
-const summary: WarRoomApiContractSummary = {
+const summary: FixtureAdaptersSummary = {
   status: overallStatus,
-  checked_files: [DOC_REL, BUILDER_REL, CONTRACT_REL, ROUTE_REL, READ_MODEL_DOC_REL],
+  checked_files: [DOC_REL, ADAPTER_REL, BUILDER_REL, API_CHECKER_REL, COMPONENT_REL],
   gates: {
     required_files: fileCheck.status,
     required_phrases: phraseCheck.status,
+    adapter_checks: adapterCheck.status,
     builder_checks: builderCheck.status,
-    route_checks: routeCheck.status,
-    runtime_safety: runtimeSafetyCheck.status,
-    payload_shape: payloadCheck.status,
+    payload_checks: payloadCheck.status,
+    safety: safetyCheck.status,
   },
   issues: allIssues,
   warnings: allWarnings,
@@ -454,7 +442,7 @@ const summary: WarRoomApiContractSummary = {
   request_performed: false,
   supabase_connected: false,
   env_read_performed: false,
-  api_route_created: true,
+  api_route_created: false,
   ui_created: false,
   runtime_created: false,
   sql_migration_created: false,
