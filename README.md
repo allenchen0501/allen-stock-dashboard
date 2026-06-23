@@ -2,7 +2,7 @@
 
 以 Next.js、TypeScript 與 Tailwind CSS 製作的個人台股戰情室，包含市場燈號、持股戰情、V8.5 核心評分、風報比、主升段候選與今日禁碰股。
 
-目前版本為 V19 War Room Read Model Contract：新增 `docs/war-room-read-model-contract.md` 並擴充 type contract `use-cases/war-room/war-room-intelligence-contract.ts`，把 Valuation / Research / Technical + Risk Reward / Intraday Alert 四大輸入引擎型別以 type-only import 串接成統一的戰情室 read model，定義盤前 / 盤中 / 盤後 / 即時四種模式輸出、七大 War Room sections 與 dataQualitySummary / sourceSummary。本階段只做文件、type contract 與 fixture-only checker，未新增 API route、未新增 UI、未接資料源、未建立 runtime、未 import runtime builder、未新增 mock data、未連 Supabase、未新增 SQL migration、未寫入資料、不產生買賣指令、未修改 repositories / services。
+目前版本為 V20 War Room API Contract：新增 `docs/war-room-api-contract.md`、fixture-only builder `use-cases/war-room/build-war-room-read-model-contract.ts` 與 API route `app/api/war-room/route.ts`，建立 `/api/war-room` 的 `mock_or_contract` 合約入口，輸出對齊 `WarRoomIntelligenceSnapshot` 形狀並支援 `mode=PREMARKET|INTRADAY|POSTMARKET|REALTIME_ALERT`（invalid mode fallback to PREMARKET）。本階段只新增此單一 API route 與 fixture-only builder / checker，未接資料源、未建立 runtime、未 import runtime builder、未連 Supabase、未發 request、未讀 env、未新增 SQL migration、未新增 UI、未新增 mock data、未寫入資料、不產生買賣指令、未修改 repositories / services。
 
 ## 開始使用
 
@@ -38,13 +38,29 @@ npm run start
 - `types/`：UI 與 API 契約。
 - `war-room/input/`：戰情室 primary、reference、rejected 資料輸入契約與 gate。
 - `supabase/`：V3-1 基礎 schema、V3-1.5 Pro+ schema、V3-1.6 補強 schema 與套用說明。
-- `docs/`：資料庫、資料保存、介面用語、技術框架、戰情室架構規範、Portfolio Valuation Radar Dashboard 規格（[docs/portfolio-valuation-radar-ui.md](docs/portfolio-valuation-radar-ui.md)）、Portfolio Valuation Formula 方法論（[docs/portfolio-valuation-formula.md](docs/portfolio-valuation-formula.md)）、War Room Intelligence Architecture（[docs/war-room-intelligence-architecture.md](docs/war-room-intelligence-architecture.md)）、Intraday Risk Crisis Alert Spec（[docs/intraday-risk-crisis-alert-spec.md](docs/intraday-risk-crisis-alert-spec.md)）、Institutional Research Center Spec（[docs/institutional-research-center-spec.md](docs/institutional-research-center-spec.md)）、Technical + Risk Reward Strategy Spec（[docs/technical-risk-reward-strategy-spec.md](docs/technical-risk-reward-strategy-spec.md)）與 War Room Read Model Contract（[docs/war-room-read-model-contract.md](docs/war-room-read-model-contract.md)）。
-- `use-cases/war-room/`：War Room Intelligence read-model type contract（types-only，無 runtime；V19 起以 type-only import 聚合四大引擎型別）。
+- `docs/`：資料庫、資料保存、介面用語、技術框架、戰情室架構規範、Portfolio Valuation Radar Dashboard 規格（[docs/portfolio-valuation-radar-ui.md](docs/portfolio-valuation-radar-ui.md)）、Portfolio Valuation Formula 方法論（[docs/portfolio-valuation-formula.md](docs/portfolio-valuation-formula.md)）、War Room Intelligence Architecture（[docs/war-room-intelligence-architecture.md](docs/war-room-intelligence-architecture.md)）、Intraday Risk Crisis Alert Spec（[docs/intraday-risk-crisis-alert-spec.md](docs/intraday-risk-crisis-alert-spec.md)）、Institutional Research Center Spec（[docs/institutional-research-center-spec.md](docs/institutional-research-center-spec.md)）、Technical + Risk Reward Strategy Spec（[docs/technical-risk-reward-strategy-spec.md](docs/technical-risk-reward-strategy-spec.md)）、War Room Read Model Contract（[docs/war-room-read-model-contract.md](docs/war-room-read-model-contract.md)）與 War Room API Contract（[docs/war-room-api-contract.md](docs/war-room-api-contract.md)）。
+- `use-cases/war-room/`：War Room Intelligence read-model type contract（types-only，無 runtime；V19 起以 type-only import 聚合四大引擎型別）與 V20 fixture-only `/api/war-room` builder。
 - `use-cases/intraday-alert/`：Intraday Alert read-model type contract（types-only，無 runtime）。
 - `use-cases/research/`：Institutional Research Center read-model type contract（types-only，無 runtime）。
 - `use-cases/technical-strategy/`：Technical + Risk Reward read-model type contract（types-only，無 runtime）。
 
 ## 版本紀錄
+
+### V20
+
+War Room API Contract：
+
+- 新增 `docs/war-room-api-contract.md`：定義 `/api/war-room` 合約（A–I 九節），含 Endpoint（`GET /api/war-room`，`mode` query param）、Response Contract（對齊 `WarRoomIntelligenceSnapshot` + `apiContractVersion: V20` / `responseSource: mock_or_contract` / `sourceMode: spec_only`）、四種模式行為、Source Mode Policy（V20 只能 `spec_only`）、Data Quality Policy（`highConfidenceConclusionAllowed` 必為 false）、Safety Boundary、UI Consumer Contract 與 Future Implementation Gate（V21 UI → V22 Fixture Adapters → V23 Runtime Pipeline → V24 Push Notification）。
+- 新增 `use-cases/war-room/build-war-room-read-model-contract.ts`：fixture-only pure builder，回傳 `BuildWarRoomReadModelContractOutput`（extends `WarRoomIntelligenceSnapshot`），所有 section 為 DATA_INSUFFICIENT（Research 為 LICENSE_REQUIRED）、聚合 item 陣列為空、四大引擎 sourceSummary 齊備、invalid mode fallback to PREMARKET；不 fetch、不連 Supabase、不讀 env、不 import runtime builder、不寫資料。
+- 新增 `app/api/war-room/route.ts`：只允許 GET，讀取 `mode` query param 後呼叫 `buildWarRoomReadModelContract` 並回傳 JSON（`Cache-Control: no-store`）；不連 Supabase、不發 request、不讀 env、不寫資料、不使用 cookies / session / auth。
+- 新增 `scripts/validate-war-room-api-contract.ts`：fixture-only API contract checker，6 gates（required_files / required_phrases / builder_checks / route_checks / runtime_safety / payload_shape），import builder 實際呼叫 pure function 驗證 5 種 mode 行為（valid 回傳同 mode、invalid 回傳 PREMARKET）、metadata 常數、read-only flags、七大 section、`sourceSummary.length >= 4` 與聚合陣列，並掃描 route / builder 不含 fetch / Supabase / env / yfinance / Yahoo / FinMind / TradingView / FactSet / runtime builder / DB write token。
+- 新增 `npm run test:war-room-api-contract` npm script。
+- 建立 `/api/war-room` mock_or_contract API 合約，支援 `mode=PREMARKET|INTRADAY|POSTMARKET|REALTIME_ALERT`，invalid mode fallback to PREMARKET，輸出 `WarRoomIntelligenceSnapshot` + `apiContractVersion: V20`。
+- 本階段只新增 `app/api/war-room/route.ts` 這一個 API route，未新增其他 API route。
+- 未接資料源；未建立 runtime；未 import runtime builder。
+- 未連 Supabase；未發 request；未讀取 Supabase secret env key。
+- 未新增 SQL migration；未新增 UI；未新增 mock data；未寫入資料。
+- 不產生買賣指令；未修改 repositories / services。
 
 ### V19
 

@@ -260,8 +260,10 @@ function checkSafety(): CheckResult {
   }
 
   // 4c. No new API route / UI component for war-room intelligence.
+  // Note: app/api/war-room/route.ts was sanctioned in V20 (War Room API
+  // Contract) and is validated by scripts/validate-war-room-api-contract.ts,
+  // so it is no longer forbidden here.
   const forbiddenRuntimeArtifacts = [
-    "app/api/war-room/route.ts",
     "app/api/war-room-intelligence/route.ts",
     "components/war-room-intelligence.tsx",
     "components/war-room-read-model.tsx",
