@@ -7,6 +7,7 @@ import { MarketSignal } from "@/components/dashboard/market-signal";
 import { PageHeading } from "@/components/dashboard/page-heading";
 import { RiskRanking } from "@/components/dashboard/risk-ranking";
 import { PortfolioValuationRadarSummary } from "@/components/portfolio-valuation-radar-summary";
+import { WarRoomDashboard } from "@/components/war-room-dashboard";
 
 export default function DashboardPage() {
   return (
@@ -19,6 +20,10 @@ export default function DashboardPage() {
       </div>
 
       <div className="mb-5"><HoldingsTable /></div>
+
+      <div className="mb-5">
+        <WarRoomDashboard />
+      </div>
 
       <div className="mb-5">
         <PortfolioValuationRadarSummary />
