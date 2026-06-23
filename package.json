@@ -25,7 +25,8 @@
     "test:war-room-intelligence-architecture": "node --require ./scripts/register-typescript.cjs ./scripts/validate-war-room-intelligence-architecture.ts",
     "test:intraday-risk-alert-spec": "node --require ./scripts/register-typescript.cjs ./scripts/validate-intraday-risk-alert-spec.ts",
     "test:institutional-research-center-spec": "node --require ./scripts/register-typescript.cjs ./scripts/validate-institutional-research-center-spec.ts",
-    "test:technical-risk-reward-spec": "node --require ./scripts/register-typescript.cjs ./scripts/validate-technical-risk-reward-spec.ts"
+    "test:technical-risk-reward-spec": "node --require ./scripts/register-typescript.cjs ./scripts/validate-technical-risk-reward-spec.ts",
+    "test:war-room-read-model-contract": "node --require ./scripts/register-typescript.cjs ./scripts/validate-war-room-read-model-contract.ts"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.108.2",
