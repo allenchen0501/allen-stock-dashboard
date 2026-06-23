@@ -20,7 +20,8 @@
     "test:portfolio-valuation-radar-spec": "node --require ./scripts/register-typescript.cjs ./scripts/validate-portfolio-valuation-radar-spec.ts",
     "test:portfolio-valuation-summary-api": "node --require ./scripts/register-typescript.cjs ./scripts/validate-portfolio-valuation-summary-api.ts",
     "test:portfolio-valuation-radar-ui": "node --require ./scripts/register-typescript.cjs ./scripts/validate-portfolio-valuation-radar-ui.ts",
-    "test:portfolio-valuation-radar-dashboard": "node --require ./scripts/register-typescript.cjs ./scripts/validate-portfolio-valuation-radar-dashboard.ts"
+    "test:portfolio-valuation-radar-dashboard": "node --require ./scripts/register-typescript.cjs ./scripts/validate-portfolio-valuation-radar-dashboard.ts",
+    "test:portfolio-valuation-formula-doc": "node --require ./scripts/register-typescript.cjs ./scripts/validate-portfolio-valuation-formula-doc.ts"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.108.2",

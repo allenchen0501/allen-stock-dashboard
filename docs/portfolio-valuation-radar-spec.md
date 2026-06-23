@@ -335,6 +335,21 @@ type StockResearchSnapshotResponse = {
 
 ---
 
+## Valuation Formula Reference
+
+V18-alt 新增 [`docs/portfolio-valuation-formula.md`](./portfolio-valuation-formula.md)，
+文件化未來估值公式的方法論（`normalizedEPS` 決策順序、PE band 分位、
+`deepCheapPrice / cheapPrice / fairPrice / expensivePrice / crazyPrice` 價格區間、
+`valuationTier` 六層 mapping、data quality gate 與 industry exceptions）。
+
+- `valuationTier` 未來的計算**必須依據** `docs/portfolio-valuation-formula.md`。
+- V15 / V16 / V17 的 spec-only 預設仍維持 `資料不足`。
+- **未完成公式實作前不得給估值結論**：在公式正式實作並通過 fixture tests 前，
+  `valuationTier` 一律維持 `資料不足`。
+- V18-alt 只是文件化公式，不改 API 行為、不接真資料、不新增 `stock_valuation_snapshots`。
+
+---
+
 ## F. Valuation Tier Semantics
 
 `valuationTier` 是對個股當前價格相對於估算合理價值的位置判斷，不是買賣訊號。

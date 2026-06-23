@@ -195,6 +195,24 @@ V16 的所有預設值均採保守策略，直到真實資料來源和 valuation
 
 ---
 
+## Formula Status
+
+V18-alt 新增 [`docs/portfolio-valuation-formula.md`](./portfolio-valuation-formula.md)，
+文件化未來估值公式方法論。但 API 行為**完全不變**：
+
+- `/api/portfolio/valuation-summary` 目前仍**不執行估值公式**。
+- `valuationTier` 預設仍是 `資料不足`。
+- `actionSignal` 預設仍是 `資料不足`。
+- V18-alt 只是文件化公式，**不改 API 行為**：source mode 仍為 `spec_only`、
+  response source 仍為 `mock_or_contract`、所有估值欄位仍為 `null`。
+- 公式正式實作將在 V19（valuation formula skeleton）才開始，且需通過
+  [Portfolio Valuation Formula](./portfolio-valuation-formula.md) Section J 的 promotion gate。
+
+Formula Status 摘要（plain-text，供 checker 與快速比對）：valuationTier 預設仍是 資料不足；
+actionSignal 預設仍是 資料不足；V18-alt 不改 API 行為。
+
+---
+
 ## E. Promotion Gate to V17
 
 進入 V17（Portfolio Valuation Summary 真實資料接入）前，以下條件**全部**必須通過：

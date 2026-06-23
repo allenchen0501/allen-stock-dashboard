@@ -2,7 +2,7 @@
 
 以 Next.js、TypeScript 與 Tailwind CSS 製作的個人台股戰情室，包含市場燈號、持股戰情、V8.5 核心評分、風報比、主升段候選與今日禁碰股。
 
-目前版本為 V17C Portfolio Valuation Radar Dashboard Integration：新增 `components/portfolio-valuation-radar-summary.tsx`，在 Dashboard 首頁 HoldingsTable 之後顯示持股估值雷達精簡摘要（summary cards + 前 5 檔 preview list + CTA 連結至 `/holdings`）。Holdings 頁仍保留完整 radar。本階段未連 Supabase、未讀 secret env、未新增 SQL migration、未新增 `stock_valuation_snapshots`、未寫入資料、不產生買賣指令。
+目前版本為 V18-alt Portfolio Valuation Formula Documentation：新增 `docs/portfolio-valuation-formula.md`，文件化未來估值公式方法論（`normalizedEPS` 決策順序、PE band 分位、`deepCheapPrice / cheapPrice / fairPrice / expensivePrice / crazyPrice` 價格區間、`valuationTier` 六層 mapping、data quality gate 與 industry exceptions）。本階段只做文件化，未實作公式、未改 API 行為、未連 Supabase、未新增 SQL migration、未新增 `stock_valuation_snapshots`、未寫入資料、不產生買賣指令、未修改 UI / components / repositories / services。
 
 ## 開始使用
 
@@ -38,9 +38,34 @@ npm run start
 - `types/`：UI 與 API 契約。
 - `war-room/input/`：戰情室 primary、reference、rejected 資料輸入契約與 gate。
 - `supabase/`：V3-1 基礎 schema、V3-1.5 Pro+ schema、V3-1.6 補強 schema 與套用說明。
-- `docs/`：資料庫、資料保存、介面用語、技術框架、戰情室架構規範與 Portfolio Valuation Radar Dashboard 規格（[docs/portfolio-valuation-radar-ui.md](docs/portfolio-valuation-radar-ui.md)）。
+- `docs/`：資料庫、資料保存、介面用語、技術框架、戰情室架構規範、Portfolio Valuation Radar Dashboard 規格（[docs/portfolio-valuation-radar-ui.md](docs/portfolio-valuation-radar-ui.md)）與 Portfolio Valuation Formula 方法論（[docs/portfolio-valuation-formula.md](docs/portfolio-valuation-formula.md)）。
 
 ## 版本紀錄
+
+### V18-alt
+
+Portfolio Valuation Formula Documentation：
+
+- 新增 `docs/portfolio-valuation-formula.md`：文件化 Allen Portfolio Valuation Radar 未來估值公式方法論：
+  - **Valuation Inputs**：`price` / `ttmEPS` / `estimatedEPS` / `forwardPE` / `historicalPERange` / `industryPERange` / `earningsStability` / `growthRate` / `dataQualityStatus` / `sourceConfidence` / `computedAt`。
+  - **Normalized EPS Policy**：`normalizedEPS` 決策順序（forward EPS → TTM EPS → EPS 為負/接近 0/波動過大回 `資料不足` → 景氣循環股用 normalized earnings → 來源衝突回保守）。
+  - **PE Band Methodology**：歷史 PE 分位優先、產業 PE 次選，`peP10 / peP25 / peP50 / peP75 / peP90` 與 `deepCheapPrice / cheapPrice / fairPrice / expensivePrice / crazyPrice` 價格區間公式。
+  - **Valuation Tier Mapping**：六層 `特價 / 便宜 / 合理 / 昂貴 / 瘋狂 / 資料不足` 對應規則，含「特價 不等於可立即買進」「高股價不等於昂貴」「低股價不等於便宜」等語意邊界。
+  - **Data Quality Gate**：缺 price / 缺 EPS / `EPS <= 0` / PE band 不足等情境必須顯示 `資料不足` 或 `WARNING`。
+  - **Action Signal Boundary**：`valuationTier` 不得直接等於 `actionSignal`；明確禁止自動下單與買賣指令。
+  - **Industry Exceptions**：景氣循環股、金融股、資產股、生技等改用 `P/B` / `P/S` / `EV/EBITDA` / normalized earnings（本輪不實作）。
+- 修改 `docs/portfolio-valuation-radar-spec.md`：新增 `Valuation Formula Reference` 段落，指向 formula 文件，重申未完成公式實作前 `valuationTier` 維持 `資料不足`。
+- 修改 `docs/portfolio-valuation-summary-api.md`：新增 `Formula Status` 段落，說明 API 行為不變（仍 spec-only，`valuationTier` / `actionSignal` 預設仍是 `資料不足`）。
+- 新增 `scripts/validate-portfolio-valuation-formula-doc.ts`：fixture-only formula documentation checker，5 gates（required_files / formula_required_terms / boundary_alignment / api_doc_alignment / spec_doc_alignment），不啟動 Next server、不發 request、不連 Supabase、不實作公式。
+- 新增 `npm run test:portfolio-valuation-formula-doc` npm script。
+- 本階段未實作估值公式；`use-cases/portfolio/valuation-tier.ts` 未修改。
+- 未改 API 行為（`/api/portfolio/valuation-summary` 仍 spec-only / `mock_or_contract`）。
+- 未連 Supabase；未讀取 Supabase secret env key。
+- 未新增 SQL migration。
+- 未新增 `stock_valuation_snapshots`（建表條件尚未滿足）。
+- 未寫入資料；未提交真實持股（cost / quantity / owner_id）。
+- 不產生買賣指令；formula 文件明確禁止「推薦買進 / 明確賣出 / 立即進場」等語意。
+- 未修改 UI / components / repositories / services。
 
 ### V17C
 
