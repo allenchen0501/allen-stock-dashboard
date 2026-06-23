@@ -2,7 +2,7 @@
 
 以 Next.js、TypeScript 與 Tailwind CSS 製作的個人台股戰情室，包含市場燈號、持股戰情、V8.5 核心評分、風報比、主升段候選與今日禁碰股。
 
-目前版本為 V18F Intraday Risk Crisis Alert Spec：新增 `docs/intraday-risk-crisis-alert-spec.md` 與 type contract `use-cases/intraday-alert/intraday-alert-contract.ts`，定義盤中風險危機告警系統規格，含大盤急跌 / 急漲、持股急跌 / 急漲、族群警報、亞光 / 譜瑞 / 山富防守區、cooldown / dedup / stale data / fallback-only safety 規則。本階段只做規格與 fixture-only checker，未接資料源、未建立 cron、未建立推播、未新增 API route、未新增 UI、未連 Supabase、未新增 SQL migration、未寫入資料、不產生買賣指令、未修改 repositories / services。
+目前版本為 V18D Institutional Research Center Spec：新增 `docs/institutional-research-center-spec.md` 與 type contract `use-cases/research/research-center-contract.ts`，定義法人研究中心規格，含八條件研究評分、TOP5 Research Ranking、1080x1920 手機研究卡、FactSet / consensus / broker target price 授權資料邊界與 AI 供應鏈 taxonomy。本階段只做規格與 fixture-only checker，未查資料、未建立 API route、未建立 UI、未建立 image / PDF renderer、未連 Supabase、未新增 SQL migration、未寫入資料、不產生買賣指令、未修改 repositories / services。
 
 ## 開始使用
 
@@ -38,11 +38,41 @@ npm run start
 - `types/`：UI 與 API 契約。
 - `war-room/input/`：戰情室 primary、reference、rejected 資料輸入契約與 gate。
 - `supabase/`：V3-1 基礎 schema、V3-1.5 Pro+ schema、V3-1.6 補強 schema 與套用說明。
-- `docs/`：資料庫、資料保存、介面用語、技術框架、戰情室架構規範、Portfolio Valuation Radar Dashboard 規格（[docs/portfolio-valuation-radar-ui.md](docs/portfolio-valuation-radar-ui.md)）、Portfolio Valuation Formula 方法論（[docs/portfolio-valuation-formula.md](docs/portfolio-valuation-formula.md)）、War Room Intelligence Architecture（[docs/war-room-intelligence-architecture.md](docs/war-room-intelligence-architecture.md)）與 Intraday Risk Crisis Alert Spec（[docs/intraday-risk-crisis-alert-spec.md](docs/intraday-risk-crisis-alert-spec.md)）。
+- `docs/`：資料庫、資料保存、介面用語、技術框架、戰情室架構規範、Portfolio Valuation Radar Dashboard 規格（[docs/portfolio-valuation-radar-ui.md](docs/portfolio-valuation-radar-ui.md)）、Portfolio Valuation Formula 方法論（[docs/portfolio-valuation-formula.md](docs/portfolio-valuation-formula.md)）、War Room Intelligence Architecture（[docs/war-room-intelligence-architecture.md](docs/war-room-intelligence-architecture.md)）、Intraday Risk Crisis Alert Spec（[docs/intraday-risk-crisis-alert-spec.md](docs/intraday-risk-crisis-alert-spec.md)）與 Institutional Research Center Spec（[docs/institutional-research-center-spec.md](docs/institutional-research-center-spec.md)）。
 - `use-cases/war-room/`：War Room Intelligence read-model type contract（types-only，無 runtime）。
 - `use-cases/intraday-alert/`：Intraday Alert read-model type contract（types-only，無 runtime）。
+- `use-cases/research/`：Institutional Research Center read-model type contract（types-only，無 runtime）。
 
 ## 版本紀錄
+
+### V18D
+
+Institutional Research Center Spec：
+
+- 新增 `docs/institutional-research-center-spec.md`：定義 Allen Stock Dashboard 法人研究中心規格（A–Q 十七節），含：
+  - **Purpose**：本模組回答「哪些股票值得深入研究」，不回答「現在能不能進場」；Research Center 不直接產生買點、不直接產生買賣指令。
+  - **Data Licensing Boundary**：FactSet / 法人共識 / 券商目標價 / 券商報告全文屬授權型資料；未授權顯示 `資料不足` 或 `LICENSE_REQUIRED`；不捏造、不推估、不抄錄；資料可用性狀態 `AVAILABLE` / `DATA_INSUFFICIENT` / `LICENSE_REQUIRED` / `SOURCE_CONFLICT` / `STALE` / `NOT_COVERED`。
+  - **Data Source Candidates**：public/official（TWSE / TPEx / 公開資訊觀測站 / 月營收 / 法說會材料）→ licensed/paid（FactSet Estimates / Consensus / broker consensus）→ fallback/user verified；fallback 不得覆蓋官方來源。
+  - **Research Input Universe**：uploaded image / pasted text / manual list / watchlist / portfolio / sector basket / AI supply chain basket（本輪不實作 OCR、不解析圖片）。
+  - **Research Data Contract Fields**：定義 `ResearchStockSnapshot` 全欄位（股價 / 法人目標價 / EPS 預估 / 月營收 / 法說會摘要 / AI 供應鏈 / 全球市占率 / 主要競爭對手 / 回檔原因 / 八條件評分 / 研究評級）；缺資料填 `null` 或 `資料不足`，不自行補值。
+  - **Eight-Factor Research Score Engine**：八條件量化評分（EPS 成長 / 目標價空間 / 法說展望 / AI 直接受惠 / 營收獲利支撐 / 回檔非需求面 / 利多大於風險 / 產業龍頭），星級 1～5、總分 `totalResearchScore` max 40；授權不足不得硬算。
+  - **Research Rating Mapping**：`S+` / `S` / `A+` / `A` / `B` / `C` / `DATA_INSUFFICIENT`；Research Rating 不是買賣建議、不等於 `actionSignal`。
+  - **TOP5 Research Ranking**：dataQualityStatus FAIL 不可入 TOP5；TOP5 Research 不等於 TOP5 Entry。
+  - **Pullback Reason Classification**：與 V18C Pullback Reason Classifier 對齊（純籌碼面 / 大盤同步修正 / 法人換股 / 產業雜訊 / 基本面降溫 / 需求面轉弱 / 財報風險 / 資料不足）。
+  - **AI Supply Chain Taxonomy**：GB200/GB300 / AI Server / ASIC / CPO / 光通 / CoWoS / 先進封裝 / 液冷 / 散熱 / 高速傳輸 / PCB / CCL / 記憶體 / 機器人 / Edge AI / PC/NB AI / 系統整合；benefit level `DIRECT` / `INDIRECT` / `THEMATIC` / `WEAK` / `DATA_INSUFFICIENT`；AI 題材標籤不等於營收貢獻已確認。
+  - **Competitor / Market Share Rules**：competitors / globalMarketShare 必須有來源，不得捏造，需附 `asOfDate`。
+  - **1080x1920 Mobile Research Card Spec**：一頁一檔手機研究卡規格；安全調整：不得使用「強力買進 / 買進」，改用研究評級；本輪不產生 PNG / PDF / HTML / WeasyPrint output。
+  - **Research Card Visual Tokens**：保留未來設計 token 與產業色彩用途。
+  - **War Room Integration**：War Room 首頁只顯示今日 TOP5 研究名單 + 評級 + 總分 + AI 主標籤 + dataQualityStatus + 一句摘要；不輸出盤中警報 / 技術買點 / actionSignal。
+  - **Safety Boundary** 與 **Future Implementation Gate**：V19（Research API Contract）→ V20（Research Center UI）→ V21（Research Card Export）→ V22（Research Data Pipeline）→ V23（Research + Technical Merge）。
+- 新增 `use-cases/research/research-center-contract.ts`：法人研究中心 read-model TypeScript type contract（`ResearchCoverageStatus` / `ResearchDataQualityStatus` / `ResearchRating` / `ResearchScoreFactor` / `AiSupplyChainTag` / `AiBenefitLevel` / `PullbackReasonType` / `ResearchUniverseInput` / `ResearchFactorScore` / `ResearchStockSnapshot` / `ResearchTopPick` / `ResearchCardSpec`），types-only，不放 runtime、不 import Supabase、不 fetch、不讀 env，並帶有 `requestPerformed` / `supabaseConnected` / `productionWritePerformed` / `renderPerformed` / `exportPerformed` / `notEntrySignal` 等 read-only invariant。
+- 新增 `scripts/validate-institutional-research-center-spec.ts`：fixture-only 規格完整性 checker，5 gates（required_files / required_phrases / contract_checks / architecture_alignment / safety），驗證文件含 20 個必要 phrase、contract 含 25 個必要型別 / 欄位、架構文件對齊 5 個必要 phrase，並掃描 contract 不含 fetch / Supabase / env / yfinance / FinMind / FactSet runtime token。
+- 新增 `npm run test:institutional-research-center-spec` npm script。
+- 本階段只定義法人研究中心規格，未查資料。
+- 未建立 API route；未建立 UI；未建立 image / PDF renderer。
+- 未連 Supabase；未讀取 Supabase secret env key。
+- 未新增 SQL migration；未寫入資料。
+- 不產生買賣指令；未修改 repositories / services。
 
 ### V18F
 

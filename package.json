@@ -23,7 +23,8 @@
     "test:portfolio-valuation-radar-dashboard": "node --require ./scripts/register-typescript.cjs ./scripts/validate-portfolio-valuation-radar-dashboard.ts",
     "test:portfolio-valuation-formula-doc": "node --require ./scripts/register-typescript.cjs ./scripts/validate-portfolio-valuation-formula-doc.ts",
     "test:war-room-intelligence-architecture": "node --require ./scripts/register-typescript.cjs ./scripts/validate-war-room-intelligence-architecture.ts",
-    "test:intraday-risk-alert-spec": "node --require ./scripts/register-typescript.cjs ./scripts/validate-intraday-risk-alert-spec.ts"
+    "test:intraday-risk-alert-spec": "node --require ./scripts/register-typescript.cjs ./scripts/validate-intraday-risk-alert-spec.ts",
+    "test:institutional-research-center-spec": "node --require ./scripts/register-typescript.cjs ./scripts/validate-institutional-research-center-spec.ts"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.108.2",
