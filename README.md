@@ -2,7 +2,7 @@
 
 以 Next.js、TypeScript 與 Tailwind CSS 製作的個人台股戰情室，包含市場燈號、持股戰情、V8.5 核心評分、風報比、主升段候選與今日禁碰股。
 
-目前版本為 V18-alt Portfolio Valuation Formula Documentation：新增 `docs/portfolio-valuation-formula.md`，文件化未來估值公式方法論（`normalizedEPS` 決策順序、PE band 分位、`deepCheapPrice / cheapPrice / fairPrice / expensivePrice / crazyPrice` 價格區間、`valuationTier` 六層 mapping、data quality gate 與 industry exceptions）。本階段只做文件化，未實作公式、未改 API 行為、未連 Supabase、未新增 SQL migration、未新增 `stock_valuation_snapshots`、未寫入資料、不產生買賣指令、未修改 UI / components / repositories / services。
+目前版本為 V18C War Room Intelligence Architecture：新增 `docs/war-room-intelligence-architecture.md` 與 read-model type contract `use-cases/war-room/war-room-intelligence-contract.ts`，定義戰情室總架構、盤前 / 盤中 / 盤後 / 即時四種模式、各分析引擎（Valuation / Research / Technical / Risk Reward / Intraday Alert / Pullback Classifier / War Room Read Model）的責任邊界與反重複矩陣。本階段只做架構規格與 fixture-only checker，未新增 API route、未新增 UI、未接資料源、未建立 cron、未建立推播、未連 Supabase、未新增 SQL migration、未寫入資料、不產生買賣指令、未修改 repositories / services。
 
 ## 開始使用
 
@@ -38,9 +38,31 @@ npm run start
 - `types/`：UI 與 API 契約。
 - `war-room/input/`：戰情室 primary、reference、rejected 資料輸入契約與 gate。
 - `supabase/`：V3-1 基礎 schema、V3-1.5 Pro+ schema、V3-1.6 補強 schema 與套用說明。
-- `docs/`：資料庫、資料保存、介面用語、技術框架、戰情室架構規範、Portfolio Valuation Radar Dashboard 規格（[docs/portfolio-valuation-radar-ui.md](docs/portfolio-valuation-radar-ui.md)）與 Portfolio Valuation Formula 方法論（[docs/portfolio-valuation-formula.md](docs/portfolio-valuation-formula.md)）。
+- `docs/`：資料庫、資料保存、介面用語、技術框架、戰情室架構規範、Portfolio Valuation Radar Dashboard 規格（[docs/portfolio-valuation-radar-ui.md](docs/portfolio-valuation-radar-ui.md)）、Portfolio Valuation Formula 方法論（[docs/portfolio-valuation-formula.md](docs/portfolio-valuation-formula.md)）與 War Room Intelligence Architecture（[docs/war-room-intelligence-architecture.md](docs/war-room-intelligence-architecture.md)）。
+- `use-cases/war-room/`：War Room Intelligence read-model type contract（types-only，無 runtime）。
 
 ## 版本紀錄
+
+### V18C
+
+War Room Intelligence Architecture：
+
+- 新增 `docs/war-room-intelligence-architecture.md`：定義 Allen Stock Dashboard 戰情室總架構，整合估值、技術、風報比、法人研究、盤中警報、回檔原因分類，避免功能重複：
+  - **Core Principle**：Research Center 不直接產生買點、Technical Strategy Engine 不假裝基本面良好、Valuation Radar 不直接等於 actionSignal、Intraday Alert 不等於買賣指令、War Room Read Model 不自己創造資料。
+  - **Module Inventory**：盤點現有 8 個模組（implemented / spec-only / doc-only / contract-only）與 10 個新增能力（Research Center / Research Score / TOP5 Ranking / Research Card 1080x1920 / AI Supply Chain Taxonomy / Pullback Classifier / Technical Strategy / Risk Reward / Intraday Alert / War Room Read Model）。
+  - **Duplication Boundary Matrix**：定義「估值便宜不等於高風報比、高風報比不等於基本面好、法人研究評級不等於買點、盤中警報不等於出場、TOP5 Research 不等於 TOP5 Entry」等反重複邊界。
+  - **Data Flow Architecture**：Data Sources → Raw Fact Layer → Analysis Engine Layer → Score / Alert Layer → War Room Read Model → Premarket / Intraday / Postmarket / Realtime UI。
+  - **四種戰情室模式**：Premarket（08:00～09:00）、Intraday（09:00～13:30）、Postmarket（13:35～晚上）、Realtime Alert Center（DANGER / WARNING / WATCH / INFO / DATA_INSUFFICIENT，含 cooldown / dedup / 只升級可重發 / stale 與 fallback 不得觸發 DANGER）。
+  - **整合規格**：Institutional Research Center、Technical Strategy + Risk Reward（扣三低 / KD / KDJ / MACD 動能 / 均線 / 量價 / 風報比 1:3~1:5）、Pullback Reason Classifier。
+  - **Promotion Roadmap**：V18D~V25 路線圖（roadmap 只是規劃，不代表本輪實作）。
+- 新增 `use-cases/war-room/war-room-intelligence-contract.ts`：read-model TypeScript type contract（`WarRoomMode` / `WarRoomMarketStatus` / `WarRoomAlertLevel` / `WarRoomDataQualityStatus` / `WarRoomSectionAvailability` / `WarRoomIntelligenceSnapshot`），types-only，不放 runtime、不 import Supabase、不 fetch、不讀 env，並帶有 `requestPerformed / supabaseConnected / productionWritePerformed` 永遠為 `false` 的 read-only invariant。
+- 新增 `scripts/validate-war-room-intelligence-architecture.ts`：fixture-only 架構完整性 checker，4 gates（required_files / required_phrases / boundary_checks / safety），驗證文件含 29 個必要 phrase、5 個 boundary phrase，並掃描 contract 不含 fetch / Supabase / env / yfinance / FinMind runtime token。
+- 新增 `npm run test:war-room-intelligence-architecture` npm script。
+- 本階段只定義戰情室總架構與盤前 / 盤中 / 盤後 / 即時四種模式，並劃定各引擎邊界。
+- 未新增 API route；未新增 UI；未接資料源；未建立 cron；未建立推播。
+- 未連 Supabase；未讀取 Supabase secret env key。
+- 未新增 SQL migration；未寫入資料。
+- 不產生買賣指令；未修改 repositories / services。
 
 ### V18-alt
 
