@@ -2,7 +2,7 @@
 
 以 Next.js、TypeScript 與 Tailwind CSS 製作的個人台股戰情室，包含市場燈號、持股戰情、V8.5 核心評分、風報比、主升段候選與今日禁碰股。
 
-目前版本為 V18C War Room Intelligence Architecture：新增 `docs/war-room-intelligence-architecture.md` 與 read-model type contract `use-cases/war-room/war-room-intelligence-contract.ts`，定義戰情室總架構、盤前 / 盤中 / 盤後 / 即時四種模式、各分析引擎（Valuation / Research / Technical / Risk Reward / Intraday Alert / Pullback Classifier / War Room Read Model）的責任邊界與反重複矩陣。本階段只做架構規格與 fixture-only checker，未新增 API route、未新增 UI、未接資料源、未建立 cron、未建立推播、未連 Supabase、未新增 SQL migration、未寫入資料、不產生買賣指令、未修改 repositories / services。
+目前版本為 V18F Intraday Risk Crisis Alert Spec：新增 `docs/intraday-risk-crisis-alert-spec.md` 與 type contract `use-cases/intraday-alert/intraday-alert-contract.ts`，定義盤中風險危機告警系統規格，含大盤急跌 / 急漲、持股急跌 / 急漲、族群警報、亞光 / 譜瑞 / 山富防守區、cooldown / dedup / stale data / fallback-only safety 規則。本階段只做規格與 fixture-only checker，未接資料源、未建立 cron、未建立推播、未新增 API route、未新增 UI、未連 Supabase、未新增 SQL migration、未寫入資料、不產生買賣指令、未修改 repositories / services。
 
 ## 開始使用
 
@@ -38,10 +38,40 @@ npm run start
 - `types/`：UI 與 API 契約。
 - `war-room/input/`：戰情室 primary、reference、rejected 資料輸入契約與 gate。
 - `supabase/`：V3-1 基礎 schema、V3-1.5 Pro+ schema、V3-1.6 補強 schema 與套用說明。
-- `docs/`：資料庫、資料保存、介面用語、技術框架、戰情室架構規範、Portfolio Valuation Radar Dashboard 規格（[docs/portfolio-valuation-radar-ui.md](docs/portfolio-valuation-radar-ui.md)）、Portfolio Valuation Formula 方法論（[docs/portfolio-valuation-formula.md](docs/portfolio-valuation-formula.md)）與 War Room Intelligence Architecture（[docs/war-room-intelligence-architecture.md](docs/war-room-intelligence-architecture.md)）。
+- `docs/`：資料庫、資料保存、介面用語、技術框架、戰情室架構規範、Portfolio Valuation Radar Dashboard 規格（[docs/portfolio-valuation-radar-ui.md](docs/portfolio-valuation-radar-ui.md)）、Portfolio Valuation Formula 方法論（[docs/portfolio-valuation-formula.md](docs/portfolio-valuation-formula.md)）、War Room Intelligence Architecture（[docs/war-room-intelligence-architecture.md](docs/war-room-intelligence-architecture.md)）與 Intraday Risk Crisis Alert Spec（[docs/intraday-risk-crisis-alert-spec.md](docs/intraday-risk-crisis-alert-spec.md)）。
 - `use-cases/war-room/`：War Room Intelligence read-model type contract（types-only，無 runtime）。
+- `use-cases/intraday-alert/`：Intraday Alert read-model type contract（types-only，無 runtime）。
 
 ## 版本紀錄
+
+### V18F
+
+Intraday Risk Crisis Alert Spec：
+
+- 新增 `docs/intraday-risk-crisis-alert-spec.md`：定義 Allen Stock Dashboard 盤中風險危機告警系統規格（Intraday Alert Engine 細化文件），含：
+  - **Purpose**：事件驅動型警報，不是定時報告，警報不是買賣指令，不自動下單。
+  - **Runtime Limitation**：V18F 不實作 runtime / cron / 推播 / API route / UI。
+  - **Data Source Candidates**：資料源優先順序（official → validated secondary → fallback），Yahoo / yfinance-like 不得為唯一正式來源，資料源衝突最多 WARNING。
+  - **Alert Scope**：大盤急跌警報 / 大盤急漲警報 / 持股急跌警報 / 持股急漲警報。
+  - **Market Crash Alert Rules**：5 分鐘內跌超過 250 點 → WARNING；15 分鐘內跌超過 500 點 → DANGER。
+  - **Market Surge Alert Rules**：5 分鐘急拉 250 點 → WARNING；廣度背離提醒。
+  - **Holding Crash Alert Rules**：3 分鐘內跌超過 2% → WATCH；5 分鐘內跌超過 3% → WARNING；亞光（3019）160 / 157 / 153；譜瑞（4966）680 / 665 / 652；山富（2743）67 / 65 / 63 防守區。
+  - **Holding Surge Alert Rules**：5 分鐘急漲 3% / 爆量突破 / 突破壓力 / 站回前高。
+  - **Sector Alert Rules**：族群同步急跌 → WARNING；族群急拉廣度背離提醒；CPO / 光通 / PCB / AI Server / 散熱族群同步轉弱 → 持股風險提高。
+  - **Alert Levels**：INFO / WATCH / WARNING / DANGER / DATA_INSUFFICIENT（中文對照：資訊 / 注意 / 警戒 / 危險 / 資料不足）。
+  - **Alert Payload Contract**：定義未來 `IntradayAlertPayload` 欄位（詳見 contract 檔）。
+  - **Alert Message Format**：中文格式範例（🔴 盤中急跌警報）。
+  - **Cooldown / Dedup Rules**：cooldown 5～10 分鐘、alertLevel 升級才重發、stale data 不得觸發 DANGER、fallback-only data 不得獨立觸發 DANGER。
+  - **Safety Boundary**：dataQualityStatus 非 PASS 不得升級 DANGER、Yahoo / fallback 單一來源不得觸發最高等級警報、War Room Read Model 不得自行升級警報。
+  - **Future Implementation Gate**：V19（Engine Contract）→ V20（UI）→ V21（Runtime Pipeline）→ V22（Push Notification）。
+- 新增 `use-cases/intraday-alert/intraday-alert-contract.ts`：Intraday Alert read-model TypeScript type contract（`IntradayAlertLevel` / `IntradayAlertType` / `IntradayAlertScope` / `IntradayAlertDataQualityStatus` / `IntradayAlertPayload`），types-only，不放 runtime、不 import Supabase、不 fetch、不讀 env。
+- 新增 `scripts/validate-intraday-risk-alert-spec.ts`：fixture-only 規格完整性 checker，5 gates（required_files / required_phrases / contract_checks / architecture_alignment / safety），驗證文件含 27 個必要 phrase、contract 含 17 個必要型別 / 欄位、架構文件對齊 4 個必要 phrase，並掃描 contract 不含 fetch / Supabase / env / yfinance / FinMind runtime token。
+- 新增 `npm run test:intraday-risk-alert-spec` npm script。
+- 本階段只定義盤中風險危機告警規格，不接資料源。
+- 未新增 API route；未新增 UI；未建立 cron；未建立推播。
+- 未連 Supabase；未讀取 Supabase secret env key。
+- 未新增 SQL migration；未寫入資料。
+- 不產生買賣指令；未修改 repositories / services。
 
 ### V18C
 
