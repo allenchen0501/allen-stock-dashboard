@@ -170,6 +170,63 @@ interface UiObservationPoint {
   notTradeAdvice: boolean;
 }
 
+// V26: Position Strategy Plan fixture types (shape mirrors PositionStrategyPlan).
+interface UiPriceZone {
+  zoneLabel: string;
+  low: number | null;
+  high: number | null;
+  priceVerified: boolean;
+  priceVerificationStatus: string;
+  isPrecisePriceAllowed: boolean;
+  safetyLabel: string;
+}
+
+interface UiPositionPlan {
+  planId: string;
+  stockId: string;
+  stockName: string;
+  planType: string;
+  priceVerified: boolean;
+  priceVerificationStatus: string;
+  dataQualityStatus: string;
+  currentPrice: number | null;
+  costBasis: number | null;
+  unrealizedProfitLossPercent: number | null;
+  entryObservationZone: UiPriceZone | null;
+  noChaseZone: UiPriceZone | null;
+  defenseZone: UiPriceZone | null;
+  invalidLevel: UiPriceZone | null;
+  profitProtectionZone: UiPriceZone | null;
+  takeProfitZone: UiPriceZone | null;
+  riskReduceZone: UiPriceZone | null;
+  exitObservationZone: UiPriceZone | null;
+  targetObservationZone: UiPriceZone | null;
+  riskRewardRatio: number | null;
+  riskRewardGrade: string;
+  holdingState: string;
+  holdingActionState: string | null;
+  holdingImpact: string | null;
+  confirmationCondition: string | null;
+  trendBreakWarning: string | null;
+  shortAttackRisk: string | null;
+  riskReduceObservation: string | null;
+  waitForReclaimCondition: string | null;
+  trendInvalidationReason: string | null;
+  noTouchReason: string | null;
+  requiredRecoveryCondition: string | null;
+  noTouchDurationHint: string | null;
+  unavailableReason: string | null;
+  missingDataFields: string[];
+  requiredVerification: string[];
+  setupTags: string[];
+  warnings: string[];
+  observationSummary: string;
+  notEntrySignal: boolean;
+  notExitSignal: boolean;
+  notTradeAdvice: boolean;
+  highConfidenceConclusionAllowed: boolean;
+}
+
 interface UiSnapshot {
   snapshotId: string;
   generatedAt: string;
@@ -195,6 +252,15 @@ interface UiSnapshot {
   responseSource: string;
   sourceMode: string;
   fixtureAdapterVersion: string;
+  // V26: Position Strategy Plan fixture integration.
+  positionStrategyPlans: UiPositionPlan[];
+  entryObservationPlans: UiPositionPlan[];
+  holdingDefensePlans: UiPositionPlan[];
+  profitProtectionPlans: UiPositionPlan[];
+  riskReductionPlans: UiPositionPlan[];
+  positionNoTouchPlans: UiPositionPlan[];
+  positionDataInsufficientPlans: UiPositionPlan[];
+  positionStrategyFixtureVersion: string;
 }
 
 // ---------------------------------------------------------------------------
@@ -569,6 +635,167 @@ function ObservationPointCard({ item }: { item: UiObservationPoint }) {
 }
 
 // ---------------------------------------------------------------------------
+// Position Strategy Plan card (V26)
+// ---------------------------------------------------------------------------
+
+const PLAN_TYPE_LABEL: Record<string, string> = {
+  ENTRY_OBSERVATION: "進場觀察",
+  HOLDING_DEFENSE: "持股防守",
+  PROFIT_PROTECTION: "獲利保護",
+  RISK_REDUCTION: "風險降低",
+  NO_TOUCH: "禁碰 / No Touch",
+  DATA_INSUFFICIENT: "資料不足",
+};
+
+// One labelled price zone row. When the zone is null or precise price is not
+// allowed, shows the safe "資料不足 / 未允許精準價位" placeholder instead.
+function ZoneLine({ label, zone }: { label: string; zone: UiPriceZone | null }) {
+  const showPrice = zone != null && zone.isPrecisePriceAllowed && zone.low != null;
+  return (
+    <div className="flex items-center justify-between gap-2 text-[9px]">
+      <span className="text-slate-600">{label}</span>
+      <span className="font-mono text-slate-400">
+        {showPrice
+          ? `${zone!.low}${zone!.high != null && zone!.high !== zone!.low ? `–${zone!.high}` : ""}`
+          : "資料不足 / 未允許精準價位"}
+      </span>
+    </div>
+  );
+}
+
+function PositionPlanCard({ plan }: { plan: UiPositionPlan }) {
+  return (
+    <div className="flex flex-col gap-1.5 rounded-lg border border-line bg-white/[0.008] p-3">
+      <div className="flex items-start justify-between gap-2">
+        <div className="min-w-0">
+          <div className="flex items-center gap-2">
+            <span className="font-mono text-[10px] text-slate-400">{plan.stockId}</span>
+            <span className="text-[11px] font-semibold text-slate-200">{plan.stockName}</span>
+          </div>
+          <p className="mt-0.5 font-mono text-[8px] text-slate-600">
+            {PLAN_TYPE_LABEL[plan.planType] ?? plan.planType} · {plan.planType}
+          </p>
+        </div>
+        <div className="flex shrink-0 flex-col items-end gap-1">
+          <Badge value={plan.dataQualityStatus} tone={qualityTone(plan.dataQualityStatus)} />
+          <span
+            className={`rounded px-1.5 py-0.5 text-[8px] ${
+              plan.priceVerified ? "bg-positive/10 text-positive" : "bg-amber/10 text-amber"
+            }`}
+          >
+            {plan.priceVerificationStatus}
+          </span>
+        </div>
+      </div>
+
+      {/* Holding context */}
+      {(plan.costBasis != null || plan.currentPrice != null) && (
+        <div className="flex flex-wrap gap-2 text-[9px] text-slate-500">
+          <span>成本 costBasis：{plan.costBasis ?? "資料不足"}</span>
+          <span>現價 currentPrice：{plan.currentPrice ?? "資料不足"}</span>
+          {plan.unrealizedProfitLossPercent != null && (
+            <span
+              className={plan.unrealizedProfitLossPercent >= 0 ? "text-positive" : "text-negative"}
+            >
+              未實現損益：{plan.unrealizedProfitLossPercent}%
+            </span>
+          )}
+        </div>
+      )}
+
+      {/* Price zones — every label encodes the negation/safety meaning */}
+      <div className="space-y-0.5">
+        {plan.entryObservationZone && (
+          <ZoneLine label="進場觀察區，不是買進價" zone={plan.entryObservationZone} />
+        )}
+        {plan.noChaseZone && <ZoneLine label="不追價區，不是放空建議" zone={plan.noChaseZone} />}
+        {plan.defenseZone && (
+          <ZoneLine label="防守區，是防守觀察不是自動出場" zone={plan.defenseZone} />
+        )}
+        {plan.invalidLevel && (
+          <ZoneLine label="策略失效觀察價，不是自動停損價" zone={plan.invalidLevel} />
+        )}
+        {plan.profitProtectionZone && (
+          <ZoneLine label="獲利保護觀察區，不是賣出價" zone={plan.profitProtectionZone} />
+        )}
+        {plan.takeProfitZone && (
+          <ZoneLine label="takeProfitZone 不是賣出價" zone={plan.takeProfitZone} />
+        )}
+        {plan.riskReduceZone && (
+          <ZoneLine label="風險降低觀察不是賣出指令" zone={plan.riskReduceZone} />
+        )}
+        {plan.exitObservationZone && (
+          <ZoneLine label="出場觀察區不是賣出價" zone={plan.exitObservationZone} />
+        )}
+        {plan.targetObservationZone && (
+          <ZoneLine label="觀察目標區，不是目標價" zone={plan.targetObservationZone} />
+        )}
+      </div>
+
+      {/* Risk/reward + holding state */}
+      <div className="flex flex-wrap items-center gap-2 text-[9px]">
+        {plan.riskRewardRatio != null ? (
+          <span className="text-slate-500">風報比 1:{plan.riskRewardRatio}</span>
+        ) : (
+          <span className="text-slate-600">風報比：資料不足</span>
+        )}
+        <Badge value={plan.riskRewardGrade} tone={qualityTone(plan.riskRewardGrade)} />
+        <span className="text-slate-600">holdingState：{plan.holdingState}</span>
+        {plan.holdingActionState && (
+          <span className="text-amber">{plan.holdingActionState}</span>
+        )}
+      </div>
+
+      {plan.holdingImpact && (
+        <p className="text-[9px] leading-5 text-slate-400">holdingImpact：{plan.holdingImpact}</p>
+      )}
+      {plan.trendBreakWarning && (
+        <p className="text-[9px] leading-5 text-amber">⚠ {plan.trendBreakWarning}</p>
+      )}
+      {plan.riskReduceObservation && (
+        <p className="text-[9px] leading-5 text-slate-500">{plan.riskReduceObservation}</p>
+      )}
+      {plan.noTouchReason && (
+        <p className="text-[9px] leading-5 text-slate-400">禁碰原因：{plan.noTouchReason}</p>
+      )}
+      {plan.unavailableReason && (
+        <p className="text-[9px] leading-5 text-slate-500">{plan.unavailableReason}</p>
+      )}
+      {plan.missingDataFields.length > 0 && (
+        <p className="text-[8px] text-slate-600">缺漏欄位：{plan.missingDataFields.join("、")}</p>
+      )}
+
+      {plan.setupTags.length > 0 && (
+        <div className="flex flex-wrap gap-1">
+          {plan.setupTags.map((t, i) => (
+            <span key={i} className="rounded bg-white/[0.02] px-1.5 py-0.5 text-[8px] text-slate-500">
+              {t}
+            </span>
+          ))}
+        </div>
+      )}
+
+      <p className="break-words text-[8px] leading-4 text-slate-600">{plan.observationSummary}</p>
+
+      <div className="flex flex-wrap gap-1">
+        {plan.notEntrySignal && (
+          <span className="rounded bg-amber/10 px-1.5 py-0.5 text-[8px] text-amber">notEntrySignal</span>
+        )}
+        {plan.notExitSignal && (
+          <span className="rounded bg-amber/10 px-1.5 py-0.5 text-[8px] text-amber">notExitSignal</span>
+        )}
+        {plan.notTradeAdvice && (
+          <span className="rounded bg-amber/10 px-1.5 py-0.5 text-[8px] text-amber">notTradeAdvice</span>
+        )}
+        <span className="rounded bg-white/[0.02] px-1.5 py-0.5 text-[8px] text-slate-600">
+          highConfidenceConclusionAllowed={String(plan.highConfidenceConclusionAllowed)}
+        </span>
+      </div>
+    </div>
+  );
+}
+
+// ---------------------------------------------------------------------------
 // Source Summary card
 // ---------------------------------------------------------------------------
 
@@ -922,6 +1149,64 @@ export function WarRoomDashboard() {
                   ))}
                 </div>
               )}
+            </div>
+
+            {/* ============================================================ */}
+            {/* Position Strategy Plans (V26)                                  */}
+            {/* ============================================================ */}
+            <div>
+              <SectionLabel
+                label={`Position Strategy Plans (${snapshot.positionStrategyPlans.length})`}
+              />
+              <div className="mb-2 rounded-lg border border-amber/15 bg-amber/[0.03] px-3 py-2 text-[9px] leading-5 text-amber">
+                fixture data 不是即時資料；fixture data 不是投資建議；不自動下單；不產生買賣指令；不替代投資判斷。
+                <span className="ml-1 font-mono text-slate-500">
+                  positionStrategyFixtureVersion = {snapshot.positionStrategyFixtureVersion}
+                </span>
+              </div>
+              <div className="mb-3 grid grid-cols-2 gap-2 sm:grid-cols-3 xl:grid-cols-6">
+                <Pill label="Entry" value={String(snapshot.entryObservationPlans.length)} />
+                <Pill label="Holding Defense" value={String(snapshot.holdingDefensePlans.length)} />
+                <Pill label="Profit Protection" value={String(snapshot.profitProtectionPlans.length)} />
+                <Pill label="Risk Reduction" value={String(snapshot.riskReductionPlans.length)} />
+                <Pill label="No Touch" value={String(snapshot.positionNoTouchPlans.length)} />
+                <Pill
+                  label="Data Insufficient"
+                  value={String(snapshot.positionDataInsufficientPlans.length)}
+                />
+              </div>
+
+              {[
+                { label: "Entry Observation Plans", plans: snapshot.entryObservationPlans },
+                { label: "Holding Defense Plans", plans: snapshot.holdingDefensePlans },
+                { label: "Profit Protection Plans", plans: snapshot.profitProtectionPlans },
+                { label: "Risk Reduction Plans", plans: snapshot.riskReductionPlans },
+                { label: "No Touch Plans", plans: snapshot.positionNoTouchPlans },
+                { label: "Data Insufficient Plans", plans: snapshot.positionDataInsufficientPlans },
+              ].map((grp) => (
+                <div key={grp.label} className="mb-3">
+                  <p className="mb-1.5 text-[10px] font-semibold text-slate-300">
+                    {grp.label} ({grp.plans.length})
+                  </p>
+                  {grp.plans.length === 0 ? (
+                    <p className="text-[10px] text-slate-600">
+                      contract-only 空狀態：尚無 fixture data。
+                    </p>
+                  ) : (
+                    <div className="grid gap-2 xl:grid-cols-2">
+                      {grp.plans.map((p, i) => (
+                        <PositionPlanCard key={p.planId ?? i} plan={p} />
+                      ))}
+                    </div>
+                  )}
+                </div>
+              ))}
+
+              <p className="text-[9px] leading-5 text-slate-500">
+                進場觀察區，不是買進價；策略失效觀察價，不是自動停損價；觀察目標區，不是目標價；
+                takeProfitZone 不是賣出價；出場觀察區不是賣出價；風險降低觀察不是賣出指令；
+                No Touch 是風控提醒，不是賣出指令；資料不足就顯示資料不足。
+              </p>
             </div>
 
             {/* ============================================================ */}

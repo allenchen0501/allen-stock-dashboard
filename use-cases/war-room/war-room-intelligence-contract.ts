@@ -25,6 +25,7 @@
 import type { ResearchTopPick } from "../research/research-center-contract";
 import type { TechnicalRiskRewardCandidate } from "../technical-strategy/technical-risk-reward-contract";
 import type { IntradayAlertPayload } from "../intraday-alert/intraday-alert-contract";
+import type { PositionStrategyPlan } from "../position-strategy/position-strategy-plan-contract";
 
 export type WarRoomMode =
   | "PREMARKET"
@@ -191,6 +192,18 @@ export interface WarRoomIntelligenceSnapshot {
   intradayAlertItems: IntradayAlertPayload[];
   avoidItems: WarRoomAvoidItem[];
   observationPoints: WarRoomObservationPoint[];
+
+  // V26: Position Strategy Plan fixture integration (read-only). The War Room is
+  // still a read model — it does not create plans, it only surfaces the Position
+  // Strategy Fixture Adapter's output.
+  positionStrategyPlans: PositionStrategyPlan[];
+  entryObservationPlans: PositionStrategyPlan[];
+  holdingDefensePlans: PositionStrategyPlan[];
+  profitProtectionPlans: PositionStrategyPlan[];
+  riskReductionPlans: PositionStrategyPlan[];
+  positionNoTouchPlans: PositionStrategyPlan[];
+  positionDataInsufficientPlans: PositionStrategyPlan[];
+  positionStrategyFixtureVersion: "V26";
 
   // Provenance + roll-up.
   sourceSummary: WarRoomSourceSummary[];

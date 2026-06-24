@@ -32,7 +32,8 @@
     "test:war-room-engine-fixture-adapters": "node --require ./scripts/register-typescript.cjs ./scripts/validate-war-room-engine-fixture-adapters.ts",
     "test:war-room-ui-polish": "node --require ./scripts/register-typescript.cjs ./scripts/validate-war-room-ui-polish.ts",
     "test:position-strategy-plan-spec": "node --require ./scripts/register-typescript.cjs ./scripts/validate-position-strategy-plan-spec.ts",
-    "test:dynamic-opportunity-price-verification-spec": "node --require ./scripts/register-typescript.cjs ./scripts/validate-dynamic-opportunity-price-verification-spec.ts"
+    "test:dynamic-opportunity-price-verification-spec": "node --require ./scripts/register-typescript.cjs ./scripts/validate-dynamic-opportunity-price-verification-spec.ts",
+    "test:position-strategy-fixture-adapters": "node --require ./scripts/register-typescript.cjs ./scripts/validate-position-strategy-fixture-adapters.ts"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.108.2",

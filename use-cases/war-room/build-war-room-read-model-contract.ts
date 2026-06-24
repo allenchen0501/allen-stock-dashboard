@@ -39,6 +39,7 @@ export interface BuildWarRoomReadModelContractOutput
   responseSource: "mock_or_contract";
   sourceMode: "fixture";
   fixtureAdapterVersion: "V22";
+  positionStrategyFixtureVersion: "V26";
 }
 
 const VALID_MODES: readonly WarRoomMode[] = [
@@ -88,7 +89,7 @@ export function buildWarRoomReadModelContract(
   const warRoomMode = normalizeMode(input.mode);
   const generatedAt = input.generatedAt ?? new Date().toISOString();
 
-  const bundle = buildWarRoomEngineFixtureBundle(warRoomMode);
+  const bundle = buildWarRoomEngineFixtureBundle(warRoomMode, generatedAt);
 
   return {
     snapshotId: `war-room-${warRoomMode}-fixture`,
@@ -112,6 +113,15 @@ export function buildWarRoomReadModelContract(
     avoidItems: bundle.avoidItems,
     observationPoints: bundle.observationPoints,
 
+    // V26: Position Strategy Plan fixture integration.
+    positionStrategyPlans: bundle.positionStrategyPlans,
+    entryObservationPlans: bundle.entryObservationPlans,
+    holdingDefensePlans: bundle.holdingDefensePlans,
+    profitProtectionPlans: bundle.profitProtectionPlans,
+    riskReductionPlans: bundle.riskReductionPlans,
+    positionNoTouchPlans: bundle.positionNoTouchPlans,
+    positionDataInsufficientPlans: bundle.positionDataInsufficientPlans,
+
     sourceSummary: bundle.sourceSummary,
     dataQualitySummary: bundle.dataQualitySummary,
 
@@ -123,5 +133,6 @@ export function buildWarRoomReadModelContract(
     responseSource: "mock_or_contract",
     sourceMode: "fixture",
     fixtureAdapterVersion: "V22",
+    positionStrategyFixtureVersion: "V26",
   };
 }

@@ -37,6 +37,8 @@ import type {
   TechnicalSetupSnapshot,
 } from "../technical-strategy/technical-risk-reward-contract";
 import type { IntradayAlertPayload } from "../intraday-alert/intraday-alert-contract";
+import type { PositionStrategyPlan } from "../position-strategy/position-strategy-plan-contract";
+import { buildPositionStrategyFixtureBundle } from "../position-strategy/position-strategy-fixture-adapters";
 
 // Fixed, deterministic timestamp — no Date.now / new Date() in this adapter.
 const FIXTURE_TS = "2026-06-23T00:00:00.000Z";
@@ -60,6 +62,14 @@ export interface WarRoomEngineFixtureBundle {
   observationPoints: WarRoomObservationPoint[];
   sourceSummary: WarRoomSourceSummary[];
   dataQualitySummary: WarRoomDataQualitySummary;
+  // V26: Position Strategy Plan fixture integration.
+  positionStrategyPlans: PositionStrategyPlan[];
+  entryObservationPlans: PositionStrategyPlan[];
+  holdingDefensePlans: PositionStrategyPlan[];
+  profitProtectionPlans: PositionStrategyPlan[];
+  riskReductionPlans: PositionStrategyPlan[];
+  positionNoTouchPlans: PositionStrategyPlan[];
+  positionDataInsufficientPlans: PositionStrategyPlan[];
 }
 
 // ---------------------------------------------------------------------------
@@ -475,11 +485,15 @@ function dataQualitySummary(): WarRoomDataQualitySummary {
  */
 export function buildWarRoomEngineFixtureBundle(
   mode: WarRoomMode,
+  generatedAt: string = FIXTURE_TS,
 ): WarRoomEngineFixtureBundle {
   const emphasis = `mode=${mode}｜${FX}`;
 
   const realtime = section("realtimeAlerts", "即時警報", "Intraday Risk Crisis Alert Engine");
   realtime.notes = [`${emphasis}`, "Intraday Alert 不等於出場；not trade advice。"];
+
+  // V26: deterministic Position Strategy Plan fixtures (timestamps passed in).
+  const positionBundle = buildPositionStrategyFixtureBundle({ generatedAt, mode });
 
   return {
     marketStatusLight: section("marketStatusLight", "市場狀態燈號", "Intraday Alert + Market Breadth"),
@@ -501,5 +515,12 @@ export function buildWarRoomEngineFixtureBundle(
     observationPoints: observationPoints(),
     sourceSummary: sourceSummary(),
     dataQualitySummary: dataQualitySummary(),
+    positionStrategyPlans: positionBundle.plans,
+    entryObservationPlans: positionBundle.entryObservationPlans,
+    holdingDefensePlans: positionBundle.holdingDefensePlans,
+    profitProtectionPlans: positionBundle.profitProtectionPlans,
+    riskReductionPlans: positionBundle.riskReductionPlans,
+    positionNoTouchPlans: positionBundle.noTouchPlans,
+    positionDataInsufficientPlans: positionBundle.dataInsufficientPlans,
   };
 }

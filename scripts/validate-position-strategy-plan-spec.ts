@@ -464,9 +464,12 @@ function checkSafety(): CheckResult {
   }
 
   // 7d. No position-strategy runtime / data-source adapter.
+  // Note: use-cases/position-strategy/position-strategy-fixture-adapters.ts was
+  // sanctioned in V26 (Position Strategy Fixture Adapters) and is validated by
+  // scripts/validate-position-strategy-fixture-adapters.ts, so it is no longer
+  // forbidden here. It remains fixture-only (no runtime / no Supabase / no fetch).
   const forbiddenRuntime = [
     "use-cases/position-strategy/build-position-strategy-plan.ts",
-    "use-cases/position-strategy/position-strategy-fixture-adapters.ts",
     "services/position-strategy/price-verification.ts",
     "services/position-strategy/holding-defense-tracker.ts",
   ];
