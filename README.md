@@ -2,7 +2,7 @@
 
 以 Next.js、TypeScript 與 Tailwind CSS 製作的個人台股戰情室，包含市場燈號、持股戰情、V8.5 核心評分、風報比、主升段候選與今日禁碰股。
 
-目前版本為 V23 War Room UI Polish：新增 `docs/war-room-engine-fixture-adapters.md` 與 fixture-only adapter `use-cases/war-room/war-room-engine-fixture-adapters.ts`，並改寫 `use-cases/war-room/build-war-room-read-model-contract.ts` 使 `/api/war-room` 從 spec-only 空陣列升級為 fixture-only sample output（`sourceMode = fixture`、新增 `fixtureAdapterVersion = V22`，`apiContractVersion` 仍為 V20、`responseSource` 仍為 `mock_or_contract`）。portfolioRiskItems / researchTopPickItems / technicalCandidateItems / intradayAlertItems / avoidItems / observationPoints 變成非空 sample（皆標示 fixture / 非即時資料），`highConfidenceConclusionAllowed` 仍為 false、不產生 DANGER。本階段只新增 fixture adapter 與 checker、改寫 builder，未新增新的 API route、未新增新的 UI、未接資料源、未建立 runtime、未 import runtime builder、未連 Supabase、未發外部 request、未讀 env、未新增 SQL migration、未新增 mock data、未寫入資料、不產生買賣指令、未修改 repositories / services。
+目前版本為 V24 Position Strategy Plan Spec：新增 `docs/war-room-engine-fixture-adapters.md` 與 fixture-only adapter `use-cases/war-room/war-room-engine-fixture-adapters.ts`，並改寫 `use-cases/war-room/build-war-room-read-model-contract.ts` 使 `/api/war-room` 從 spec-only 空陣列升級為 fixture-only sample output（`sourceMode = fixture`、新增 `fixtureAdapterVersion = V22`，`apiContractVersion` 仍為 V20、`responseSource` 仍為 `mock_or_contract`）。portfolioRiskItems / researchTopPickItems / technicalCandidateItems / intradayAlertItems / avoidItems / observationPoints 變成非空 sample（皆標示 fixture / 非即時資料），`highConfidenceConclusionAllowed` 仍為 false、不產生 DANGER。本階段只新增 fixture adapter 與 checker、改寫 builder，未新增新的 API route、未新增新的 UI、未接資料源、未建立 runtime、未 import runtime builder、未連 Supabase、未發外部 request、未讀 env、未新增 SQL migration、未新增 mock data、未寫入資料、不產生買賣指令、未修改 repositories / services。
 
 ## 開始使用
 
@@ -38,13 +38,30 @@ npm run start
 - `types/`：UI 與 API 契約。
 - `war-room/input/`：戰情室 primary、reference、rejected 資料輸入契約與 gate。
 - `supabase/`：V3-1 基礎 schema、V3-1.5 Pro+ schema、V3-1.6 補強 schema 與套用說明。
-- `docs/`：資料庫、資料保存、介面用語、技術框架、戰情室架構規範、Portfolio Valuation Radar Dashboard 規格（[docs/portfolio-valuation-radar-ui.md](docs/portfolio-valuation-radar-ui.md)）、Portfolio Valuation Formula 方法論（[docs/portfolio-valuation-formula.md](docs/portfolio-valuation-formula.md)）、War Room Intelligence Architecture（[docs/war-room-intelligence-architecture.md](docs/war-room-intelligence-architecture.md)）、Intraday Risk Crisis Alert Spec（[docs/intraday-risk-crisis-alert-spec.md](docs/intraday-risk-crisis-alert-spec.md)）、Institutional Research Center Spec（[docs/institutional-research-center-spec.md](docs/institutional-research-center-spec.md)）、Technical + Risk Reward Strategy Spec（[docs/technical-risk-reward-strategy-spec.md](docs/technical-risk-reward-strategy-spec.md)）、War Room Read Model Contract（[docs/war-room-read-model-contract.md](docs/war-room-read-model-contract.md)）、War Room API Contract（[docs/war-room-api-contract.md](docs/war-room-api-contract.md)）、War Room UI Integration（[docs/war-room-ui-integration.md](docs/war-room-ui-integration.md)）、War Room Engine Fixture Adapters（[docs/war-room-engine-fixture-adapters.md](docs/war-room-engine-fixture-adapters.md)）與 War Room UI Polish（[docs/war-room-ui-polish.md](docs/war-room-ui-polish.md)）。
+- `docs/`：資料庫、資料保存、介面用語、技術框架、戰情室架構規範、Portfolio Valuation Radar Dashboard 規格（[docs/portfolio-valuation-radar-ui.md](docs/portfolio-valuation-radar-ui.md)）、Portfolio Valuation Formula 方法論（[docs/portfolio-valuation-formula.md](docs/portfolio-valuation-formula.md)）、War Room Intelligence Architecture（[docs/war-room-intelligence-architecture.md](docs/war-room-intelligence-architecture.md)）、Intraday Risk Crisis Alert Spec（[docs/intraday-risk-crisis-alert-spec.md](docs/intraday-risk-crisis-alert-spec.md)）、Institutional Research Center Spec（[docs/institutional-research-center-spec.md](docs/institutional-research-center-spec.md)）、Technical + Risk Reward Strategy Spec（[docs/technical-risk-reward-strategy-spec.md](docs/technical-risk-reward-strategy-spec.md)）、War Room Read Model Contract（[docs/war-room-read-model-contract.md](docs/war-room-read-model-contract.md)）、War Room API Contract（[docs/war-room-api-contract.md](docs/war-room-api-contract.md)）、War Room UI Integration（[docs/war-room-ui-integration.md](docs/war-room-ui-integration.md)）、War Room Engine Fixture Adapters（[docs/war-room-engine-fixture-adapters.md](docs/war-room-engine-fixture-adapters.md)）、War Room UI Polish（[docs/war-room-ui-polish.md](docs/war-room-ui-polish.md)）與 Position Strategy Plan Spec（[docs/position-strategy-plan-spec.md](docs/position-strategy-plan-spec.md)）。
 - `use-cases/war-room/`：War Room Intelligence read-model type contract（types-only，無 runtime；V19 起以 type-only import 聚合四大引擎型別）、V20 fixture-only `/api/war-room` builder 與 V22 engine fixture adapters。
 - `use-cases/intraday-alert/`：Intraday Alert read-model type contract（types-only，無 runtime）。
 - `use-cases/research/`：Institutional Research Center read-model type contract（types-only，無 runtime）。
 - `use-cases/technical-strategy/`：Technical + Risk Reward read-model type contract（types-only，無 runtime）。
+- `use-cases/position-strategy/`：Position Strategy Plan read-model type contract（types + 靜態安全 constants，無 runtime；把技術指標轉成條件式策略觀察計畫）。
 
 ## 版本紀錄
+
+### V24
+
+Position Strategy Plan Spec：
+
+- 新增 `docs/position-strategy-plan-spec.md`：定義 Position Strategy Plan（A–L 十二節），把 KD / KDJ / MACD / 5MA / 10MA / 20MA / 日 200MA / 週 30MA / 扣三低 / 量縮回測 / 爆量轉強 / 支撐壓力 / 風報比 / 持股成本 / 即時警報 / 族群大盤狀態，轉成條件式策略觀察計畫，含 Core Philosophy、六種 plan、Price Verification Dependency、Entry / Holding Defense / Profit Protection / Risk Reduction / No Touch logic、War Room Integration、Safety Language 與 Future Implementation Gate（V25 Dynamic Opportunity Pool & Price Verification Spec → V26 Position Strategy Fixture Adapters → V27 Holding Defense Tracker API Contract → V28 Runtime Data Pipeline Spec）。
+- 新增 `use-cases/position-strategy/position-strategy-plan-contract.ts`：types + 靜態安全 constants only（無 runtime / 無 fetch / 無 Supabase / 無 process.env / 無 Date.now / 不寫資料），定義 `PositionStrategyPlanType`（ENTRY_OBSERVATION / HOLDING_DEFENSE / PROFIT_PROTECTION / RISK_REDUCTION / NO_TOUCH / DATA_INSUFFICIENT）、`PositionStrategyDataQualityStatus`、`PositionStrategySourceMode`、`PriceVerificationStatus`、`PositionStrategyRiskRewardGrade`、`HoldingState`、`HoldingActionState`、`PriceZone`、`PositionStrategyPlan`、`PositionStrategyPlanBundle`，與 `POSITION_STRATEGY_CONTRACT_VERSION` / `POSITION_STRATEGY_SAFETY_LABELS` / `POSITION_STRATEGY_ALLOWED_PLAN_TYPES` / `POSITION_STRATEGY_DISALLOWED_TERMS`。
+- Position Strategy Plan 把技術指標轉成條件式策略觀察計畫，新增 ENTRY_OBSERVATION / HOLDING_DEFENSE / PROFIT_PROTECTION / RISK_REDUCTION / NO_TOUCH / DATA_INSUFFICIENT；定義進場觀察區、轉強確認條件、策略失效觀察價、防守區、獲利保護區、takeProfitZone、holdingImpact、風險降低觀察、出場觀察區、不追價區，以及 priceVerified / PriceVerificationStatus。
+- 新增 `scripts/validate-position-strategy-plan-spec.ts`：spec-only checker，8 gates（required_files / required_phrases / contract_checks / constant_checks / package_checks / readme_checks / negation_context / safety），import contract constants 實際驗證版本號、六種 plan type、安全 labels、disallowed terms，並以 negation-context 確保「買進價 / 賣出價 / 目標價 / 停損價」只在否定語境出現，safety scan 只對 contract code file 嚴格掃描（不因 docs 的資料源優先順序說明誤判）。
+- 新增 `npm run test:position-strategy-plan-spec`。
+- 安全標示：**V24 只定義 Holding Defense Plan** 的資料合約與語義，**真正的 Holding Defense Tracker API 留到 V27**（V24 不建立 Holding Defense Tracker API、不讀持股資料、不計算即時損益）。
+- 本階段未接資料源；未建立 runtime；未連 Supabase；未發外部 request；未讀 env secret。
+- 未新增 SQL migration；未新增 API route；未新增 UI；未新增 mock-data；未寫入資料。
+- 未修改 app / components / services / repositories；未 import runtime builder；未產生買賣指令。
+
+架構文件清單新增：Position Strategy Plan Spec（[docs/position-strategy-plan-spec.md](docs/position-strategy-plan-spec.md)）。
 
 ### V23
 
