@@ -2,7 +2,7 @@
 
 以 Next.js、TypeScript 與 Tailwind CSS 製作的個人台股戰情室，包含市場燈號、持股戰情、V8.5 核心評分、風報比、主升段候選與今日禁碰股。
 
-目前版本為 V22 War Room Engine Fixture Adapters：新增 `docs/war-room-engine-fixture-adapters.md` 與 fixture-only adapter `use-cases/war-room/war-room-engine-fixture-adapters.ts`，並改寫 `use-cases/war-room/build-war-room-read-model-contract.ts` 使 `/api/war-room` 從 spec-only 空陣列升級為 fixture-only sample output（`sourceMode = fixture`、新增 `fixtureAdapterVersion = V22`，`apiContractVersion` 仍為 V20、`responseSource` 仍為 `mock_or_contract`）。portfolioRiskItems / researchTopPickItems / technicalCandidateItems / intradayAlertItems / avoidItems / observationPoints 變成非空 sample（皆標示 fixture / 非即時資料），`highConfidenceConclusionAllowed` 仍為 false、不產生 DANGER。本階段只新增 fixture adapter 與 checker、改寫 builder，未新增新的 API route、未新增新的 UI、未接資料源、未建立 runtime、未 import runtime builder、未連 Supabase、未發外部 request、未讀 env、未新增 SQL migration、未新增 mock data、未寫入資料、不產生買賣指令、未修改 repositories / services。
+目前版本為 V23 War Room UI Polish：新增 `docs/war-room-engine-fixture-adapters.md` 與 fixture-only adapter `use-cases/war-room/war-room-engine-fixture-adapters.ts`，並改寫 `use-cases/war-room/build-war-room-read-model-contract.ts` 使 `/api/war-room` 從 spec-only 空陣列升級為 fixture-only sample output（`sourceMode = fixture`、新增 `fixtureAdapterVersion = V22`，`apiContractVersion` 仍為 V20、`responseSource` 仍為 `mock_or_contract`）。portfolioRiskItems / researchTopPickItems / technicalCandidateItems / intradayAlertItems / avoidItems / observationPoints 變成非空 sample（皆標示 fixture / 非即時資料），`highConfidenceConclusionAllowed` 仍為 false、不產生 DANGER。本階段只新增 fixture adapter 與 checker、改寫 builder，未新增新的 API route、未新增新的 UI、未接資料源、未建立 runtime、未 import runtime builder、未連 Supabase、未發外部 request、未讀 env、未新增 SQL migration、未新增 mock data、未寫入資料、不產生買賣指令、未修改 repositories / services。
 
 ## 開始使用
 
@@ -38,13 +38,31 @@ npm run start
 - `types/`：UI 與 API 契約。
 - `war-room/input/`：戰情室 primary、reference、rejected 資料輸入契約與 gate。
 - `supabase/`：V3-1 基礎 schema、V3-1.5 Pro+ schema、V3-1.6 補強 schema 與套用說明。
-- `docs/`：資料庫、資料保存、介面用語、技術框架、戰情室架構規範、Portfolio Valuation Radar Dashboard 規格（[docs/portfolio-valuation-radar-ui.md](docs/portfolio-valuation-radar-ui.md)）、Portfolio Valuation Formula 方法論（[docs/portfolio-valuation-formula.md](docs/portfolio-valuation-formula.md)）、War Room Intelligence Architecture（[docs/war-room-intelligence-architecture.md](docs/war-room-intelligence-architecture.md)）、Intraday Risk Crisis Alert Spec（[docs/intraday-risk-crisis-alert-spec.md](docs/intraday-risk-crisis-alert-spec.md)）、Institutional Research Center Spec（[docs/institutional-research-center-spec.md](docs/institutional-research-center-spec.md)）、Technical + Risk Reward Strategy Spec（[docs/technical-risk-reward-strategy-spec.md](docs/technical-risk-reward-strategy-spec.md)）、War Room Read Model Contract（[docs/war-room-read-model-contract.md](docs/war-room-read-model-contract.md)）、War Room API Contract（[docs/war-room-api-contract.md](docs/war-room-api-contract.md)）、War Room UI Integration（[docs/war-room-ui-integration.md](docs/war-room-ui-integration.md)）與 War Room Engine Fixture Adapters（[docs/war-room-engine-fixture-adapters.md](docs/war-room-engine-fixture-adapters.md)）。
+- `docs/`：資料庫、資料保存、介面用語、技術框架、戰情室架構規範、Portfolio Valuation Radar Dashboard 規格（[docs/portfolio-valuation-radar-ui.md](docs/portfolio-valuation-radar-ui.md)）、Portfolio Valuation Formula 方法論（[docs/portfolio-valuation-formula.md](docs/portfolio-valuation-formula.md)）、War Room Intelligence Architecture（[docs/war-room-intelligence-architecture.md](docs/war-room-intelligence-architecture.md)）、Intraday Risk Crisis Alert Spec（[docs/intraday-risk-crisis-alert-spec.md](docs/intraday-risk-crisis-alert-spec.md)）、Institutional Research Center Spec（[docs/institutional-research-center-spec.md](docs/institutional-research-center-spec.md)）、Technical + Risk Reward Strategy Spec（[docs/technical-risk-reward-strategy-spec.md](docs/technical-risk-reward-strategy-spec.md)）、War Room Read Model Contract（[docs/war-room-read-model-contract.md](docs/war-room-read-model-contract.md)）、War Room API Contract（[docs/war-room-api-contract.md](docs/war-room-api-contract.md)）、War Room UI Integration（[docs/war-room-ui-integration.md](docs/war-room-ui-integration.md)）、War Room Engine Fixture Adapters（[docs/war-room-engine-fixture-adapters.md](docs/war-room-engine-fixture-adapters.md)）與 War Room UI Polish（[docs/war-room-ui-polish.md](docs/war-room-ui-polish.md)）。
 - `use-cases/war-room/`：War Room Intelligence read-model type contract（types-only，無 runtime；V19 起以 type-only import 聚合四大引擎型別）、V20 fixture-only `/api/war-room` builder 與 V22 engine fixture adapters。
 - `use-cases/intraday-alert/`：Intraday Alert read-model type contract（types-only，無 runtime）。
 - `use-cases/research/`：Institutional Research Center read-model type contract（types-only，無 runtime）。
 - `use-cases/technical-strategy/`：Technical + Risk Reward read-model type contract（types-only，無 runtime）。
 
 ## 版本紀錄
+
+### V23
+
+War Room UI Polish：
+
+- 新增 `docs/war-room-ui-polish.md`：定義戰情室 UI 打磨規格（A–K 十一節），含 UI Polish Goals（四模式切換 / 狀態燈 / 七大 sections / fixture 標示 / sourceSummary / dataQualitySummary / fixture items card / 空狀態 / 手機版 / 不新增 chart library）、Above-the-Fold Layout（第一屏必須顯示 Allen Stock War Room / marketStatus / primaryAlertLevel / highConfidenceConclusionAllowed / responseSource / sourceMode / fixtureAdapterVersion / generatedAt / 安全提示 badge）、Mode Switcher Polish（四模式 subtitle）、Seven Sections Polish（完整 section card 含 warnings / notes / fallback / unavailableReason）、Fixture Items Polish（六大 item sections 各自的 card list 規格含安全標籤）、Source Summary / Data Quality Summary Polish、Mobile-Friendly Polish、Safety Language（14 條）與 Future Implementation Gate（V24 Runtime Data Pipeline Spec → V25 Runtime Pilot → V26 Intraday Alert Runtime → V27 Push Notification）。
+- 修改 `components/war-room-dashboard.tsx`：V23 UI Polish 重構：新增 `Allen Stock War Room` 標題、mode button 加 subtitle（盤前今日研究/技術候選/觀察點；盤中即時警報/持股/廣度；盤後收盤結構/歸因/明日觀察；即時警報中心/cooldown/dedup）、Header 常駐顯示 `responseSource = mock_or_contract` 與 `fixture only · 非即時資料 · not trade advice` badge；狀態總覽 summary cards 顯示 marketStatus / primaryAlertLevel / overallStatus / `highConfidenceConclusionAllowed = false` / sourceMode / fixtureAdapterVersion / apiContractVersion / responseSource；七大 sections 各自獨立 `SectionCardView` 含 sourceEngine / available / dataQualityStatus badge / fallback 降級提示 / warnings / notes；六大 item sections 各有獨立 card component（`PortfolioRiskCard` / `ResearchTopPickCard` / `TechnicalCandidateCard` / `IntradayAlertCard` / `AvoidItemCard` / `ObservationPointCard`）；`TechnicalCandidateCard` 使用安全標籤（觀察價，不是買進價 / 失效觀察價，不是自動停損價 / 觀察目標區，不是目標價）；`AvoidItemCard` 標示「Avoid / No Touch 是風控提醒，不是賣出指令」；Source Summary 用 `SourceSummaryCard` 顯示 fallback / req / supabase / write flags；Data Quality Summary 顯示全六個 count 欄位與 highConfidenceConclusionAllowed；Safety Footer 永遠顯示、含 `前版 sourceMode = spec_only（V21），V22 升級為 fixture（fixtureAdapterVersion = V22）` 歷史標注；仍只 fetch `/api/war-room`，不 import builder / engine runtime / Supabase。
+- 新增 `scripts/validate-war-room-ui-polish.ts`：V23 UI polish checker，4 gates（required_files / required_phrases / component_checks / safety），component 必須含 33 個必要字串（含 `Allen Stock War Room` / `fixtureAdapterVersion` / `mock_or_contract` / `sourceMode` / `highConfidenceConclusionAllowed` / 四模式 / 七 section IDs / 六 item arrays / `觀察價，不是買進價` / `失效觀察價，不是自動停損價` / `觀察目標區，不是目標價` / `不是賣出指令` / `不自動下單` / `不產生買賣指令` / `資料不足`），safety scan 確認 component 無外部 URL / 外部資料源 / Supabase / axios / process.env / runtime builder import，且 fetch 僅指向 `/api/war-room`，package.json 未新增 chart / renderer 套件，protected files 仍存在，API route / builder / fixture adapter 未被修改或刪除。
+- 新增 `npm run test:war-room-ui-polish` npm script。
+- 改善 War Room header / mode switcher / summary cards / 七大 sections / fixture item card list / source summary / data quality summary / safety footer。
+- 強化 fixture / 非即時資料 / mock_or_contract / highConfidenceConclusionAllowed=false / 不產生買賣指令 UI 標示。
+- 本階段未新增新的 API route。
+- 未新增新的 UI component（只修改現有 `components/war-room-dashboard.tsx`）。
+- 未接資料源；未建立 runtime；未連 Supabase；未發外部 request；未讀 env。
+- 未新增 SQL migration；未新增 SQL migration；未寫入資料；未修改 repositories / services。
+- 不產生買賣指令；未修改 builder / fixture adapter / API route。
+
+架構文件清單新增：War Room UI Polish（[docs/war-room-ui-polish.md](docs/war-room-ui-polish.md)）。
 
 ### V22
 
