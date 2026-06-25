@@ -502,9 +502,13 @@ function checkSafety(): CheckResult {
   }
 
   // 7c. No new API route / UI component for intraday defense.
+  // Note: app/api/portfolio/intraday-defense/route.ts was sanctioned in V31
+  // (Intraday Defense Fixture API) and is validated by
+  // scripts/validate-intraday-defense-fixture-api.ts, so it is no longer
+  // forbidden here. It returns a fixture-only mock_or_contract payload (no
+  // Supabase / no external fetch / no runtime / no buy-sell command).
   const forbiddenArtifacts = [
     "app/api/intraday-defense/route.ts",
-    "app/api/portfolio/intraday-defense/route.ts",
     "components/intraday-holding-defense.tsx",
     "components/intraday-defense.tsx",
   ];
