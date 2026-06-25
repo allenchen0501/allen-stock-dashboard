@@ -581,10 +581,15 @@ function checkSafety(): CheckResult {
     }
   }
 
+  // Note: app/api/portfolio/runtime-pilot-dry-run/route.ts was sanctioned in V36
+  // (Runtime Pilot Dry-Run API) and is validated by
+  // scripts/validate-runtime-pilot-dry-run-api.ts, so it is no longer forbidden
+  // here. It returns a fixture-only mock_or_contract payload wrapping the V35
+  // dry-run bundle (no Supabase / no external fetch / no runtime / no buy-sell
+  // command / no production write).
   const forbiddenArtifacts = [
     "supabase/runtime_pilot_dry_run.sql",
     "app/api/runtime-pilot-dry-run/route.ts",
-    "app/api/portfolio/runtime-pilot-dry-run/route.ts",
     "components/runtime-pilot-dry-run.tsx",
   ];
   for (const rel of forbiddenArtifacts) {
