@@ -38,7 +38,8 @@
     "test:runtime-data-pipeline-spec": "node --require ./scripts/register-typescript.cjs ./scripts/validate-runtime-data-pipeline-spec.ts",
     "test:holding-defense-tracker-ui-integration": "node --require ./scripts/register-typescript.cjs ./scripts/validate-holding-defense-tracker-ui-integration.ts",
     "test:intraday-holding-defense-runtime-spec": "node --require ./scripts/register-typescript.cjs ./scripts/validate-intraday-holding-defense-runtime-spec.ts",
-    "test:intraday-defense-fixture-api": "node --require ./scripts/register-typescript.cjs ./scripts/validate-intraday-defense-fixture-api.ts"
+    "test:intraday-defense-fixture-api": "node --require ./scripts/register-typescript.cjs ./scripts/validate-intraday-defense-fixture-api.ts",
+    "test:intraday-defense-ui-integration": "node --require ./scripts/register-typescript.cjs ./scripts/validate-intraday-defense-ui-integration.ts"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.108.2",
