@@ -44,7 +44,8 @@
     "test:runtime-pilot-readiness-ui": "node --require ./scripts/register-typescript.cjs ./scripts/validate-runtime-pilot-readiness-ui.ts",
     "test:runtime-pilot-dry-run-spec": "node --require ./scripts/register-typescript.cjs ./scripts/validate-runtime-pilot-dry-run-spec.ts",
     "test:runtime-pilot-dry-run-api": "node --require ./scripts/register-typescript.cjs ./scripts/validate-runtime-pilot-dry-run-api.ts",
-    "test:runtime-pilot-monitoring-ui": "node --require ./scripts/register-typescript.cjs ./scripts/validate-runtime-pilot-monitoring-ui.ts"
+    "test:runtime-pilot-monitoring-ui": "node --require ./scripts/register-typescript.cjs ./scripts/validate-runtime-pilot-monitoring-ui.ts",
+    "test:runtime-pilot-implementation-review": "node --require ./scripts/register-typescript.cjs ./scripts/validate-runtime-pilot-implementation-review.ts"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.108.2",
