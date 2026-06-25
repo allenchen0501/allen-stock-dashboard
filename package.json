@@ -35,7 +35,8 @@
     "test:dynamic-opportunity-price-verification-spec": "node --require ./scripts/register-typescript.cjs ./scripts/validate-dynamic-opportunity-price-verification-spec.ts",
     "test:position-strategy-fixture-adapters": "node --require ./scripts/register-typescript.cjs ./scripts/validate-position-strategy-fixture-adapters.ts",
     "test:holding-defense-tracker-api-contract": "node --require ./scripts/register-typescript.cjs ./scripts/validate-holding-defense-tracker-api-contract.ts",
-    "test:runtime-data-pipeline-spec": "node --require ./scripts/register-typescript.cjs ./scripts/validate-runtime-data-pipeline-spec.ts"
+    "test:runtime-data-pipeline-spec": "node --require ./scripts/register-typescript.cjs ./scripts/validate-runtime-data-pipeline-spec.ts",
+    "test:holding-defense-tracker-ui-integration": "node --require ./scripts/register-typescript.cjs ./scripts/validate-holding-defense-tracker-ui-integration.ts"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.108.2",

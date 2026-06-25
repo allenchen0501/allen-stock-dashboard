@@ -587,11 +587,15 @@ function checkSafety(): CheckResult {
     }
   }
 
-  // 9b. No new SQL migration / UI component for holding-defense.
+  // 9b. No new SQL migration for holding-defense.
+  // Note: components/holding-defense-tracker.tsx was sanctioned in V29 (Holding
+  // Defense Tracker UI Integration) and is validated by
+  // scripts/validate-holding-defense-tracker-ui-integration.ts, so it is no
+  // longer forbidden here. It reads only the internal /api/portfolio/holding-defense
+  // endpoint (no Supabase / no external fetch / no runtime).
   const forbiddenArtifacts = [
     "supabase/holding_defense.sql",
     "supabase/holding_defense_tracker.sql",
-    "components/holding-defense-tracker.tsx",
     "components/holding-defense.tsx",
   ];
   for (const rel of forbiddenArtifacts) {
