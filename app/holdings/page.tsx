@@ -4,6 +4,7 @@ import { CoreScore } from "@/components/dashboard/core-score";
 import { PortfolioValuationRadar } from "@/components/portfolio-valuation-radar";
 import { HoldingDefenseTracker } from "@/components/holding-defense-tracker";
 import { IntradayDefenseTracker } from "@/components/intraday-defense-tracker";
+import { RuntimePilotReadiness } from "@/components/runtime-pilot-readiness";
 
 export default function HoldingsPage() {
   return (
@@ -17,6 +18,9 @@ export default function HoldingsPage() {
       </div>
       <div className="mt-5">
         <IntradayDefenseTracker />
+      </div>
+      <div className="mt-5">
+        <RuntimePilotReadiness />
       </div>
       <div className="mt-5 grid gap-5 xl:grid-cols-[1fr_410px]">
         <HoldingsTable full />

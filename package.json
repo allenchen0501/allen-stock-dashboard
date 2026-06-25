@@ -40,7 +40,8 @@
     "test:intraday-holding-defense-runtime-spec": "node --require ./scripts/register-typescript.cjs ./scripts/validate-intraday-holding-defense-runtime-spec.ts",
     "test:intraday-defense-fixture-api": "node --require ./scripts/register-typescript.cjs ./scripts/validate-intraday-defense-fixture-api.ts",
     "test:intraday-defense-ui-integration": "node --require ./scripts/register-typescript.cjs ./scripts/validate-intraday-defense-ui-integration.ts",
-    "test:runtime-pilot-readiness-checklist": "node --require ./scripts/register-typescript.cjs ./scripts/validate-runtime-pilot-readiness-checklist.ts"
+    "test:runtime-pilot-readiness-checklist": "node --require ./scripts/register-typescript.cjs ./scripts/validate-runtime-pilot-readiness-checklist.ts",
+    "test:runtime-pilot-readiness-ui": "node --require ./scripts/register-typescript.cjs ./scripts/validate-runtime-pilot-readiness-ui.ts"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.108.2",
