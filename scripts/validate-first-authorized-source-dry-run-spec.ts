@@ -593,7 +593,11 @@ function checkSafety(): CheckResult {
   const forbiddenArtifacts = [
     "supabase/first_authorized_source_dry_run.sql",
     "app/api/first-authorized-source-dry-run/route.ts",
-    "app/api/portfolio/first-authorized-source-dry-run/route.ts",
+    // V40 sanctioned the fixture-only API route
+    // app/api/portfolio/first-authorized-source-dry-run/route.ts — it is a
+    // mock_or_contract internal endpoint wrapping this V39 bundle, so it is no
+    // longer forbidden here. (No Supabase / no external request / no write / no
+    // buy-sell / no SQL migration / no runtime — still enforced by V40's checker.)
     "components/first-authorized-source-dry-run.tsx",
   ];
   for (const rel of forbiddenArtifacts) {
