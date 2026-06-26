@@ -2,7 +2,7 @@
 
 以 Next.js、TypeScript 與 Tailwind CSS 製作的個人台股戰情室，包含市場燈號、持股戰情、V8.5 核心評分、風報比、主升段候選與今日禁碰股。
 
-目前版本為 V40 First Authorized Source Dry-Run API：新增 `docs/war-room-engine-fixture-adapters.md` 與 fixture-only adapter `use-cases/war-room/war-room-engine-fixture-adapters.ts`，並改寫 `use-cases/war-room/build-war-room-read-model-contract.ts` 使 `/api/war-room` 從 spec-only 空陣列升級為 fixture-only sample output（`sourceMode = fixture`、新增 `fixtureAdapterVersion = V22`，`apiContractVersion` 仍為 V20、`responseSource` 仍為 `mock_or_contract`）。portfolioRiskItems / researchTopPickItems / technicalCandidateItems / intradayAlertItems / avoidItems / observationPoints 變成非空 sample（皆標示 fixture / 非即時資料），`highConfidenceConclusionAllowed` 仍為 false、不產生 DANGER。本階段只新增 fixture adapter 與 checker、改寫 builder，未新增新的 API route、未新增新的 UI、未接資料源、未建立 runtime、未 import runtime builder、未連 Supabase、未發外部 request、未讀 env、未新增 SQL migration、未新增 mock data、未寫入資料、不產生買賣指令、未修改 repositories / services。
+目前版本為 V41 First Authorized Source Dry-Run Monitoring UI：新增 `docs/war-room-engine-fixture-adapters.md` 與 fixture-only adapter `use-cases/war-room/war-room-engine-fixture-adapters.ts`，並改寫 `use-cases/war-room/build-war-room-read-model-contract.ts` 使 `/api/war-room` 從 spec-only 空陣列升級為 fixture-only sample output（`sourceMode = fixture`、新增 `fixtureAdapterVersion = V22`，`apiContractVersion` 仍為 V20、`responseSource` 仍為 `mock_or_contract`）。portfolioRiskItems / researchTopPickItems / technicalCandidateItems / intradayAlertItems / avoidItems / observationPoints 變成非空 sample（皆標示 fixture / 非即時資料），`highConfidenceConclusionAllowed` 仍為 false、不產生 DANGER。本階段只新增 fixture adapter 與 checker、改寫 builder，未新增新的 API route、未新增新的 UI、未接資料源、未建立 runtime、未 import runtime builder、未連 Supabase、未發外部 request、未讀 env、未新增 SQL migration、未新增 mock data、未寫入資料、不產生買賣指令、未修改 repositories / services。
 
 ## 開始使用
 
@@ -51,6 +51,22 @@ npm run start
 - `use-cases/runtime-pilot/`：Runtime Pilot Readiness Checklist 與 Runtime Pilot Dry-Run read-model type contracts 與 pure spec builders（types + 靜態安全 constants，無 runtime；18 個 readiness gates / severity / status / go-no-go decision / audit / rollback / kill switch shape，以及 dry-run lifecycle / quote snapshot / price verification / alert projection / audit event / no-write proof / kill switch / rollback shape；預設 decision = NO_GO、lifecycleState = DRY_RUN_NOT_ALLOWED、dryRunAllowed = false）。
 
 ## 版本紀錄
+
+### V41
+
+First Authorized Source Dry-Run Monitoring UI：
+
+- 新增 `docs/first-authorized-source-dry-run-monitoring-ui.md`：定義 **First Authorized Source Dry-Run Monitoring UI**（A–I 章），把 V40 `/api/portfolio/first-authorized-source-dry-run` 視覺化，含 data source boundary、UI placement、UI sections、required field display、no-write / no-trade display rules、data quality display rules、safety language 與 future implementation gate（V42 First Real Authorized Source Review → V43 First Authorized Source Connector Adapter Spec）。維持 single-source / source-neutral connector shape，不硬寫任何具體資料源名稱。
+- 新增 `components/first-authorized-source-dry-run-monitoring.tsx`：client component，`useEffect` / `useState`，只 fetch internal API `/api/portfolio/first-authorized-source-dry-run`；type-only import `FirstAuthorizedSourceDryRunApiResponse`，不 import V40 builder function、不 import route、不 fetch 外部 URL、無 axios / Supabase / process.env / Date.now / new Date / DB write token / 具體資料源 token。視覺化 decision / dryRunAllowed / manualSignOffCompleted、source authorization preflight、source-neutral connector shape、quote snapshot normalization、price verification / data quality gate、alert projection、auditEvent、noWriteProof、killSwitch、rollback，並顯示 GO_FIRST_AUTHORIZED_SOURCE_DRY_RUN / NO_GO、production write 一律 BLOCKED、monitoring preview 不是 runtime 狀態、fixture data 不是即時資料。
+- 修改 `app/holdings/page.tsx`：`import FirstAuthorizedSourceDryRunMonitoring`，於 Runtime Pilot Monitoring UI 下方渲染 `<FirstAuthorizedSourceDryRunMonitoring />`；未新增 route、未 import route、未 import Supabase、未 fetch 外部 URL。
+- 新增 `scripts/validate-first-authorized-source-dry-run-monitoring-ui.ts`：static UI checker（9 gates：required_files / required_phrases / component_checks / component_safety / page_integration / api_route_check / package_checks / readme_checks / safety），驗證 component 只 fetch internal API、不 import builder function / route、無外部 fetch / Supabase / 具體資料源 token，並確認 V40 route / API builder 未被破壞、無新增 API route。
+- 新增 `npm run test:first-authorized-source-dry-run-monitoring-ui`。
+- First Authorized Source Dry-Run Monitoring UI 將 V40 `/api/portfolio/first-authorized-source-dry-run` 接進 holdings page；顯示 decision / dryRunAllowed；顯示 source authorization preflight；顯示 source-neutral connector shape；顯示 quote snapshot normalization；顯示 price verification / data quality gate；顯示 alert projection；顯示 auditEvent；顯示 noWriteProof；顯示 killSwitch；顯示 rollback；顯示 GO_FIRST_AUTHORIZED_SOURCE_DRY_RUN / NO_GO；顯示 manualSignOffCompleted；顯示 production write 一律 BLOCKED；顯示 monitoring preview 不是 runtime 狀態；顯示 fixture data 不是即時資料。
+- monitoring 卡片逐欄渲染 dryRunBundle 各區段：`preflight`、`connectorShape`、`quoteSnapshot`、`priceVerification`、`alertProjection`、`auditEvent`、`noWriteProof`、`killSwitch`、`rollback`，summary 另含 `manualSignOffCompleted`、`authorizationStatus`、`legalStatus`、`sourceCategory`、`requestMode`、`priceVerified`、`noDangerGuardApplied`、`buySellCommandGenerated`、`autoOrderRequested`、`productionWriteRequested` 等旗標（全 false）。
+- V41 不接真資料；V41 不建立 runtime；V41 不建立 quote polling / scheduler / webhook / crawler / connector runtime。
+- 未連 Supabase；未發外部 request；未讀 env key；未新增 SQL migration；未新增 API route；未修改 First Authorized Source Dry-Run API route / API builder；未修改 V39 contract / builder；未修改 Runtime Pilot Monitoring UI；未修改 War Room；未修改 services / repositories；未新增 mock-data；未 import route / builder into component；未寫入資料；未產生買賣指令。
+
+架構文件清單新增：First Authorized Source Dry-Run Monitoring UI（[docs/first-authorized-source-dry-run-monitoring-ui.md](docs/first-authorized-source-dry-run-monitoring-ui.md)）。
 
 ### V40
 

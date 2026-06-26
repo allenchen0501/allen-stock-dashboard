@@ -6,6 +6,7 @@ import { HoldingDefenseTracker } from "@/components/holding-defense-tracker";
 import { IntradayDefenseTracker } from "@/components/intraday-defense-tracker";
 import { RuntimePilotReadiness } from "@/components/runtime-pilot-readiness";
 import { RuntimePilotMonitoring } from "@/components/runtime-pilot-monitoring";
+import { FirstAuthorizedSourceDryRunMonitoring } from "@/components/first-authorized-source-dry-run-monitoring";
 
 export default function HoldingsPage() {
   return (
@@ -25,6 +26,9 @@ export default function HoldingsPage() {
       </div>
       <div className="mt-5">
         <RuntimePilotMonitoring />
+      </div>
+      <div className="mt-5">
+        <FirstAuthorizedSourceDryRunMonitoring />
       </div>
       <div className="mt-5 grid gap-5 xl:grid-cols-[1fr_410px]">
         <HoldingsTable full />
