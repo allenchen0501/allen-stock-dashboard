@@ -48,7 +48,8 @@
     "test:runtime-pilot-implementation-review": "node --require ./scripts/register-typescript.cjs ./scripts/validate-runtime-pilot-implementation-review.ts",
     "test:first-authorized-source-dry-run-spec": "node --require ./scripts/register-typescript.cjs ./scripts/validate-first-authorized-source-dry-run-spec.ts",
     "test:first-authorized-source-dry-run-api": "node --require ./scripts/register-typescript.cjs ./scripts/validate-first-authorized-source-dry-run-api.ts",
-    "test:first-authorized-source-dry-run-monitoring-ui": "node --require ./scripts/register-typescript.cjs ./scripts/validate-first-authorized-source-dry-run-monitoring-ui.ts"
+    "test:first-authorized-source-dry-run-monitoring-ui": "node --require ./scripts/register-typescript.cjs ./scripts/validate-first-authorized-source-dry-run-monitoring-ui.ts",
+    "test:preview-deployment-readiness": "node --require ./scripts/register-typescript.cjs ./scripts/validate-preview-deployment-readiness.ts"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.108.2",
