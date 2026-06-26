@@ -306,9 +306,11 @@ function checkSafety(): CheckResult {
   const details: string[] = [];
   const issues: string[] = [];
 
-  // No new monitoring UI / SQL migration in this route round.
+  // No new SQL migration in this route round.
+  // (V52 sanctioned components/shadow-runner-dry-run-monitoring.tsx — the monitoring
+  // UI is now validated by validate-shadow-runner-dry-run-monitoring-ui.ts, so it is
+  // no longer forbidden here. No other V51 safety check is relaxed.)
   const forbiddenArtifacts = [
-    "components/shadow-runner-dry-run-monitoring.tsx",
     "supabase/shadow_runner_dry_run.sql",
   ];
   for (const rel of forbiddenArtifacts) {
