@@ -51,7 +51,8 @@
     "test:first-authorized-source-dry-run-monitoring-ui": "node --require ./scripts/register-typescript.cjs ./scripts/validate-first-authorized-source-dry-run-monitoring-ui.ts",
     "test:preview-deployment-readiness": "node --require ./scripts/register-typescript.cjs ./scripts/validate-preview-deployment-readiness.ts",
     "test:production-alias-safety-smoke-test-evidence": "node --require ./scripts/register-typescript.cjs ./scripts/validate-production-alias-safety-smoke-test-evidence.ts",
-    "test:staging-supabase-readonly-safety-gate": "node --require ./scripts/register-typescript.cjs ./scripts/validate-staging-supabase-readonly-safety-gate.ts"
+    "test:staging-supabase-readonly-safety-gate": "node --require ./scripts/register-typescript.cjs ./scripts/validate-staging-supabase-readonly-safety-gate.ts",
+    "test:staging-supabase-rls-manual-matrix": "node --require ./scripts/register-typescript.cjs ./scripts/validate-staging-supabase-rls-manual-matrix.ts"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.108.2",
