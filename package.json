@@ -54,7 +54,8 @@
     "test:staging-supabase-readonly-safety-gate": "node --require ./scripts/register-typescript.cjs ./scripts/validate-staging-supabase-readonly-safety-gate.ts",
     "test:staging-supabase-rls-manual-matrix": "node --require ./scripts/register-typescript.cjs ./scripts/validate-staging-supabase-rls-manual-matrix.ts",
     "test:staging-supabase-schema-mapping-spec": "node --require ./scripts/register-typescript.cjs ./scripts/validate-staging-supabase-schema-mapping-spec.ts",
-    "test:staging-readonly-adapter-spec": "node --require ./scripts/register-typescript.cjs ./scripts/validate-staging-readonly-adapter-spec.ts"
+    "test:staging-readonly-adapter-spec": "node --require ./scripts/register-typescript.cjs ./scripts/validate-staging-readonly-adapter-spec.ts",
+    "test:fixture-vs-staging-shadow-comparison-spec": "node --require ./scripts/register-typescript.cjs ./scripts/validate-fixture-vs-staging-shadow-comparison-spec.ts"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.108.2",
