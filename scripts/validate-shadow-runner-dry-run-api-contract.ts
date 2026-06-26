@@ -434,7 +434,13 @@ function checkSafety(): CheckResult {
   }
 
   const forbiddenArtifacts = [
-    "app/api/portfolio/shadow-runner-dry-run/route.ts",
+    // V51 sanctioned the fixture-only API route
+    // app/api/portfolio/shadow-runner-dry-run/route.ts — after V51, the route's
+    // existence is validated by the V51 route checker
+    // (validate-shadow-runner-dry-run-api-route.ts), while the V50 contract flags
+    // (routeCreated / apiRouteCreated / routeImplemented) remain false and the V50
+    // doc still represents "contract only, not route implementation". No
+    // Supabase / env / DB-write / promotion / api-switch safety flag is relaxed.
     "components/shadow-runner-dry-run-api-contract.tsx",
     "supabase/shadow_runner_dry_run_api_contract.sql",
   ];
