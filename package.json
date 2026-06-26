@@ -64,7 +64,8 @@
     "test:shadow-runner-dry-run-monitoring-ui-production-evidence": "node --require ./scripts/register-typescript.cjs ./scripts/validate-shadow-runner-dry-run-monitoring-ui-production-evidence.ts",
     "test:shadow-runner-safety-gate-checklist": "node --require ./scripts/register-typescript.cjs ./scripts/validate-shadow-runner-safety-gate-checklist.ts",
     "test:staging-readonly-connection-review-gate": "node --require ./scripts/register-typescript.cjs ./scripts/validate-staging-readonly-connection-review-gate.ts",
-    "test:manual-signoff-evidence-spec": "node --require ./scripts/register-typescript.cjs ./scripts/validate-manual-signoff-evidence-spec.ts"
+    "test:manual-signoff-evidence-spec": "node --require ./scripts/register-typescript.cjs ./scripts/validate-manual-signoff-evidence-spec.ts",
+    "test:staging-readonly-connection-dry-run-plan": "node --require ./scripts/register-typescript.cjs ./scripts/validate-staging-readonly-connection-dry-run-plan.ts"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.108.2",
