@@ -61,7 +61,8 @@
     "test:shadow-runner-dry-run-api-route": "node --require ./scripts/register-typescript.cjs ./scripts/validate-shadow-runner-dry-run-api-route.ts",
     "test:shadow-runner-dry-run-production-smoke-evidence": "node --require ./scripts/register-typescript.cjs ./scripts/validate-shadow-runner-dry-run-production-smoke-evidence.ts",
     "test:shadow-runner-dry-run-monitoring-ui": "node --require ./scripts/register-typescript.cjs ./scripts/validate-shadow-runner-dry-run-monitoring-ui.ts",
-    "test:shadow-runner-dry-run-monitoring-ui-production-evidence": "node --require ./scripts/register-typescript.cjs ./scripts/validate-shadow-runner-dry-run-monitoring-ui-production-evidence.ts"
+    "test:shadow-runner-dry-run-monitoring-ui-production-evidence": "node --require ./scripts/register-typescript.cjs ./scripts/validate-shadow-runner-dry-run-monitoring-ui-production-evidence.ts",
+    "test:shadow-runner-safety-gate-checklist": "node --require ./scripts/register-typescript.cjs ./scripts/validate-shadow-runner-safety-gate-checklist.ts"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.108.2",
