@@ -1,9 +1,12 @@
 import { buildAllenWarRoomOperationalLayoutContract } from "@/use-cases/war-room/build-allen-war-room-operational-layout-contract";
+import { buildAllenScoreScoringModelContract } from "@/use-cases/war-room/build-allen-score-scoring-model-contract";
 import { DataVerificationBanner } from "@/components/war-room/data-verification-banner";
 import { MarketSessionPanel } from "@/components/war-room/market-session-panel";
 import { ActualPositionsTable } from "@/components/war-room/actual-positions-table";
 import { FixedWatchlistTable } from "@/components/war-room/fixed-watchlist-table";
 import { SystemCandidatesTable } from "@/components/war-room/system-candidates-table";
+import { AllenScoreSummary } from "@/components/war-room/allen-score-summary";
+import { DailyCandidatePools } from "@/components/war-room/daily-candidate-pools";
 
 // ---------------------------------------------------------------------------
 // Allen War Room Operational Layout — V60
@@ -26,6 +29,8 @@ const TONE_CLASS: Record<string, string> = {
 
 export function WarRoomOperationalLayout() {
   const layout = buildAllenWarRoomOperationalLayoutContract({ generatedAt: "2026-06-23T00:00:00.000Z" });
+  const allenScore = buildAllenScoreScoringModelContract({ generatedAt: "2026-06-23T00:00:00.000Z" });
+  const scoredCandidates = allenScore.dailyPools.flatMap((p) => p.candidates);
 
   return (
     <div className="space-y-5">
@@ -62,10 +67,12 @@ export function WarRoomOperationalLayout() {
         </div>
       </section>
 
+      <AllenScoreSummary model={allenScore} />
       <MarketSessionPanel structures={layout.sessionStructures} />
       <ActualPositionsTable positions={layout.actualPositions} />
       <FixedWatchlistTable items={layout.fixedWatchlist} />
-      <SystemCandidatesTable candidates={layout.systemCandidates} />
+      <SystemCandidatesTable candidates={scoredCandidates} />
+      <DailyCandidatePools pools={allenScore.dailyPools} />
 
       {/* Risk blocklist */}
       <section className="panel-shell overflow-hidden">
