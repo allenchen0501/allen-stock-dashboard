@@ -70,7 +70,8 @@
     "test:staging-readonly-dry-run-execution-evidence-spec": "node --require ./scripts/register-typescript.cjs ./scripts/validate-staging-readonly-dry-run-execution-evidence-spec.ts",
     "test:allen-war-room-operational-layout": "node --require ./scripts/register-typescript.cjs ./scripts/validate-allen-war-room-operational-layout.ts",
     "test:allen-score-scoring-model": "node --require ./scripts/register-typescript.cjs ./scripts/validate-allen-score-scoring-model.ts",
-    "test:allen-score-deterministic-scoring-engine": "node --require ./scripts/register-typescript.cjs ./scripts/validate-allen-score-deterministic-scoring-engine.ts"
+    "test:allen-score-deterministic-scoring-engine": "node --require ./scripts/register-typescript.cjs ./scripts/validate-allen-score-deterministic-scoring-engine.ts",
+    "test:structured-candidate-trade-plan": "node --require ./scripts/register-typescript.cjs ./scripts/validate-structured-candidate-trade-plan.ts"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.108.2",

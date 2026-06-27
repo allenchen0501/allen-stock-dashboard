@@ -3,14 +3,22 @@ import { RuntimePilotReadiness } from "@/components/runtime-pilot-readiness";
 import { RuntimePilotMonitoring } from "@/components/runtime-pilot-monitoring";
 import { FirstAuthorizedSourceDryRunMonitoring } from "@/components/first-authorized-source-dry-run-monitoring";
 import { ShadowRunnerDryRunMonitoring } from "@/components/shadow-runner-dry-run-monitoring";
+import { buildAllenScoreDeterministicScoringEngineContract } from "@/use-cases/war-room/build-allen-score-deterministic-scoring-engine-contract";
+import { buildStructuredCandidateTradePlanContract } from "@/use-cases/war-room/build-structured-candidate-trade-plan-contract";
 
 // V60: dedicated engineering / safety monitoring page. The fixture-only spec /
 // runtime / shadow-runner monitoring panels live here, moved away from the primary
 // trading view (`/holdings`). These existing monitoring components are unchanged —
-// only relocated. Still fixture/mock safe mode: no Supabase, no env, no DB,
-// no real market data, no /api/portfolio switch.
+// only relocated. V63 adds a spec-only Allen Score engine / trade plan consistency
+// health card (deterministic, no runtime). Still fixture/mock safe mode: no
+// Supabase, no env, no DB, no real market data, no /api/portfolio switch.
 
 export default function SystemSafetyPage() {
+  const engine = buildAllenScoreDeterministicScoringEngineContract({ generatedAt: "2026-06-23T00:00:00.000Z" });
+  const tradePlan = buildStructuredCandidateTradePlanContract({ generatedAt: "2026-06-23T00:00:00.000Z" });
+  const engineConsistent = Object.values(engine.consistency).every((v) => v === true);
+  const validPlans = tradePlan.validations.filter((v) => v.valid).length;
+
   return (
     <div className="page-wrap">
       <PageHeading
@@ -18,6 +26,40 @@ export default function SystemSafetyPage() {
         title="系統安全監控 / Engineering Safety"
         description="工程安全監控面板（spec-only / fixture-only / mock_or_contract）。此頁為工程用途，非操作交易依據；目前非真實資料，不可作為操作依據。"
       />
+      <div className="mt-5">
+        <section className="panel-shell overflow-hidden">
+          <div className="border-b border-line/80 px-5 py-4 sm:px-6">
+            <h2 className="text-[15px] font-semibold tracking-wide text-slate-100">
+              Allen Score Engine / Trade Plan Consistency（spec-only）
+            </h2>
+            <p className="mt-1 text-[10px] text-slate-500">
+              deterministic / fixture-only。no runtime、no fetch、no Supabase connection、no env read、no DB write。
+            </p>
+          </div>
+          <div className="grid grid-cols-2 gap-3 px-5 py-4 sm:px-6 lg:grid-cols-4">
+            <div className="rounded-xl border border-line bg-white/[0.012] px-4 py-3">
+              <p className="text-[9px] uppercase tracking-[0.15em] text-slate-500">Scoring engine ({engine.contractVersion})</p>
+              <p className={`mt-1 text-[14px] font-semibold ${engineConsistent ? "text-positive" : "text-negative"}`}>
+                grade↔score {engineConsistent ? "verified" : "NOT verified"}
+              </p>
+            </div>
+            <div className="rounded-xl border border-line bg-white/[0.012] px-4 py-3">
+              <p className="text-[9px] uppercase tracking-[0.15em] text-slate-500">Trade plans ({tradePlan.contractVersion})</p>
+              <p className={`mt-1 text-[14px] font-semibold ${tradePlan.allValid ? "text-positive" : "text-negative"}`}>
+                {validPlans}/{tradePlan.validations.length} valid
+              </p>
+            </div>
+            <div className="rounded-xl border border-line bg-white/[0.012] px-4 py-3">
+              <p className="text-[9px] uppercase tracking-[0.15em] text-slate-500">Decision</p>
+              <p className="mt-1 text-[14px] font-semibold text-slate-200">{tradePlan.decision}</p>
+            </div>
+            <div className="rounded-xl border border-line bg-white/[0.012] px-4 py-3">
+              <p className="text-[9px] uppercase tracking-[0.15em] text-slate-500">Mode</p>
+              <p className="mt-1 text-[12px] font-semibold text-amber">fixture/mock，不可作為正式操作依據</p>
+            </div>
+          </div>
+        </section>
+      </div>
       <div className="mt-5">
         <RuntimePilotReadiness />
       </div>

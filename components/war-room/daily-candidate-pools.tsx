@@ -1,12 +1,18 @@
 import type { AllenScoreDailyPool } from "@/use-cases/war-room/allen-score-scoring-model-contract";
+import type {
+  CandidateTradePlan,
+  StructuredCandidateTradePlanBundle,
+} from "@/use-cases/war-room/structured-candidate-trade-plan-contract";
 
 // ---------------------------------------------------------------------------
-// Daily Candidate Pools — V61
+// Daily Candidate Pools — V61 / V63
 //
 // Allen Score daily grade pools: A 級主升段池 / B 級觀察池 / C 級等待池 / 禁碰池.
 // Each candidate shows 候選原因 / 技術觸發 / 承接區 / 確認條件 / 失效條件 /
 // 風報比 / 今日建議 / 資料來源 / 資料時間 / 驗證狀態, plus the Allen Score total
-// and 5 sub-scores. 系統候選股不等於持股、可逢低布局不等於已買進,
+// and 5 sub-scores. V63 adds the structured trade plan: 候選承接區 / 失效防守區 /
+// 目標觀察區, all fixture/mock and observation-only (not buy/sell command).
+// 系統候選股不等於持股、可逢低布局不等於已買進,
 // fixture/mock score is not operational data. No fetch, no Supabase, no env, no DB.
 // ---------------------------------------------------------------------------
 
@@ -26,7 +32,32 @@ function Field({ label, value }: { label: string; value: string }) {
   );
 }
 
-export function DailyCandidatePools({ pools }: { pools: AllenScoreDailyPool[] }) {
+function StructuredTradePlan({ plan }: { plan: CandidateTradePlan }) {
+  const { buyZone, riskReward, entryStrategy } = plan;
+  return (
+    <div className="mt-2 rounded-lg border border-line/70 bg-white/[0.012] px-3 py-2">
+      <p className="text-[9px] font-bold uppercase tracking-[0.15em] text-slate-500">
+        Structured Trade Plan（fixture/mock）
+      </p>
+      <div className="mt-1 space-y-0.5">
+        <Field label="候選承接區" value={`${buyZone.lower}–${buyZone.upper} ${buyZone.currency}（${buyZone.basis}）`} />
+        <Field label="失效/防守區" value={`${riskReward.stopLossLower}–${riskReward.stopLossUpper}（下檔風險 ${riskReward.downsideRiskPercent}%）`} />
+        <Field label="目標觀察區" value={`${riskReward.targetLower}–${riskReward.targetUpper}（上檔報酬 ${riskReward.upsideRewardPercent}%）`} />
+        <Field label="風報比 rewardRiskRatio" value={`${riskReward.rewardRiskRatio}`} />
+        <Field label="觀察策略" value={entryStrategy.observationOnlyText} />
+      </div>
+    </div>
+  );
+}
+
+export function DailyCandidatePools({
+  pools,
+  tradePlan,
+}: {
+  pools: AllenScoreDailyPool[];
+  tradePlan?: StructuredCandidateTradePlanBundle;
+}) {
+  const planBySymbol = new Map((tradePlan?.tradePlans ?? []).map((p) => [p.symbol, p] as const));
   return (
     <section className="panel-shell overflow-hidden">
       <div className="border-b border-line/80 px-5 py-4 sm:px-6">
@@ -41,6 +72,9 @@ export function DailyCandidatePools({ pools }: { pools: AllenScoreDailyPool[] })
         </p>
         <p className="mt-1 text-[9px] text-slate-600">
           每檔總分 = 五大分項加總，分級依分數決定（deterministic scoring engine：grade must match score、pool must match grade）。
+        </p>
+        <p className="mt-1 text-[9px] text-slate-600">
+          承接區 / 失效防守區 / 目標觀察區為 deterministic 結構化 fixture/mock 區間：fixture/mock 區間不可作為正式操作依據；觀察策略，不是買賣指令；無股數/成本，不計算損益。
         </p>
       </div>
 
@@ -83,6 +117,8 @@ export function DailyCandidatePools({ pools }: { pools: AllenScoreDailyPool[] })
                       <Field label="資料時間" value={c.dataTimestamp} />
                       <Field label="驗證狀態" value={c.verificationStatus} />
                     </div>
+
+                    {planBySymbol.has(c.symbol) ? <StructuredTradePlan plan={planBySymbol.get(c.symbol)!} /> : null}
                   </div>
                 ))}
               </div>

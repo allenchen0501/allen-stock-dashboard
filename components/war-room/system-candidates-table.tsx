@@ -27,6 +27,7 @@ export function SystemCandidatesTable({ candidates }: { candidates: AllenScoreCa
         <p className="mt-1 text-[11px] font-semibold text-amber">系統候選股不等於持股（system candidate is not position）。</p>
         <p className="mt-1 text-[10px] text-slate-500">fixture/mock score 不可作為正式操作依據。</p>
         <p className="mt-1 text-[9px] text-slate-600">Allen Score = 技術 + 基本 + 籌碼 + ETF + 情緒（totalScore equals sub-score sum，deterministic scoring engine）。</p>
+        <p className="mt-1 text-[9px] text-slate-600">結構化承接區 / 失效防守區 / 目標觀察區詳見每日候選池（Structured Trade Plan，fixture/mock，觀察策略，不是買賣指令）。</p>
       </div>
       <div className="overflow-x-auto px-2 py-3 sm:px-4">
         <table className="w-full min-w-[960px] border-collapse text-[10px]">
