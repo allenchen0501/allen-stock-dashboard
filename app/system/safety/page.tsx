@@ -7,6 +7,7 @@ import { buildAllenScoreDeterministicScoringEngineContract } from "@/use-cases/w
 import { buildStructuredCandidateTradePlanContract } from "@/use-cases/war-room/build-structured-candidate-trade-plan-contract";
 import { buildCandidatePriceLevelFixtureSourceContract } from "@/use-cases/war-room/build-candidate-price-level-fixture-source-contract";
 import { buildDescriptorToRealQuoteMappingContract } from "@/use-cases/war-room/build-descriptor-to-real-quote-mapping-contract";
+import { buildAuthorizedRealQuoteFieldCatalogContract } from "@/use-cases/war-room/build-authorized-real-quote-field-catalog-contract";
 
 // V60: dedicated engineering / safety monitoring page. The fixture-only spec /
 // runtime / shadow-runner monitoring panels live here, moved away from the primary
@@ -26,6 +27,11 @@ export default function SystemSafetyPage() {
   const mapping = buildDescriptorToRealQuoteMappingContract({ generatedAt: "2026-06-23T00:00:00.000Z" });
   const mappingItem = mapping.mappingItems[0];
   const validMappings = mapping.validations.filter((v) => v.valid).length;
+  const catalog = buildAuthorizedRealQuoteFieldCatalogContract({ generatedAt: "2026-06-23T00:00:00.000Z" });
+  const allSourcesNotConnected = catalog.sourceCandidates.every((s) => s.connectionStatus === "NOT_CONNECTED");
+  const allRuntimeDisabled = catalog.sourceCandidates.every((s) => s.runtimeEnabled === false);
+  const allFetchDisallowed = catalog.sourceCandidates.every((s) => s.fetchAllowed === false);
+  const sb = catalog.sourceBoundary;
 
   return (
     <div className="page-wrap">
@@ -152,6 +158,54 @@ export default function SystemSafetyPage() {
             <p className="text-[9px] text-slate-600">
               futureRealQuoteField → CandidatePriceLevelDescriptor field → CandidateTradePlan field（spec-only）；
               尚未連真實行情，fixture 區間不可作為正式操作依據。
+            </p>
+          </div>
+        </section>
+      </div>
+      <div className="mt-5">
+        <section className="panel-shell overflow-hidden">
+          <div className="border-b border-line/80 px-5 py-4 sm:px-6">
+            <h2 className="text-[15px] font-semibold tracking-wide text-slate-100">
+              Authorized Real Quote Field Catalog（spec-only）
+            </h2>
+            <p className="mt-1 text-[10px] text-slate-500">
+              {catalog.specName}（{catalog.contractVersion}）· sourceCatalogMode = {catalog.sourceCatalogMode}。
+              deterministic / fixture-only：no runtime、no fetch、no Supabase connection、no env read、no DB write、no API route。
+            </p>
+          </div>
+          <div className="grid grid-cols-2 gap-3 px-5 py-4 sm:px-6 lg:grid-cols-4">
+            <div className="rounded-xl border border-line bg-white/[0.012] px-4 py-3">
+              <p className="text-[9px] uppercase tracking-[0.15em] text-slate-500">Source candidates</p>
+              <p className="mt-1 text-[14px] font-semibold text-slate-100">{catalog.sourceCandidates.length}</p>
+              <p className={`mt-1 text-[9px] font-semibold ${allSourcesNotConnected ? "text-positive" : "text-negative"}`}>
+                all NOT_CONNECTED {String(allSourcesNotConnected)}
+              </p>
+            </div>
+            <div className="rounded-xl border border-line bg-white/[0.012] px-4 py-3">
+              <p className="text-[9px] uppercase tracking-[0.15em] text-slate-500">Field catalog items</p>
+              <p className="mt-1 text-[14px] font-semibold text-slate-100">{catalog.fieldCatalogItems.length}</p>
+              <p className="mt-1 text-[9px] text-slate-600">
+                runtimeEnabled false {String(allRuntimeDisabled)} · fetchAllowed false {String(allFetchDisallowed)}
+              </p>
+            </div>
+            <div className="rounded-xl border border-line bg-white/[0.012] px-4 py-3">
+              <p className="text-[9px] uppercase tracking-[0.15em] text-slate-500">sign-off / staging / shadow</p>
+              <p className="mt-1 text-[11px] font-semibold text-slate-200">
+                manualSignoffCompleted {String(sb.manualSignoffCompleted)} · stagingReadOnlyConnected{" "}
+                {String(sb.stagingReadOnlyConnected)} · shadowComparisonCompleted {String(sb.shadowComparisonCompleted)}
+              </p>
+            </div>
+            <div className="rounded-xl border border-line bg-white/[0.012] px-4 py-3">
+              <p className="text-[9px] uppercase tracking-[0.15em] text-slate-500">production / service role</p>
+              <p className="mt-1 text-[11px] font-semibold text-slate-200">
+                productionSwitchAllowed {String(sb.productionSwitchAllowed)} · serviceRoleAllowedInAppRuntime{" "}
+                {String(sb.serviceRoleAllowedInAppRuntime)} · writeOperationsAllowed {String(sb.writeOperationsAllowed)}
+              </p>
+            </div>
+          </div>
+          <div className="border-t border-line/60 px-5 py-3 sm:px-6">
+            <p className="text-[9px] text-slate-600">
+              尚未授權任何真實行情來源，fixture 區間不可作為正式操作依據（operationalUseAllowed false）。
             </p>
           </div>
         </section>
