@@ -70,10 +70,12 @@ export function DailyCandidatePools({
   pools,
   tradePlan,
   fixtureSource,
+  realQuoteMappingReadiness,
 }: {
   pools: AllenScoreDailyPool[];
   tradePlan?: StructuredCandidateTradePlanBundle;
   fixtureSource?: CandidatePriceLevelFixtureSourceBundle;
+  realQuoteMappingReadiness?: string;
 }) {
   const planBySymbol = new Map((tradePlan?.tradePlans ?? []).map((p) => [p.symbol, p] as const));
   const descriptorBySymbol = new Map((fixtureSource?.descriptors ?? []).map((d) => [d.symbol, d] as const));
@@ -97,6 +99,9 @@ export function DailyCandidatePools({
         </p>
         <p className="mt-1 text-[9px] text-slate-600">
           價位來源為 fixture source descriptor：realMappingStatus = NOT_CONNECTED（未連真實報價）；fixture 區間不可作為正式操作依據。
+        </p>
+        <p className="mt-1 text-[9px] text-slate-600">
+          Real quote mapping: {realQuoteMappingReadiness ?? "SPEC_DEFINED_NOT_CONNECTED"}。尚未連真實行情，fixture 區間不可作為正式操作依據。
         </p>
       </div>
 

@@ -72,7 +72,8 @@
     "test:allen-score-scoring-model": "node --require ./scripts/register-typescript.cjs ./scripts/validate-allen-score-scoring-model.ts",
     "test:allen-score-deterministic-scoring-engine": "node --require ./scripts/register-typescript.cjs ./scripts/validate-allen-score-deterministic-scoring-engine.ts",
     "test:structured-candidate-trade-plan": "node --require ./scripts/register-typescript.cjs ./scripts/validate-structured-candidate-trade-plan.ts",
-    "test:candidate-price-level-fixture-source": "node --require ./scripts/register-typescript.cjs ./scripts/validate-candidate-price-level-fixture-source.ts"
+    "test:candidate-price-level-fixture-source": "node --require ./scripts/register-typescript.cjs ./scripts/validate-candidate-price-level-fixture-source.ts",
+    "test:descriptor-to-real-quote-mapping": "node --require ./scripts/register-typescript.cjs ./scripts/validate-descriptor-to-real-quote-mapping.ts"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.108.2",
