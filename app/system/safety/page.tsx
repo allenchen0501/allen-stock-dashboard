@@ -8,6 +8,7 @@ import { buildStructuredCandidateTradePlanContract } from "@/use-cases/war-room/
 import { buildCandidatePriceLevelFixtureSourceContract } from "@/use-cases/war-room/build-candidate-price-level-fixture-source-contract";
 import { buildDescriptorToRealQuoteMappingContract } from "@/use-cases/war-room/build-descriptor-to-real-quote-mapping-contract";
 import { buildAuthorizedRealQuoteFieldCatalogContract } from "@/use-cases/war-room/build-authorized-real-quote-field-catalog-contract";
+import { buildRealQuoteSourceConflictResolutionPolicyContract } from "@/use-cases/war-room/build-real-quote-source-conflict-resolution-policy-contract";
 
 // V60: dedicated engineering / safety monitoring page. The fixture-only spec /
 // runtime / shadow-runner monitoring panels live here, moved away from the primary
@@ -32,6 +33,9 @@ export default function SystemSafetyPage() {
   const allRuntimeDisabled = catalog.sourceCandidates.every((s) => s.runtimeEnabled === false);
   const allFetchDisallowed = catalog.sourceCandidates.every((s) => s.fetchAllowed === false);
   const sb = catalog.sourceBoundary;
+  const conflict = buildRealQuoteSourceConflictResolutionPolicyContract({ generatedAt: "2026-06-23T00:00:00.000Z" });
+  const allConflictOpFalse = conflict.sampleResolutionResults.every((r) => r.operationalUseAllowed === false);
+  const allConflictSignoffNotDone = conflict.sampleResolutionResults.every((r) => r.manualSignoffCompleted === false);
 
   return (
     <div className="page-wrap">
@@ -206,6 +210,51 @@ export default function SystemSafetyPage() {
           <div className="border-t border-line/60 px-5 py-3 sm:px-6">
             <p className="text-[9px] text-slate-600">
               尚未授權任何真實行情來源，fixture 區間不可作為正式操作依據（operationalUseAllowed false）。
+            </p>
+          </div>
+        </section>
+      </div>
+      <div className="mt-5">
+        <section className="panel-shell overflow-hidden">
+          <div className="border-b border-line/80 px-5 py-4 sm:px-6">
+            <h2 className="text-[15px] font-semibold tracking-wide text-slate-100">
+              Real Quote Source Conflict Resolution Policy（spec-only）
+            </h2>
+            <p className="mt-1 text-[10px] text-slate-500">
+              {conflict.specName}（{conflict.contractVersion}）· policyMode = {conflict.policyMode}。
+              deterministic conflict resolution / fixture-only：no runtime、no fetch、no Supabase connection、no env read、no DB write、no API route。
+            </p>
+          </div>
+          <div className="grid grid-cols-2 gap-3 px-5 py-4 sm:px-6 lg:grid-cols-4">
+            <div className="rounded-xl border border-line bg-white/[0.012] px-4 py-3">
+              <p className="text-[9px] uppercase tracking-[0.15em] text-slate-500">Conflict rules</p>
+              <p className="mt-1 text-[14px] font-semibold text-slate-100">{conflict.conflictRules.length}</p>
+            </div>
+            <div className="rounded-xl border border-line bg-white/[0.012] px-4 py-3">
+              <p className="text-[9px] uppercase tracking-[0.15em] text-slate-500">Sample resolutions</p>
+              <p className="mt-1 text-[14px] font-semibold text-slate-100">{conflict.sampleResolutionResults.length}</p>
+              <p className={`mt-1 text-[9px] font-semibold ${allConflictOpFalse ? "text-positive" : "text-negative"}`}>
+                operationalUseAllowed false {String(allConflictOpFalse)}
+              </p>
+            </div>
+            <div className="rounded-xl border border-line bg-white/[0.012] px-4 py-3">
+              <p className="text-[9px] uppercase tracking-[0.15em] text-slate-500">sign-off / production</p>
+              <p className="mt-1 text-[11px] font-semibold text-slate-200">
+                manualSignoffCompleted {String(!allConflictSignoffNotDone ? true : false)} · productionSwitchAllowed{" "}
+                {String(conflict.productionReady)}
+              </p>
+            </div>
+            <div className="rounded-xl border border-line bg-white/[0.012] px-4 py-3">
+              <p className="text-[9px] uppercase tracking-[0.15em] text-slate-500">connection</p>
+              <p className="mt-1 text-[11px] font-semibold text-slate-200">
+                realDataConnected {String(conflict.realDataConnected)} · fetchPerformed {String(conflict.fetchPerformed)} ·
+                supabaseConnected {String(conflict.supabaseConnected)}
+              </p>
+            </div>
+          </div>
+          <div className="border-t border-line/60 px-5 py-3 sm:px-6">
+            <p className="text-[9px] text-slate-600">
+              多來源衝突解析尚未接真實資料，fixture 區間不可作為正式操作依據（degraded / BLOCKED_NOT_CONNECTED）。
             </p>
           </div>
         </section>

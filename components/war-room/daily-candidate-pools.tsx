@@ -72,12 +72,14 @@ export function DailyCandidatePools({
   fixtureSource,
   realQuoteMappingReadiness,
   authorizedSourceCatalogMode,
+  conflictPolicyMode,
 }: {
   pools: AllenScoreDailyPool[];
   tradePlan?: StructuredCandidateTradePlanBundle;
   fixtureSource?: CandidatePriceLevelFixtureSourceBundle;
   realQuoteMappingReadiness?: string;
   authorizedSourceCatalogMode?: string;
+  conflictPolicyMode?: string;
 }) {
   const planBySymbol = new Map((tradePlan?.tradePlans ?? []).map((p) => [p.symbol, p] as const));
   const descriptorBySymbol = new Map((fixtureSource?.descriptors ?? []).map((d) => [d.symbol, d] as const));
@@ -107,6 +109,9 @@ export function DailyCandidatePools({
         </p>
         <p className="mt-1 text-[9px] text-slate-600">
           Authorized source catalog: {authorizedSourceCatalogMode ?? "SPEC_ONLY_NOT_CONNECTED"}。尚未授權任何真實行情來源，fixture 區間不可作為正式操作依據。
+        </p>
+        <p className="mt-1 text-[9px] text-slate-600">
+          Conflict policy: {conflictPolicyMode ?? "SPEC_ONLY_NOT_CONNECTED"}。多來源衝突解析尚未接真實資料，fixture 區間不可作為正式操作依據。
         </p>
       </div>
 

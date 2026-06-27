@@ -5,6 +5,7 @@ import { buildStructuredCandidateTradePlanContract } from "@/use-cases/war-room/
 import { buildCandidatePriceLevelFixtureSourceContract } from "@/use-cases/war-room/build-candidate-price-level-fixture-source-contract";
 import { buildDescriptorToRealQuoteMappingContract } from "@/use-cases/war-room/build-descriptor-to-real-quote-mapping-contract";
 import { buildAuthorizedRealQuoteFieldCatalogContract } from "@/use-cases/war-room/build-authorized-real-quote-field-catalog-contract";
+import { buildRealQuoteSourceConflictResolutionPolicyContract } from "@/use-cases/war-room/build-real-quote-source-conflict-resolution-policy-contract";
 import { DataVerificationBanner } from "@/components/war-room/data-verification-banner";
 import { MarketSessionPanel } from "@/components/war-room/market-session-panel";
 import { ActualPositionsTable } from "@/components/war-room/actual-positions-table";
@@ -40,6 +41,7 @@ export function WarRoomOperationalLayout() {
   const fixtureSource = buildCandidatePriceLevelFixtureSourceContract({ generatedAt: "2026-06-23T00:00:00.000Z" });
   const mappingMatrix = buildDescriptorToRealQuoteMappingContract({ generatedAt: "2026-06-23T00:00:00.000Z" });
   const authorizedCatalog = buildAuthorizedRealQuoteFieldCatalogContract({ generatedAt: "2026-06-23T00:00:00.000Z" });
+  const conflictPolicy = buildRealQuoteSourceConflictResolutionPolicyContract({ generatedAt: "2026-06-23T00:00:00.000Z" });
   const scoredCandidates = allenScore.dailyPools.flatMap((p) => p.candidates);
 
   return (
@@ -88,6 +90,7 @@ export function WarRoomOperationalLayout() {
         fixtureSource={fixtureSource}
         realQuoteMappingReadiness={mappingMatrix.mappingItems[0]?.mappingReadiness}
         authorizedSourceCatalogMode={authorizedCatalog.sourceCatalogMode}
+        conflictPolicyMode={conflictPolicy.policyMode}
       />
 
       {/* Risk blocklist */}

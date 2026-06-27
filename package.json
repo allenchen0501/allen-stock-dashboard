@@ -74,7 +74,8 @@
     "test:structured-candidate-trade-plan": "node --require ./scripts/register-typescript.cjs ./scripts/validate-structured-candidate-trade-plan.ts",
     "test:candidate-price-level-fixture-source": "node --require ./scripts/register-typescript.cjs ./scripts/validate-candidate-price-level-fixture-source.ts",
     "test:descriptor-to-real-quote-mapping": "node --require ./scripts/register-typescript.cjs ./scripts/validate-descriptor-to-real-quote-mapping.ts",
-    "test:authorized-real-quote-field-catalog": "node --require ./scripts/register-typescript.cjs ./scripts/validate-authorized-real-quote-field-catalog.ts"
+    "test:authorized-real-quote-field-catalog": "node --require ./scripts/register-typescript.cjs ./scripts/validate-authorized-real-quote-field-catalog.ts",
+    "test:real-quote-source-conflict-resolution-policy": "node --require ./scripts/register-typescript.cjs ./scripts/validate-real-quote-source-conflict-resolution-policy.ts"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.108.2",
