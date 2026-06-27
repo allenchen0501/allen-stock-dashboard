@@ -5,6 +5,7 @@ import { FirstAuthorizedSourceDryRunMonitoring } from "@/components/first-author
 import { ShadowRunnerDryRunMonitoring } from "@/components/shadow-runner-dry-run-monitoring";
 import { buildAllenScoreDeterministicScoringEngineContract } from "@/use-cases/war-room/build-allen-score-deterministic-scoring-engine-contract";
 import { buildStructuredCandidateTradePlanContract } from "@/use-cases/war-room/build-structured-candidate-trade-plan-contract";
+import { buildCandidatePriceLevelFixtureSourceContract } from "@/use-cases/war-room/build-candidate-price-level-fixture-source-contract";
 
 // V60: dedicated engineering / safety monitoring page. The fixture-only spec /
 // runtime / shadow-runner monitoring panels live here, moved away from the primary
@@ -16,8 +17,11 @@ import { buildStructuredCandidateTradePlanContract } from "@/use-cases/war-room/
 export default function SystemSafetyPage() {
   const engine = buildAllenScoreDeterministicScoringEngineContract({ generatedAt: "2026-06-23T00:00:00.000Z" });
   const tradePlan = buildStructuredCandidateTradePlanContract({ generatedAt: "2026-06-23T00:00:00.000Z" });
+  const fixtureSource = buildCandidatePriceLevelFixtureSourceContract({ generatedAt: "2026-06-23T00:00:00.000Z" });
   const engineConsistent = Object.values(engine.consistency).every((v) => v === true);
   const validPlans = tradePlan.validations.filter((v) => v.valid).length;
+  const validDescriptors = fixtureSource.validations.filter((v) => v.valid).length;
+  const mb = fixtureSource.mappingBoundary;
 
   return (
     <div className="page-wrap">
@@ -57,6 +61,47 @@ export default function SystemSafetyPage() {
               <p className="text-[9px] uppercase tracking-[0.15em] text-slate-500">Mode</p>
               <p className="mt-1 text-[12px] font-semibold text-amber">fixture/mock，不可作為正式操作依據</p>
             </div>
+          </div>
+        </section>
+      </div>
+      <div className="mt-5">
+        <section className="panel-shell overflow-hidden">
+          <div className="border-b border-line/80 px-5 py-4 sm:px-6">
+            <h2 className="text-[15px] font-semibold tracking-wide text-slate-100">
+              Trade Plan Fixture Source / Mapping Boundary（spec-only）
+            </h2>
+            <p className="mt-1 text-[10px] text-slate-500">
+              fixture source descriptor + future real quote mapping boundary（{fixtureSource.contractVersion}）。
+              deterministic / fixture-only：no runtime、no fetch、no Supabase connection、no env read、no DB write。
+            </p>
+          </div>
+          <div className="grid grid-cols-2 gap-3 px-5 py-4 sm:px-6 lg:grid-cols-4">
+            <div className="rounded-xl border border-line bg-white/[0.012] px-4 py-3">
+              <p className="text-[9px] uppercase tracking-[0.15em] text-slate-500">Descriptors valid</p>
+              <p className={`mt-1 text-[14px] font-semibold ${fixtureSource.allValid ? "text-positive" : "text-negative"}`}>
+                {validDescriptors}/{fixtureSource.validations.length}
+              </p>
+            </div>
+            <div className="rounded-xl border border-line bg-white/[0.012] px-4 py-3">
+              <p className="text-[9px] uppercase tracking-[0.15em] text-slate-500">realMappingStatus</p>
+              <p className="mt-1 text-[14px] font-semibold text-amber">{fixtureSource.source.realMappingStatus}</p>
+              <p className="mt-1 text-[9px] text-slate-600">未連真實報價</p>
+            </div>
+            <div className="rounded-xl border border-line bg-white/[0.012] px-4 py-3">
+              <p className="text-[9px] uppercase tracking-[0.15em] text-slate-500">Manual sign-off</p>
+              <p className="mt-1 text-[12px] font-semibold text-slate-200">
+                required {String(mb.manualSignoffRequired)} · completed {String(mb.manualSignoffCompleted)}
+              </p>
+            </div>
+            <div className="rounded-xl border border-line bg-white/[0.012] px-4 py-3">
+              <p className="text-[9px] uppercase tracking-[0.15em] text-slate-500">Production switch</p>
+              <p className="mt-1 text-[12px] font-semibold text-slate-200">
+                allowed {String(mb.productionSwitchAllowed)} · staging read-only {String(mb.stagingReadOnlyRequired)}
+              </p>
+            </div>
+          </div>
+          <div className="border-t border-line/60 px-5 py-3 sm:px-6">
+            <p className="text-[9px] text-slate-600">{mb.mappingNotConnectedReason}</p>
           </div>
         </section>
       </div>

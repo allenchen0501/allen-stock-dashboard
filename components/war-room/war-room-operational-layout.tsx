@@ -2,6 +2,7 @@ import { buildAllenWarRoomOperationalLayoutContract } from "@/use-cases/war-room
 import { buildAllenScoreScoringModelContract } from "@/use-cases/war-room/build-allen-score-scoring-model-contract";
 import { buildAllenScoreDeterministicScoringEngineContract } from "@/use-cases/war-room/build-allen-score-deterministic-scoring-engine-contract";
 import { buildStructuredCandidateTradePlanContract } from "@/use-cases/war-room/build-structured-candidate-trade-plan-contract";
+import { buildCandidatePriceLevelFixtureSourceContract } from "@/use-cases/war-room/build-candidate-price-level-fixture-source-contract";
 import { DataVerificationBanner } from "@/components/war-room/data-verification-banner";
 import { MarketSessionPanel } from "@/components/war-room/market-session-panel";
 import { ActualPositionsTable } from "@/components/war-room/actual-positions-table";
@@ -34,6 +35,7 @@ export function WarRoomOperationalLayout() {
   const allenScore = buildAllenScoreScoringModelContract({ generatedAt: "2026-06-23T00:00:00.000Z" });
   const scoringEngine = buildAllenScoreDeterministicScoringEngineContract({ generatedAt: "2026-06-23T00:00:00.000Z" });
   const tradePlan = buildStructuredCandidateTradePlanContract({ generatedAt: "2026-06-23T00:00:00.000Z" });
+  const fixtureSource = buildCandidatePriceLevelFixtureSourceContract({ generatedAt: "2026-06-23T00:00:00.000Z" });
   const scoredCandidates = allenScore.dailyPools.flatMap((p) => p.candidates);
 
   return (
@@ -76,7 +78,7 @@ export function WarRoomOperationalLayout() {
       <ActualPositionsTable positions={layout.actualPositions} />
       <FixedWatchlistTable items={layout.fixedWatchlist} />
       <SystemCandidatesTable candidates={scoredCandidates} />
-      <DailyCandidatePools pools={allenScore.dailyPools} tradePlan={tradePlan} />
+      <DailyCandidatePools pools={allenScore.dailyPools} tradePlan={tradePlan} fixtureSource={fixtureSource} />
 
       {/* Risk blocklist */}
       <section className="panel-shell overflow-hidden">

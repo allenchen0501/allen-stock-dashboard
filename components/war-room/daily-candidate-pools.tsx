@@ -3,6 +3,10 @@ import type {
   CandidateTradePlan,
   StructuredCandidateTradePlanBundle,
 } from "@/use-cases/war-room/structured-candidate-trade-plan-contract";
+import type {
+  CandidatePriceLevelDescriptor,
+  CandidatePriceLevelFixtureSourceBundle,
+} from "@/use-cases/war-room/candidate-price-level-fixture-source-contract";
 
 // ---------------------------------------------------------------------------
 // Daily Candidate Pools — V61 / V63
@@ -32,7 +36,13 @@ function Field({ label, value }: { label: string; value: string }) {
   );
 }
 
-function StructuredTradePlan({ plan }: { plan: CandidateTradePlan }) {
+function StructuredTradePlan({
+  plan,
+  descriptor,
+}: {
+  plan: CandidateTradePlan;
+  descriptor?: CandidatePriceLevelDescriptor;
+}) {
   const { buyZone, riskReward, entryStrategy } = plan;
   return (
     <div className="mt-2 rounded-lg border border-line/70 bg-white/[0.012] px-3 py-2">
@@ -45,6 +55,12 @@ function StructuredTradePlan({ plan }: { plan: CandidateTradePlan }) {
         <Field label="目標觀察區" value={`${riskReward.targetLower}–${riskReward.targetUpper}（上檔報酬 ${riskReward.upsideRewardPercent}%）`} />
         <Field label="風報比 rewardRiskRatio" value={`${riskReward.rewardRiskRatio}`} />
         <Field label="觀察策略" value={entryStrategy.observationOnlyText} />
+        {descriptor ? (
+          <Field
+            label="價位來源 fixture source"
+            value={`${descriptor.sourceLabel}｜realMappingStatus = ${descriptor.realMappingStatus}（未連真實報價）`}
+          />
+        ) : null}
       </div>
     </div>
   );
@@ -53,11 +69,14 @@ function StructuredTradePlan({ plan }: { plan: CandidateTradePlan }) {
 export function DailyCandidatePools({
   pools,
   tradePlan,
+  fixtureSource,
 }: {
   pools: AllenScoreDailyPool[];
   tradePlan?: StructuredCandidateTradePlanBundle;
+  fixtureSource?: CandidatePriceLevelFixtureSourceBundle;
 }) {
   const planBySymbol = new Map((tradePlan?.tradePlans ?? []).map((p) => [p.symbol, p] as const));
+  const descriptorBySymbol = new Map((fixtureSource?.descriptors ?? []).map((d) => [d.symbol, d] as const));
   return (
     <section className="panel-shell overflow-hidden">
       <div className="border-b border-line/80 px-5 py-4 sm:px-6">
@@ -75,6 +94,9 @@ export function DailyCandidatePools({
         </p>
         <p className="mt-1 text-[9px] text-slate-600">
           承接區 / 失效防守區 / 目標觀察區為 deterministic 結構化 fixture/mock 區間：fixture/mock 區間不可作為正式操作依據；觀察策略，不是買賣指令；無股數/成本，不計算損益。
+        </p>
+        <p className="mt-1 text-[9px] text-slate-600">
+          價位來源為 fixture source descriptor：realMappingStatus = NOT_CONNECTED（未連真實報價）；fixture 區間不可作為正式操作依據。
         </p>
       </div>
 
@@ -118,7 +140,9 @@ export function DailyCandidatePools({
                       <Field label="驗證狀態" value={c.verificationStatus} />
                     </div>
 
-                    {planBySymbol.has(c.symbol) ? <StructuredTradePlan plan={planBySymbol.get(c.symbol)!} /> : null}
+                    {planBySymbol.has(c.symbol) ? (
+                      <StructuredTradePlan plan={planBySymbol.get(c.symbol)!} descriptor={descriptorBySymbol.get(c.symbol)} />
+                    ) : null}
                   </div>
                 ))}
               </div>

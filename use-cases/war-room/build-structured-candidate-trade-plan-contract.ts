@@ -31,8 +31,9 @@ import type {
   StructuredCandidateTradePlanBundle,
   StructuredEntryStrategy,
   StructuredRiskReward,
-  TradePlanConfidence,
 } from "./structured-candidate-trade-plan-contract";
+import { buildCandidatePriceLevelDescriptorMap } from "./build-candidate-price-level-fixture-source-contract";
+import type { CandidatePriceLevelDescriptor } from "./candidate-price-level-fixture-source-contract";
 
 const DEFAULT_GENERATED_AT = "2026-06-23T00:00:00.000Z";
 
@@ -40,54 +41,38 @@ export interface BuildStructuredCandidateTradePlanContractInput {
   generatedAt?: string;
 }
 
-interface PriceLevels {
-  buyLower: number;
-  buyUpper: number;
-  stopLower: number;
-  stopUpper: number;
-  targetLower: number;
-  targetUpper: number;
-  basis: string;
-  confidence: TradePlanConfidence;
-}
-
-/** Deterministic fixture price levels keyed by candidate symbol (TWD). */
-const PRICE_LEVELS: Record<string, PriceLevels> = {
-  A100: { buyLower: 100, buyUpper: 105, stopLower: 94, stopUpper: 98, targetLower: 112, targetUpper: 120, basis: "回測 5MA 承接區（fixture）", confidence: "medium" },
-  A101: { buyLower: 50, buyUpper: 53, stopLower: 46, stopUpper: 48.5, targetLower: 58, targetUpper: 64, basis: "回測 10MA 承接區（fixture）", confidence: "medium" },
-  B200: { buyLower: 200, buyUpper: 210, stopLower: 188, stopUpper: 196, targetLower: 224, targetUpper: 240, basis: "回測季線承接區（fixture）", confidence: "low" },
-  C300: { buyLower: 75, buyUpper: 78, stopLower: 70, stopUpper: 73.5, targetLower: 83, targetUpper: 88, basis: "型態待完成，暫估承接區（fixture）", confidence: "low" },
-};
+// V64: fixture price levels are no longer hand-written here — they come from the
+// candidate price level fixture source descriptors (single source of truth).
 
 function round(value: number, dp: number): number {
   const f = Math.pow(10, dp);
   return Math.round(value * f) / f;
 }
 
-function buildBuyZone(levels: PriceLevels): StructuredBuyZone {
+function buildBuyZone(d: CandidatePriceLevelDescriptor): StructuredBuyZone {
   return {
-    lower: levels.buyLower,
-    upper: levels.buyUpper,
+    lower: d.buyZoneLower,
+    upper: d.buyZoneUpper,
     currency: "TWD",
-    basis: levels.basis,
-    confidence: levels.confidence,
+    basis: d.sourceDescription,
+    confidence: d.confidence,
     sourceType: "fixture_mock",
     operationalUseAllowed: false,
   };
 }
 
-function buildRiskReward(levels: PriceLevels): StructuredRiskReward {
-  // Reference entry = mid of the buy zone. Risk to the nearest defense (stopUpper),
+function buildRiskReward(d: CandidatePriceLevelDescriptor): StructuredRiskReward {
+  // Reference entry = mid of the buy zone. Risk to the nearest defense (stopLossUpper),
   // reward to the nearest target (targetLower); both as percent of the reference.
-  const entry = (levels.buyLower + levels.buyUpper) / 2;
-  const downsideRiskPercent = round(((entry - levels.stopUpper) / entry) * 100, 2);
-  const upsideRewardPercent = round(((levels.targetLower - entry) / entry) * 100, 2);
+  const entry = (d.buyZoneLower + d.buyZoneUpper) / 2;
+  const downsideRiskPercent = round(((entry - d.stopLossUpper) / entry) * 100, 2);
+  const upsideRewardPercent = round(((d.targetLower - entry) / entry) * 100, 2);
   const rewardRiskRatio = round(upsideRewardPercent / downsideRiskPercent, 1);
   return {
-    stopLossLower: levels.stopLower,
-    stopLossUpper: levels.stopUpper,
-    targetLower: levels.targetLower,
-    targetUpper: levels.targetUpper,
+    stopLossLower: d.stopLossLower,
+    stopLossUpper: d.stopLossUpper,
+    targetLower: d.targetLower,
+    targetUpper: d.targetUpper,
     downsideRiskPercent,
     upsideRewardPercent,
     rewardRiskRatio,
@@ -107,7 +92,7 @@ function buildEntryStrategy(c: AllenScoreCandidate): StructuredEntryStrategy {
   };
 }
 
-function buildPlan(c: AllenScoreCandidate, levels: PriceLevels): CandidateTradePlan {
+function buildPlan(c: AllenScoreCandidate, descriptor: CandidatePriceLevelDescriptor): CandidateTradePlan {
   const allenScore = scoreCandidate({
     technicalScore: c.technicalScore,
     fundamentalScore: c.fundamentalScore,
@@ -123,8 +108,8 @@ function buildPlan(c: AllenScoreCandidate, levels: PriceLevels): CandidateTradeP
     grade,
     allenScore,
     pool,
-    buyZone: buildBuyZone(levels),
-    riskReward: buildRiskReward(levels),
+    buyZone: buildBuyZone(descriptor),
+    riskReward: buildRiskReward(descriptor),
     entryStrategy: buildEntryStrategy(c),
     isPosition: false,
     pnlComputable: false,
@@ -243,12 +228,13 @@ export function buildStructuredCandidateTradePlanContract(
   const model = buildAllenScoreScoringModelContract({ generatedAt });
   const candidates = model.dailyPools.flatMap((p) => p.candidates);
   const bySymbol = new Map(candidates.map((c) => [c.symbol, c] as const));
+  const descriptorBySymbol = buildCandidatePriceLevelDescriptorMap({ generatedAt });
 
   const tradePlans: CandidateTradePlan[] = [];
   for (const c of candidates) {
-    const levels = PRICE_LEVELS[c.symbol];
-    if (!levels) continue; // AVOID / 禁碰 candidates get no actionable trade plan.
-    tradePlans.push(buildPlan(c, levels));
+    const descriptor = descriptorBySymbol.get(c.symbol);
+    if (!descriptor) continue; // AVOID / 禁碰 candidates get no actionable trade plan.
+    tradePlans.push(buildPlan(c, descriptor));
   }
 
   const validations = tradePlans.map((plan) => validatePlan(plan, bySymbol.get(plan.symbol)));
