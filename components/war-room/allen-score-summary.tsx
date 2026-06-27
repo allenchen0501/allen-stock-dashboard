@@ -1,15 +1,25 @@
 import type { AllenScoreScoringModelBundle } from "@/use-cases/war-room/allen-score-scoring-model-contract";
+import type { AllenScoreDeterministicScoringEngineBundle } from "@/use-cases/war-room/allen-score-deterministic-scoring-engine-contract";
 
 // ---------------------------------------------------------------------------
-// Allen Score Summary — V61
+// Allen Score Summary — V61 / V62
 //
 // Presentational summary of the Allen Score 100 scoring model: total 100 =
 // Technical 30 + Fundamental 25 + Chip 25 + ETF Flow 10 + Market Sentiment 10,
 // and the daily grade thresholds (A >= 80 / B 70-79 / C 60-69 / Avoid < 60).
+// V62 adds the deterministic scoring engine consistency status (totalScore equals
+// sub-score sum, grade must match score, pool must match grade).
 // fixture/mock score is not operational data. No fetch, no Supabase, no env, no DB.
 // ---------------------------------------------------------------------------
 
-export function AllenScoreSummary({ model }: { model: AllenScoreScoringModelBundle }) {
+export function AllenScoreSummary({
+  model,
+  engine,
+}: {
+  model: AllenScoreScoringModelBundle;
+  engine?: AllenScoreDeterministicScoringEngineBundle;
+}) {
+  const allConsistent = engine ? Object.values(engine.consistency).every((v) => v === true) : false;
   return (
     <section className="panel-shell overflow-hidden">
       <div className="border-b border-line/80 px-5 py-4 sm:px-6">
@@ -51,6 +61,15 @@ export function AllenScoreSummary({ model }: { model: AllenScoreScoringModelBund
           <span>C 級等待池：{model.cGradeMin}–{model.cGradeMax}</span>
           <span>禁碰池：&lt; {model.avoidBelow}</span>
         </div>
+
+        {engine ? (
+          <p className="mt-2 text-[10px] text-slate-400">
+            Deterministic Scoring Engine（{engine.contractVersion}）：grade↔score 一致性{" "}
+            <span className={allConsistent ? "text-positive" : "text-negative"}>
+              {allConsistent ? "verified（totalScore equals sub-score sum、grade must match score、pool must match grade）" : "NOT verified"}
+            </span>
+          </p>
+        ) : null}
       </div>
     </section>
   );

@@ -25,9 +25,20 @@ import type {
   AllenScoreCandidate,
   AllenScoreCategory,
   AllenScoreDailyPool,
+  AllenScoreGrade,
   AllenScorePoolDefinition,
   AllenScoreScoringModelBundle,
 } from "./allen-score-scoring-model-contract";
+import { gradeCandidate, scoreCandidate } from "./allen-score-scoring-engine";
+import type { AllenScoreEngineGrade } from "./allen-score-scoring-engine";
+
+/** Canonical engine grade → V61 grade enum. */
+const ENGINE_TO_ALLEN_GRADE: Record<AllenScoreEngineGrade, AllenScoreGrade> = {
+  A: "A_MAIN_UPTREND",
+  B: "B_OBSERVE",
+  C: "C_WAIT",
+  AVOID: "AVOID",
+};
 
 const DEFAULT_GENERATED_AT = "2026-06-23T00:00:00.000Z";
 const FX = "fixture／mock score：目前非真實分數，不可作為正式操作依據";
@@ -186,12 +197,27 @@ function buildPoolDefinitions(): AllenScorePoolDefinition[] {
 // ---------------------------------------------------------------------------
 
 function candidate(
-  c: Omit<AllenScoreCandidate, "isPosition" | "pnlComputable" | "dataSource" | "verificationStatus"> & {
+  c: Omit<
+    AllenScoreCandidate,
+    "isPosition" | "pnlComputable" | "dataSource" | "verificationStatus" | "allenScore" | "grade"
+  > & {
     verificationStatus: AllenScoreCandidate["verificationStatus"];
   },
 ): AllenScoreCandidate {
+  // allenScore + grade are DERIVED deterministically by the V62 scoring engine —
+  // never hand-filled — so total == sub-score sum and grade always matches score.
+  const allenScore = scoreCandidate({
+    technicalScore: c.technicalScore,
+    fundamentalScore: c.fundamentalScore,
+    chipScore: c.chipScore,
+    etfFlowScore: c.etfFlowScore,
+    marketSentimentScore: c.marketSentimentScore,
+  });
+  const grade = ENGINE_TO_ALLEN_GRADE[gradeCandidate(allenScore)];
   return {
     ...c,
+    allenScore,
+    grade,
     dataSource: "fixture / mock_or_contract",
     isPosition: false,
     pnlComputable: false,
@@ -204,8 +230,6 @@ function buildDailyPools(generatedAt: string): AllenScoreDailyPool[] {
       stockId: "A100",
       symbol: "A100",
       name: "A 級 sample 甲",
-      allenScore: 88,
-      grade: "A_MAIN_UPTREND",
       technicalScore: 27,
       fundamentalScore: 22,
       chipScore: 22,
@@ -225,8 +249,6 @@ function buildDailyPools(generatedAt: string): AllenScoreDailyPool[] {
       stockId: "A101",
       symbol: "A101",
       name: "A 級 sample 乙",
-      allenScore: 82,
-      grade: "A_MAIN_UPTREND",
       technicalScore: 25,
       fundamentalScore: 20,
       chipScore: 21,
@@ -249,8 +271,6 @@ function buildDailyPools(generatedAt: string): AllenScoreDailyPool[] {
       stockId: "B200",
       symbol: "B200",
       name: "B 級 sample 丙",
-      allenScore: 72,
-      grade: "B_OBSERVE",
       technicalScore: 22,
       fundamentalScore: 18,
       chipScore: 18,
@@ -273,8 +293,6 @@ function buildDailyPools(generatedAt: string): AllenScoreDailyPool[] {
       stockId: "C300",
       symbol: "C300",
       name: "C 級 sample 丁",
-      allenScore: 61,
-      grade: "C_WAIT",
       technicalScore: 18,
       fundamentalScore: 16,
       chipScore: 15,
@@ -297,8 +315,6 @@ function buildDailyPools(generatedAt: string): AllenScoreDailyPool[] {
       stockId: "Z900",
       symbol: "Z900",
       name: "禁碰 sample 戊",
-      allenScore: 40,
-      grade: "AVOID",
       technicalScore: 12,
       fundamentalScore: 10,
       chipScore: 10,

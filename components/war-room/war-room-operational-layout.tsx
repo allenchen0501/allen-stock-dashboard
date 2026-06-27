@@ -1,5 +1,6 @@
 import { buildAllenWarRoomOperationalLayoutContract } from "@/use-cases/war-room/build-allen-war-room-operational-layout-contract";
 import { buildAllenScoreScoringModelContract } from "@/use-cases/war-room/build-allen-score-scoring-model-contract";
+import { buildAllenScoreDeterministicScoringEngineContract } from "@/use-cases/war-room/build-allen-score-deterministic-scoring-engine-contract";
 import { DataVerificationBanner } from "@/components/war-room/data-verification-banner";
 import { MarketSessionPanel } from "@/components/war-room/market-session-panel";
 import { ActualPositionsTable } from "@/components/war-room/actual-positions-table";
@@ -30,6 +31,7 @@ const TONE_CLASS: Record<string, string> = {
 export function WarRoomOperationalLayout() {
   const layout = buildAllenWarRoomOperationalLayoutContract({ generatedAt: "2026-06-23T00:00:00.000Z" });
   const allenScore = buildAllenScoreScoringModelContract({ generatedAt: "2026-06-23T00:00:00.000Z" });
+  const scoringEngine = buildAllenScoreDeterministicScoringEngineContract({ generatedAt: "2026-06-23T00:00:00.000Z" });
   const scoredCandidates = allenScore.dailyPools.flatMap((p) => p.candidates);
 
   return (
@@ -67,7 +69,7 @@ export function WarRoomOperationalLayout() {
         </div>
       </section>
 
-      <AllenScoreSummary model={allenScore} />
+      <AllenScoreSummary model={allenScore} engine={scoringEngine} />
       <MarketSessionPanel structures={layout.sessionStructures} />
       <ActualPositionsTable positions={layout.actualPositions} />
       <FixedWatchlistTable items={layout.fixedWatchlist} />

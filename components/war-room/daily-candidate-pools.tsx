@@ -39,6 +39,9 @@ export function DailyCandidatePools({ pools }: { pools: AllenScoreDailyPool[] })
         <p className="mt-1 text-[10px] text-slate-500">
           fixture/mock score 不可作為正式操作依據（fixture/mock score is not operational data）。
         </p>
+        <p className="mt-1 text-[9px] text-slate-600">
+          每檔總分 = 五大分項加總，分級依分數決定（deterministic scoring engine：grade must match score、pool must match grade）。
+        </p>
       </div>
 
       <div className="space-y-5 px-5 py-4 sm:px-6">
