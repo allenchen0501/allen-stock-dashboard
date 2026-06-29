@@ -127,6 +127,7 @@ export function DailyCandidatePools({
   uiBehavior,
   connectionEvidenceDecision,
   evidenceTransitionMode,
+  ledgerRollupMode,
 }: {
   pools: AllenScoreDailyPool[];
   tradePlan?: StructuredCandidateTradePlanBundle;
@@ -138,6 +139,7 @@ export function DailyCandidatePools({
   uiBehavior?: DowngradedTradePlanUiBehaviorContract;
   connectionEvidenceDecision?: string;
   evidenceTransitionMode?: string;
+  ledgerRollupMode?: string;
 }) {
   const planBySymbol = new Map((tradePlan?.tradePlans ?? []).map((p) => [p.symbol, p] as const));
   const descriptorBySymbol = new Map((fixtureSource?.descriptors ?? []).map((d) => [d.symbol, d] as const));
@@ -184,6 +186,9 @@ export function DailyCandidatePools({
         </p>
         <p className="mt-1 text-[9px] text-slate-600">
           Evidence transition engine: {evidenceTransitionMode ?? "NO_GO"} / PREVIEW_ONLY。即使 preview 單項 evidence，真實行情與 staging 連線仍維持鎖定。
+        </p>
+        <p className="mt-1 text-[9px] text-slate-600">
+          Ledger integrity rollup: {ledgerRollupMode ?? "NO_GO"} / SPEC_ONLY_SAFETY_GATE。source contracts 完整，但 evidence 全部 pending，真實行情仍鎖定。
         </p>
       </div>
 

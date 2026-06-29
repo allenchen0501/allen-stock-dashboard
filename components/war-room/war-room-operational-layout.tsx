@@ -10,6 +10,7 @@ import { buildConflictToTradePlanVerificationContract } from "@/use-cases/war-ro
 import { buildDowngradedTradePlanUiBehaviorContract } from "@/use-cases/war-room/build-downgraded-trade-plan-ui-behavior-contract";
 import { buildUnifiedConnectionEvidenceLedgerContract } from "@/use-cases/war-room/build-unified-connection-evidence-ledger-contract";
 import { buildEvidenceLedgerTransitionContract } from "@/use-cases/war-room/build-evidence-ledger-transition-contract";
+import { buildLedgerIntegrityRollupContract } from "@/use-cases/war-room/build-ledger-integrity-rollup-contract";
 import { DataVerificationBanner } from "@/components/war-room/data-verification-banner";
 import { MarketSessionPanel } from "@/components/war-room/market-session-panel";
 import { ActualPositionsTable } from "@/components/war-room/actual-positions-table";
@@ -50,6 +51,7 @@ export function WarRoomOperationalLayout() {
   const downgradedUiBehavior = buildDowngradedTradePlanUiBehaviorContract({ generatedAt: "2026-06-23T00:00:00.000Z" });
   const connectionEvidence = buildUnifiedConnectionEvidenceLedgerContract({ generatedAt: "2026-06-23T00:00:00.000Z" });
   const evidenceTransition = buildEvidenceLedgerTransitionContract({ generatedAt: "2026-06-23T00:00:00.000Z" });
+  const ledgerRollup = buildLedgerIntegrityRollupContract({ generatedAt: "2026-06-23T00:00:00.000Z" });
   const scoredCandidates = allenScore.dailyPools.flatMap((p) => p.candidates);
 
   return (
@@ -103,6 +105,7 @@ export function WarRoomOperationalLayout() {
         uiBehavior={downgradedUiBehavior}
         connectionEvidenceDecision={connectionEvidence.decision}
         evidenceTransitionMode={evidenceTransition.decision}
+        ledgerRollupMode={ledgerRollup.decision}
       />
 
       {/* Risk blocklist */}
