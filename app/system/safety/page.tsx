@@ -11,6 +11,7 @@ import { buildAuthorizedRealQuoteFieldCatalogContract } from "@/use-cases/war-ro
 import { buildRealQuoteSourceConflictResolutionPolicyContract } from "@/use-cases/war-room/build-real-quote-source-conflict-resolution-policy-contract";
 import { buildConflictToTradePlanVerificationContract } from "@/use-cases/war-room/build-conflict-to-trade-plan-verification-contract";
 import { buildDowngradedTradePlanUiBehaviorContract } from "@/use-cases/war-room/build-downgraded-trade-plan-ui-behavior-contract";
+import { buildUnifiedConnectionEvidenceLedgerContract } from "@/use-cases/war-room/build-unified-connection-evidence-ledger-contract";
 
 // V60: dedicated engineering / safety monitoring page. The fixture-only spec /
 // runtime / shadow-runner monitoring panels live here, moved away from the primary
@@ -46,6 +47,9 @@ export default function SystemSafetyPage() {
   const allUiOpFalse = uiBehavior.uiStates.every((s) => s.operationalUseAllowed === false);
   const allUiObservation = uiBehavior.uiStates.every((s) => s.observationOnly === true);
   const allUiSignoffNotDone = uiBehavior.uiStates.every((s) => s.manualSignoffCompleted === false);
+  const ledger = buildUnifiedConnectionEvidenceLedgerContract({ generatedAt: "2026-06-23T00:00:00.000Z" });
+  const ledgerPendingCount = ledger.evidenceCategories.reduce((sum, c) => sum + c.pendingCount, 0);
+  const ledgerCompletedCount = ledger.evidenceCategories.reduce((sum, c) => sum + c.completedCount, 0);
 
   return (
     <div className="page-wrap">
@@ -357,6 +361,53 @@ export default function SystemSafetyPage() {
           <div className="border-t border-line/60 px-5 py-3 sm:px-6">
             <p className="text-[9px] text-slate-600">
               依 TradePlanDisplayMode 決定承接區 / 目標區 / 風報比顯示或隱藏；這不是買賣指令，不可作為正式操作依據。
+            </p>
+          </div>
+        </section>
+      </div>
+      <div className="mt-5">
+        <section className="panel-shell overflow-hidden">
+          <div className="border-b border-line/80 px-5 py-4 sm:px-6">
+            <h2 className="text-[15px] font-semibold tracking-wide text-slate-100">
+              Unified Connection Evidence Ledger（spec-only）
+            </h2>
+            <p className="mt-1 text-[10px] text-slate-500">
+              {ledger.specName}（{ledger.contractVersion}）· ledgerMode = {ledger.ledgerMode} · decision ={" "}
+              <span className="font-semibold text-negative">{ledger.decision}</span>。
+              deterministic / spec-only：no runtime、no fetch、no Supabase connection、no env read、no DB write、no API route。
+            </p>
+          </div>
+          <div className="grid grid-cols-2 gap-3 px-5 py-4 sm:px-6 lg:grid-cols-4">
+            <div className="rounded-xl border border-line bg-white/[0.012] px-4 py-3">
+              <p className="text-[9px] uppercase tracking-[0.15em] text-slate-500">Evidence items</p>
+              <p className="mt-1 text-[14px] font-semibold text-slate-100">{ledger.evidenceItems.length}</p>
+              <p className="mt-1 text-[9px] text-slate-600">pending {ledgerPendingCount} · completed {ledgerCompletedCount}</p>
+            </div>
+            <div className="rounded-xl border border-line bg-white/[0.012] px-4 py-3">
+              <p className="text-[9px] uppercase tracking-[0.15em] text-slate-500">connection allowed</p>
+              <p className="mt-1 text-[11px] font-semibold text-slate-200">
+                staging {String(ledger.stagingConnectionAllowed)} · realQuote {String(ledger.realQuoteConnectionAllowed)} ·
+                production {String(ledger.productionSwitchAllowed)}
+              </p>
+            </div>
+            <div className="rounded-xl border border-line bg-white/[0.012] px-4 py-3">
+              <p className="text-[9px] uppercase tracking-[0.15em] text-slate-500">sign-off / evidence</p>
+              <p className="mt-1 text-[11px] font-semibold text-slate-200">
+                manualSignoffCompleted {String(ledger.manualSignoffCompleted)} · actualEvidenceAttached{" "}
+                {String(ledger.actualEvidenceAttached)}
+              </p>
+            </div>
+            <div className="rounded-xl border border-line bg-white/[0.012] px-4 py-3">
+              <p className="text-[9px] uppercase tracking-[0.15em] text-slate-500">connection</p>
+              <p className="mt-1 text-[11px] font-semibold text-slate-200">
+                realDataConnected {String(ledger.realDataConnected)} · supabaseConnected {String(ledger.supabaseConnected)} ·
+                productionReady {String(ledger.productionReady)}
+              </p>
+            </div>
+          </div>
+          <div className="border-t border-line/60 px-5 py-3 sm:px-6">
+            <p className="text-[9px] text-slate-600">
+              真實行情與 staging 連線仍需人工 evidence，不可作為正式操作依據（V64–V69 evidence 收斂為單一 ledger）。
             </p>
           </div>
         </section>

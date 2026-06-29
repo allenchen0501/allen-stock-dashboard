@@ -125,6 +125,7 @@ export function DailyCandidatePools({
   conflictPolicyMode,
   tradePlanVerificationMode,
   uiBehavior,
+  connectionEvidenceDecision,
 }: {
   pools: AllenScoreDailyPool[];
   tradePlan?: StructuredCandidateTradePlanBundle;
@@ -134,6 +135,7 @@ export function DailyCandidatePools({
   conflictPolicyMode?: string;
   tradePlanVerificationMode?: string;
   uiBehavior?: DowngradedTradePlanUiBehaviorContract;
+  connectionEvidenceDecision?: string;
 }) {
   const planBySymbol = new Map((tradePlan?.tradePlans ?? []).map((p) => [p.symbol, p] as const));
   const descriptorBySymbol = new Map((fixtureSource?.descriptors ?? []).map((d) => [d.symbol, d] as const));
@@ -174,6 +176,9 @@ export function DailyCandidatePools({
         </p>
         <p className="mt-1 text-[9px] text-slate-600">
           Trade plan verification: {tradePlanVerificationMode ?? "SPEC_ONLY_NOT_CONNECTED"}。來源衝突或缺值時，承接區會降級為觀察，不可作為正式操作依據。
+        </p>
+        <p className="mt-1 text-[9px] text-slate-600">
+          Connection evidence ledger: {connectionEvidenceDecision ?? "NO_GO"} / PENDING。真實行情與 staging 連線仍需人工 evidence，不可作為正式操作依據。
         </p>
       </div>
 

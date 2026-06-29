@@ -8,6 +8,7 @@ import { buildAuthorizedRealQuoteFieldCatalogContract } from "@/use-cases/war-ro
 import { buildRealQuoteSourceConflictResolutionPolicyContract } from "@/use-cases/war-room/build-real-quote-source-conflict-resolution-policy-contract";
 import { buildConflictToTradePlanVerificationContract } from "@/use-cases/war-room/build-conflict-to-trade-plan-verification-contract";
 import { buildDowngradedTradePlanUiBehaviorContract } from "@/use-cases/war-room/build-downgraded-trade-plan-ui-behavior-contract";
+import { buildUnifiedConnectionEvidenceLedgerContract } from "@/use-cases/war-room/build-unified-connection-evidence-ledger-contract";
 import { DataVerificationBanner } from "@/components/war-room/data-verification-banner";
 import { MarketSessionPanel } from "@/components/war-room/market-session-panel";
 import { ActualPositionsTable } from "@/components/war-room/actual-positions-table";
@@ -46,6 +47,7 @@ export function WarRoomOperationalLayout() {
   const conflictPolicy = buildRealQuoteSourceConflictResolutionPolicyContract({ generatedAt: "2026-06-23T00:00:00.000Z" });
   const tradePlanVerification = buildConflictToTradePlanVerificationContract({ generatedAt: "2026-06-23T00:00:00.000Z" });
   const downgradedUiBehavior = buildDowngradedTradePlanUiBehaviorContract({ generatedAt: "2026-06-23T00:00:00.000Z" });
+  const connectionEvidence = buildUnifiedConnectionEvidenceLedgerContract({ generatedAt: "2026-06-23T00:00:00.000Z" });
   const scoredCandidates = allenScore.dailyPools.flatMap((p) => p.candidates);
 
   return (
@@ -97,6 +99,7 @@ export function WarRoomOperationalLayout() {
         conflictPolicyMode={conflictPolicy.policyMode}
         tradePlanVerificationMode={tradePlanVerification.matrixMode}
         uiBehavior={downgradedUiBehavior}
+        connectionEvidenceDecision={connectionEvidence.decision}
       />
 
       {/* Risk blocklist */}
