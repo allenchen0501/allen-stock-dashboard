@@ -14,6 +14,7 @@ import { buildDowngradedTradePlanUiBehaviorContract } from "@/use-cases/war-room
 import { buildUnifiedConnectionEvidenceLedgerContract } from "@/use-cases/war-room/build-unified-connection-evidence-ledger-contract";
 import { buildEvidenceLedgerTransitionContract } from "@/use-cases/war-room/build-evidence-ledger-transition-contract";
 import { buildLedgerIntegrityRollupContract } from "@/use-cases/war-room/build-ledger-integrity-rollup-contract";
+import { buildSafetyChainCiGuardContract } from "@/use-cases/war-room/build-safety-chain-ci-guard-contract";
 
 // V60: dedicated engineering / safety monitoring page. The fixture-only spec /
 // runtime / shadow-runner monitoring panels live here, moved away from the primary
@@ -55,6 +56,7 @@ export default function SystemSafetyPage() {
   const transition = buildEvidenceLedgerTransitionContract({ generatedAt: "2026-06-23T00:00:00.000Z" });
   const allSourceContractsExist = transition.sourceContractIntegrityItems.every((s) => s.sourceContractExists === true);
   const rollup = buildLedgerIntegrityRollupContract({ generatedAt: "2026-06-23T00:00:00.000Z" });
+  const ciGuard = buildSafetyChainCiGuardContract({ generatedAt: "2026-06-23T00:00:00.000Z" });
 
   return (
     <div className="page-wrap">
@@ -508,6 +510,54 @@ export default function SystemSafetyPage() {
           <div className="border-t border-line/60 px-5 py-3 sm:px-6">
             <p className="text-[9px] text-slate-600">
               source contracts 完整，但 evidence 全部 pending，真實行情仍鎖定（{rollup.safetyGateBlockers.length} 個 safety gate blocker 未解除）。
+            </p>
+          </div>
+        </section>
+      </div>
+      <div className="mt-5">
+        <section className="panel-shell overflow-hidden">
+          <div className="border-b border-line/80 px-5 py-4 sm:px-6">
+            <h2 className="text-[15px] font-semibold tracking-wide text-slate-100">
+              Safety Chain CI Guard（spec-only）
+            </h2>
+            <p className="mt-1 text-[10px] text-slate-500">
+              {ciGuard.specName}（{ciGuard.contractVersion}）· guardMode = SPEC_ONLY_CI_GUARD · decision ={" "}
+              <span className={ciGuard.result.allCriticalPassed ? "font-semibold text-positive" : "font-semibold text-negative"}>
+                {ciGuard.decision}
+              </span>
+              。READY_FOR_UI_REVIEW is not production ready。
+            </p>
+          </div>
+          <div className="grid grid-cols-2 gap-3 px-5 py-4 sm:px-6 lg:grid-cols-4">
+            <div className="rounded-xl border border-line bg-white/[0.012] px-4 py-3">
+              <p className="text-[9px] uppercase tracking-[0.15em] text-slate-500">Chain checks</p>
+              <p className={`mt-1 text-[14px] font-semibold ${ciGuard.result.allCriticalPassed ? "text-positive" : "text-negative"}`}>
+                {ciGuard.result.passedChecks}/{ciGuard.result.totalChecks}
+              </p>
+              <p className="mt-1 text-[9px] text-slate-600">allCriticalPassed {String(ciGuard.result.allCriticalPassed)}</p>
+            </div>
+            <div className="rounded-xl border border-line bg-white/[0.012] px-4 py-3">
+              <p className="text-[9px] uppercase tracking-[0.15em] text-slate-500">runtime / no-go locks</p>
+              <p className="mt-1 text-[11px] font-semibold text-slate-200">
+                allRuntimeFlagsFalse {String(ciGuard.result.allRuntimeFlagsFalse)} · allNoGoLocksPreserved{" "}
+                {String(ciGuard.result.allNoGoLocksPreserved)}
+              </p>
+            </div>
+            <div className="rounded-xl border border-line bg-white/[0.012] px-4 py-3">
+              <p className="text-[9px] uppercase tracking-[0.15em] text-slate-500">operational / production</p>
+              <p className="mt-1 text-[11px] font-semibold text-slate-200">
+                allOperationalUseBlocked {String(ciGuard.result.allOperationalUseBlocked)} · productionSwitchStillBlocked{" "}
+                {String(ciGuard.result.productionSwitchStillBlocked)}
+              </p>
+            </div>
+            <div className="rounded-xl border border-line bg-white/[0.012] px-4 py-3">
+              <p className="text-[9px] uppercase tracking-[0.15em] text-slate-500">production ready</p>
+              <p className="mt-1 text-[12px] font-semibold text-slate-200">productionReady {String(ciGuard.productionReady)}</p>
+            </div>
+          </div>
+          <div className="border-t border-line/60 px-5 py-3 sm:px-6">
+            <p className="text-[9px] text-slate-600">
+              一個指令彙總 V60–V72 安全鏈；任何 commit 偷翻 NO_GO / runtime / production switch 旗標即被攔下（npm run test:safety-chain）。
             </p>
           </div>
         </section>
