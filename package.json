@@ -78,7 +78,8 @@
     "test:real-quote-source-conflict-resolution-policy": "node --require ./scripts/register-typescript.cjs ./scripts/validate-real-quote-source-conflict-resolution-policy.ts",
     "test:conflict-to-trade-plan-verification": "node --require ./scripts/register-typescript.cjs ./scripts/validate-conflict-to-trade-plan-verification.ts",
     "test:downgraded-trade-plan-ui-behavior": "node --require ./scripts/register-typescript.cjs ./scripts/validate-downgraded-trade-plan-ui-behavior.ts",
-    "test:unified-connection-evidence-ledger": "node --require ./scripts/register-typescript.cjs ./scripts/validate-unified-connection-evidence-ledger.ts"
+    "test:unified-connection-evidence-ledger": "node --require ./scripts/register-typescript.cjs ./scripts/validate-unified-connection-evidence-ledger.ts",
+    "test:evidence-ledger-transition": "node --require ./scripts/register-typescript.cjs ./scripts/validate-evidence-ledger-transition.ts"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.108.2",

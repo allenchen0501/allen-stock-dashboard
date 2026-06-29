@@ -12,6 +12,7 @@ import { buildRealQuoteSourceConflictResolutionPolicyContract } from "@/use-case
 import { buildConflictToTradePlanVerificationContract } from "@/use-cases/war-room/build-conflict-to-trade-plan-verification-contract";
 import { buildDowngradedTradePlanUiBehaviorContract } from "@/use-cases/war-room/build-downgraded-trade-plan-ui-behavior-contract";
 import { buildUnifiedConnectionEvidenceLedgerContract } from "@/use-cases/war-room/build-unified-connection-evidence-ledger-contract";
+import { buildEvidenceLedgerTransitionContract } from "@/use-cases/war-room/build-evidence-ledger-transition-contract";
 
 // V60: dedicated engineering / safety monitoring page. The fixture-only spec /
 // runtime / shadow-runner monitoring panels live here, moved away from the primary
@@ -50,6 +51,8 @@ export default function SystemSafetyPage() {
   const ledger = buildUnifiedConnectionEvidenceLedgerContract({ generatedAt: "2026-06-23T00:00:00.000Z" });
   const ledgerPendingCount = ledger.evidenceCategories.reduce((sum, c) => sum + c.pendingCount, 0);
   const ledgerCompletedCount = ledger.evidenceCategories.reduce((sum, c) => sum + c.completedCount, 0);
+  const transition = buildEvidenceLedgerTransitionContract({ generatedAt: "2026-06-23T00:00:00.000Z" });
+  const allSourceContractsExist = transition.sourceContractIntegrityItems.every((s) => s.sourceContractExists === true);
 
   return (
     <div className="page-wrap">
@@ -408,6 +411,54 @@ export default function SystemSafetyPage() {
           <div className="border-t border-line/60 px-5 py-3 sm:px-6">
             <p className="text-[9px] text-slate-600">
               真實行情與 staging 連線仍需人工 evidence，不可作為正式操作依據（V64–V69 evidence 收斂為單一 ledger）。
+            </p>
+          </div>
+        </section>
+      </div>
+      <div className="mt-5">
+        <section className="panel-shell overflow-hidden">
+          <div className="border-b border-line/80 px-5 py-4 sm:px-6">
+            <h2 className="text-[15px] font-semibold tracking-wide text-slate-100">
+              Evidence Ledger Transition Engine（spec-only）
+            </h2>
+            <p className="mt-1 text-[10px] text-slate-500">
+              {transition.specName}（{transition.contractVersion}）· transitionMode = {transition.transitionMode} ·
+              decision = <span className="font-semibold text-negative">{transition.decision}</span>。
+              deterministic / preview-only：no runtime、no fetch、no Supabase connection、no env read、no DB write、no API route。
+            </p>
+          </div>
+          <div className="grid grid-cols-2 gap-3 px-5 py-4 sm:px-6 lg:grid-cols-4">
+            <div className="rounded-xl border border-line bg-white/[0.012] px-4 py-3">
+              <p className="text-[9px] uppercase tracking-[0.15em] text-slate-500">Preview results</p>
+              <p className="mt-1 text-[14px] font-semibold text-slate-100">{transition.transitionPreviewResults.length}</p>
+              <p className="mt-1 text-[9px] text-slate-600">actualLedgerMutated {String(transition.actualLedgerMutated)}</p>
+            </div>
+            <div className="rounded-xl border border-line bg-white/[0.012] px-4 py-3">
+              <p className="text-[9px] uppercase tracking-[0.15em] text-slate-500">Source contract integrity</p>
+              <p className="mt-1 text-[14px] font-semibold text-slate-100">{transition.sourceContractIntegrityItems.length}</p>
+              <p className={`mt-1 text-[9px] font-semibold ${allSourceContractsExist ? "text-positive" : "text-negative"}`}>
+                all exist {String(allSourceContractsExist)}
+              </p>
+            </div>
+            <div className="rounded-xl border border-line bg-white/[0.012] px-4 py-3">
+              <p className="text-[9px] uppercase tracking-[0.15em] text-slate-500">ledger after preview</p>
+              <p className="mt-1 text-[12px] font-semibold text-slate-200">
+                ledgerDecisionAfterPreview {transition.ledgerDecisionAfterPreview}
+              </p>
+            </div>
+            <div className="rounded-xl border border-line bg-white/[0.012] px-4 py-3">
+              <p className="text-[9px] uppercase tracking-[0.15em] text-slate-500">connection</p>
+              <p className="mt-1 text-[11px] font-semibold text-slate-200">
+                staging {String(transition.recalculationResult.stagingConnectionAllowed)} · realQuote{" "}
+                {String(transition.recalculationResult.realQuoteConnectionAllowed)} · production{" "}
+                {String(transition.recalculationResult.productionSwitchAllowed)} · productionReady{" "}
+                {String(transition.productionReady)}
+              </p>
+            </div>
+          </div>
+          <div className="border-t border-line/60 px-5 py-3 sm:px-6">
+            <p className="text-[9px] text-slate-600">
+              即使 preview 單項 evidence，真實行情與 staging 連線仍維持鎖定（actualLedgerMutated false、ledger decision NO_GO）。
             </p>
           </div>
         </section>
