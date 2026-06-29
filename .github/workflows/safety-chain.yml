@@ -1,0 +1,33 @@
+name: Safety Chain
+
+# V74 GitHub Actions Safety Chain Workflow.
+# On every push / pull_request to main, run the V73 safety chain guard + build.
+# CI guard only, read-only permissions. See
+# docs/github-actions-safety-chain.md for the full safety boundary.
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  safety-chain:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - name: Install dependencies
+        run: npm ci
+      - name: Run safety chain
+        run: npm run test:safety-chain
+      - name: Build
+        run: npm run build
