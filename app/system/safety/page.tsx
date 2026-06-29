@@ -10,6 +10,7 @@ import { buildDescriptorToRealQuoteMappingContract } from "@/use-cases/war-room/
 import { buildAuthorizedRealQuoteFieldCatalogContract } from "@/use-cases/war-room/build-authorized-real-quote-field-catalog-contract";
 import { buildRealQuoteSourceConflictResolutionPolicyContract } from "@/use-cases/war-room/build-real-quote-source-conflict-resolution-policy-contract";
 import { buildConflictToTradePlanVerificationContract } from "@/use-cases/war-room/build-conflict-to-trade-plan-verification-contract";
+import { buildDowngradedTradePlanUiBehaviorContract } from "@/use-cases/war-room/build-downgraded-trade-plan-ui-behavior-contract";
 
 // V60: dedicated engineering / safety monitoring page. The fixture-only spec /
 // runtime / shadow-runner monitoring panels live here, moved away from the primary
@@ -41,6 +42,10 @@ export default function SystemSafetyPage() {
   const allDowngradeOpFalse = downgrade.sampleDowngradeResults.every((r) => r.operationalUseAllowed === false);
   const allDowngradeObservation = downgrade.sampleDowngradeResults.every((r) => r.observationOnly === true);
   const allDowngradeSignoffNotDone = downgrade.sampleDowngradeResults.every((r) => r.manualSignoffCompleted === false);
+  const uiBehavior = buildDowngradedTradePlanUiBehaviorContract({ generatedAt: "2026-06-23T00:00:00.000Z" });
+  const allUiOpFalse = uiBehavior.uiStates.every((s) => s.operationalUseAllowed === false);
+  const allUiObservation = uiBehavior.uiStates.every((s) => s.observationOnly === true);
+  const allUiSignoffNotDone = uiBehavior.uiStates.every((s) => s.manualSignoffCompleted === false);
 
   return (
     <div className="page-wrap">
@@ -306,6 +311,52 @@ export default function SystemSafetyPage() {
           <div className="border-t border-line/60 px-5 py-3 sm:px-6">
             <p className="text-[9px] text-slate-600">
               來源衝突或缺值時，承接區會降級為觀察，不可作為正式操作依據（VERIFIED 為 future-only，不在目前 sample 使用）。
+            </p>
+          </div>
+        </section>
+      </div>
+      <div className="mt-5">
+        <section className="panel-shell overflow-hidden">
+          <div className="border-b border-line/80 px-5 py-4 sm:px-6">
+            <h2 className="text-[15px] font-semibold tracking-wide text-slate-100">
+              Downgraded Trade Plan UI Behavior（spec-only）
+            </h2>
+            <p className="mt-1 text-[10px] text-slate-500">
+              {uiBehavior.specName}（{uiBehavior.contractVersion}）· behaviorMode = {uiBehavior.behaviorMode}。
+              deterministic / fixture-only：no runtime、no fetch、no Supabase connection、no env read、no DB write、no API route。
+            </p>
+          </div>
+          <div className="grid grid-cols-2 gap-3 px-5 py-4 sm:px-6 lg:grid-cols-4">
+            <div className="rounded-xl border border-line bg-white/[0.012] px-4 py-3">
+              <p className="text-[9px] uppercase tracking-[0.15em] text-slate-500">UI states</p>
+              <p className="mt-1 text-[14px] font-semibold text-slate-100">{uiBehavior.uiStates.length}</p>
+              <p className={`mt-1 text-[9px] font-semibold ${allUiObservation ? "text-positive" : "text-negative"}`}>
+                observationOnly true {String(allUiObservation)}
+              </p>
+            </div>
+            <div className="rounded-xl border border-line bg-white/[0.012] px-4 py-3">
+              <p className="text-[9px] uppercase tracking-[0.15em] text-slate-500">operational / sign-off</p>
+              <p className="mt-1 text-[11px] font-semibold text-slate-200">
+                operationalUseAllowed false {String(allUiOpFalse)} · manualSignoffCompleted {String(!allUiSignoffNotDone)}
+              </p>
+            </div>
+            <div className="rounded-xl border border-line bg-white/[0.012] px-4 py-3">
+              <p className="text-[9px] uppercase tracking-[0.15em] text-slate-500">production</p>
+              <p className="mt-1 text-[11px] font-semibold text-slate-200">
+                productionSwitchAllowed {String(uiBehavior.productionReady)}
+              </p>
+            </div>
+            <div className="rounded-xl border border-line bg-white/[0.012] px-4 py-3">
+              <p className="text-[9px] uppercase tracking-[0.15em] text-slate-500">connection</p>
+              <p className="mt-1 text-[11px] font-semibold text-slate-200">
+                realDataConnected {String(uiBehavior.realDataConnected)} · fetchPerformed {String(uiBehavior.fetchPerformed)} ·
+                supabaseConnected {String(uiBehavior.supabaseConnected)}
+              </p>
+            </div>
+          </div>
+          <div className="border-t border-line/60 px-5 py-3 sm:px-6">
+            <p className="text-[9px] text-slate-600">
+              依 TradePlanDisplayMode 決定承接區 / 目標區 / 風報比顯示或隱藏；這不是買賣指令，不可作為正式操作依據。
             </p>
           </div>
         </section>

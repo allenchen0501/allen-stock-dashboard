@@ -7,6 +7,16 @@ import type {
   CandidatePriceLevelDescriptor,
   CandidatePriceLevelFixtureSourceBundle,
 } from "@/use-cases/war-room/candidate-price-level-fixture-source-contract";
+import type {
+  DowngradedTradePlanUiBehaviorContract,
+  DowngradedTradePlanUiState,
+} from "@/use-cases/war-room/downgraded-trade-plan-ui-behavior-contract";
+
+const WARNING_TONE: Record<string, string> = {
+  info: "text-slate-400",
+  warning: "text-amber",
+  danger: "text-negative",
+};
 
 // ---------------------------------------------------------------------------
 // Daily Candidate Pools — V61 / V63
@@ -39,11 +49,50 @@ function Field({ label, value }: { label: string; value: string }) {
 function StructuredTradePlan({
   plan,
   descriptor,
+  uiState,
 }: {
   plan: CandidateTradePlan;
   descriptor?: CandidatePriceLevelDescriptor;
+  uiState?: DowngradedTradePlanUiState;
 }) {
   const { buyZone, riskReward, entryStrategy } = plan;
+
+  // V69: when a downgrade UI state is present, the card display follows it —
+  // zones are hidden / downgraded and a warning + (non-imperative) action label show.
+  if (uiState) {
+    return (
+      <div className="mt-2 rounded-lg border border-line/70 bg-white/[0.012] px-3 py-2">
+        <p className="text-[9px] font-bold uppercase tracking-[0.15em] text-slate-500">
+          Structured Trade Plan（fixture/mock · {uiState.tradePlanDisplayMode}）
+        </p>
+        <p className={`mt-1 text-[10px] font-semibold ${WARNING_TONE[uiState.warningLevel] ?? "text-slate-400"}`}>
+          {uiState.warningTitle}
+        </p>
+        <p className="mt-0.5 text-[9px] leading-4 text-slate-500">{uiState.warningMessage}</p>
+        <div className="mt-1 space-y-0.5">
+          {uiState.buyZoneVisible ? (
+            <Field label="候選承接區" value={uiState.buyZoneDisplayText} />
+          ) : (
+            <Field label="候選承接區" value="（已隱藏：來源降級，不可作為正式操作依據）" />
+          )}
+          {uiState.targetZoneVisible ? (
+            <Field label="目標觀察區" value={uiState.targetZoneDisplayText} />
+          ) : (
+            <Field label="目標觀察區" value="（已隱藏：來源降級，不可作為正式操作依據）" />
+          )}
+          {uiState.riskRewardVisible ? (
+            <Field label="風報比 rewardRiskRatio" value={uiState.riskRewardDisplayText} />
+          ) : (
+            <Field label="風報比 rewardRiskRatio" value="（已隱藏：來源降級，不可作為正式操作依據）" />
+          )}
+          <Field label="今日動作 actionLabel" value={uiState.actionLabel} />
+          <Field label="observationOnly" value={`${uiState.observationOnly}（operationalUseAllowed=false）`} />
+        </div>
+        <p className="mt-1 text-[9px] font-semibold text-amber">這不是買賣指令（this is not a buy/sell command）。</p>
+      </div>
+    );
+  }
+
   return (
     <div className="mt-2 rounded-lg border border-line/70 bg-white/[0.012] px-3 py-2">
       <p className="text-[9px] font-bold uppercase tracking-[0.15em] text-slate-500">
@@ -55,6 +104,7 @@ function StructuredTradePlan({
         <Field label="目標觀察區" value={`${riskReward.targetLower}–${riskReward.targetUpper}（上檔報酬 ${riskReward.upsideRewardPercent}%）`} />
         <Field label="風報比 rewardRiskRatio" value={`${riskReward.rewardRiskRatio}`} />
         <Field label="觀察策略" value={entryStrategy.observationOnlyText} />
+        <p className="text-[9px] font-semibold text-amber">這不是買賣指令（this is not a buy/sell command）。</p>
         {descriptor ? (
           <Field
             label="價位來源 fixture source"
@@ -74,6 +124,7 @@ export function DailyCandidatePools({
   authorizedSourceCatalogMode,
   conflictPolicyMode,
   tradePlanVerificationMode,
+  uiBehavior,
 }: {
   pools: AllenScoreDailyPool[];
   tradePlan?: StructuredCandidateTradePlanBundle;
@@ -82,9 +133,15 @@ export function DailyCandidatePools({
   authorizedSourceCatalogMode?: string;
   conflictPolicyMode?: string;
   tradePlanVerificationMode?: string;
+  uiBehavior?: DowngradedTradePlanUiBehaviorContract;
 }) {
   const planBySymbol = new Map((tradePlan?.tradePlans ?? []).map((p) => [p.symbol, p] as const));
   const descriptorBySymbol = new Map((fixtureSource?.descriptors ?? []).map((d) => [d.symbol, d] as const));
+  // V69: first downgrade UI state per symbol drives the card display behavior.
+  const uiStateBySymbol = new Map<string, DowngradedTradePlanUiState>();
+  for (const s of uiBehavior?.uiStates ?? []) {
+    if (!uiStateBySymbol.has(s.symbol)) uiStateBySymbol.set(s.symbol, s);
+  }
   return (
     <section className="panel-shell overflow-hidden">
       <div className="border-b border-line/80 px-5 py-4 sm:px-6">
@@ -161,7 +218,11 @@ export function DailyCandidatePools({
                     </div>
 
                     {planBySymbol.has(c.symbol) ? (
-                      <StructuredTradePlan plan={planBySymbol.get(c.symbol)!} descriptor={descriptorBySymbol.get(c.symbol)} />
+                      <StructuredTradePlan
+                        plan={planBySymbol.get(c.symbol)!}
+                        descriptor={descriptorBySymbol.get(c.symbol)}
+                        uiState={uiStateBySymbol.get(c.symbol)}
+                      />
                     ) : null}
                   </div>
                 ))}

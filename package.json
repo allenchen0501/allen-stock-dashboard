@@ -76,7 +76,8 @@
     "test:descriptor-to-real-quote-mapping": "node --require ./scripts/register-typescript.cjs ./scripts/validate-descriptor-to-real-quote-mapping.ts",
     "test:authorized-real-quote-field-catalog": "node --require ./scripts/register-typescript.cjs ./scripts/validate-authorized-real-quote-field-catalog.ts",
     "test:real-quote-source-conflict-resolution-policy": "node --require ./scripts/register-typescript.cjs ./scripts/validate-real-quote-source-conflict-resolution-policy.ts",
-    "test:conflict-to-trade-plan-verification": "node --require ./scripts/register-typescript.cjs ./scripts/validate-conflict-to-trade-plan-verification.ts"
+    "test:conflict-to-trade-plan-verification": "node --require ./scripts/register-typescript.cjs ./scripts/validate-conflict-to-trade-plan-verification.ts",
+    "test:downgraded-trade-plan-ui-behavior": "node --require ./scripts/register-typescript.cjs ./scripts/validate-downgraded-trade-plan-ui-behavior.ts"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.108.2",
