@@ -25,11 +25,13 @@ const phase2Module = require("../use-cases/war-room/build-phase-2-locked-impleme
 const phase2bModule = require("../use-cases/war-room/build-shadow-quote-comparison-view-model") as typeof import("../use-cases/war-room/build-shadow-quote-comparison-view-model");
 const scaffoldModule = require("../use-cases/war-room/build-shadow-runtime-comparison") as typeof import("../use-cases/war-room/build-shadow-runtime-comparison");
 const scopeModule = require("../use-cases/war-room/build-limited-live-fetch-scope-contract") as typeof import("../use-cases/war-room/build-limited-live-fetch-scope-contract");
+const implModule = require("../use-cases/war-room/build-limited-live-fetch-implementation-contract") as typeof import("../use-cases/war-room/build-limited-live-fetch-implementation-contract");
 const { buildSafetyChainCiGuardContract } = builderModule;
 const { buildPhase2LockedImplementationContract } = phase2Module;
 const { buildShadowQuoteComparisonViewModel } = phase2bModule;
 const { buildStagingShadowRuntimeContract } = scaffoldModule;
 const { buildLimitedLiveFetchScopeContract } = scopeModule;
+const { buildLimitedLiveFetchImplementationContract } = implModule;
 
 // ---------------------------------------------------------------------------
 // Types
@@ -140,7 +142,11 @@ const REQUIRED_SCRIPTS = [
   "test:phase-2b-shadow-comparison-ui-shell",
   "test:staging-shadow-runtime-scaffold",
   "test:limited-live-fetch-dry-run-pr-scope",
+  "test:limited-live-fetch-dry-run-implementation",
 ];
+
+// The manual smoke script must NEVER be part of the safety chain.
+const SMOKE_SCRIPT_NAME = "smoke:limited-live-fetch:3019";
 
 // ---------------------------------------------------------------------------
 // Gate 1: Required files
@@ -285,8 +291,9 @@ function checkGuard(): { result: CheckResult; decision: string; total: number; p
   const phase2bCheck = g.checks.find((c) => c.sourceScript === "test:phase-2b-shadow-comparison-ui-shell");
   const scaffoldCheck = g.checks.find((c) => c.sourceScript === "test:staging-shadow-runtime-scaffold");
   const scopeCheck = g.checks.find((c) => c.sourceScript === "test:limited-live-fetch-dry-run-pr-scope");
-  if (g.checks.length >= 17 || (phase2Check && phase2bCheck && scaffoldCheck && scopeCheck)) details.push(`PASS  totalChecks = ${g.checks.length} (>= 17 / includes Phase 2 + Phase 2b + scaffold + live fetch scope).`);
-  else issues.push(`FAIL  totalChecks must be 17 or include all extended checks (got ${g.checks.length}).`);
+  const implCheck = g.checks.find((c) => c.sourceScript === "test:limited-live-fetch-dry-run-implementation");
+  if (g.checks.length >= 18 || (phase2Check && phase2bCheck && scaffoldCheck && scopeCheck && implCheck)) details.push(`PASS  totalChecks = ${g.checks.length} (>= 18 / includes Phase 2 + Phase 2b + scaffold + live fetch scope + live fetch implementation).`);
+  else issues.push(`FAIL  totalChecks must be 18 or include all extended checks (got ${g.checks.length}).`);
   if (phase2Check) {
     if (phase2Check.critical === true) details.push("PASS  Phase 2 check critical === true.");
     else issues.push("FAIL  Phase 2 check must be critical.");
@@ -379,6 +386,49 @@ function checkGuard(): { result: CheckResult; decision: string; total: number; p
   expectEq("scope.ownerApprovalRequired", sp.ownerApprovalRequired, true);
   expectEq("scope.ownerApprovalReceived", sp.ownerApprovalReceived, false);
 
+  // Limited Live Fetch Implementation check present + critical/passed.
+  if (implCheck) {
+    if (implCheck.critical === true) details.push("PASS  Live fetch implementation check critical === true.");
+    else issues.push("FAIL  Live fetch implementation check must be critical.");
+    if (implCheck.passed === true) details.push("PASS  Live fetch implementation check passed === true.");
+    else issues.push(`FAIL  Live fetch implementation check must pass (${implCheck.failureReason}).`);
+    if (implCheck.expectedDecision === "NO_GO" || implCheck.expectedDecision === "LIVE_FETCH_DRY_RUN_NON_OPERATIONAL")
+      details.push(`PASS  Live fetch implementation expectedDecision ${implCheck.expectedDecision}.`);
+    else issues.push("FAIL  Live fetch implementation expectedDecision must be NO_GO or LIVE_FETCH_DRY_RUN_NON_OPERATIONAL.");
+    if (implCheck.expectedMode === "LIMITED_LIVE_FETCH_DRY_RUN_SHADOW_ONLY") details.push("PASS  Live fetch implementation mode LIMITED_LIVE_FETCH_DRY_RUN_SHADOW_ONLY.");
+    else issues.push("FAIL  Live fetch implementation mode must be LIMITED_LIVE_FETCH_DRY_RUN_SHADOW_ONLY.");
+  } else {
+    issues.push("FAIL  guard must include a Limited Live Fetch Dry-run Implementation check.");
+  }
+
+  // Limited Live Fetch Implementation contract itself: approved scope + all
+  // operational / connection flags false / shadow-only / non-operational.
+  const impl = buildLimitedLiveFetchImplementationContract({ generatedAt: FIXED_TS });
+  const im = impl as unknown as Record<string, unknown>;
+  expectEq("impl.decision", impl.decision, "LIVE_FETCH_DRY_RUN_NON_OPERATIONAL");
+  expectEq("impl.mode", impl.mode, "LIMITED_LIVE_FETCH_DRY_RUN_SHADOW_ONLY");
+  expectEq("impl.approvedProviderOnly", im.approvedProviderOnly, true);
+  expectEq("impl.approvedProvider", im.approvedProvider, "TWSE_TPEX");
+  expectEq("impl.symbol", im.symbol, "3019");
+  expectEq("impl.channel", im.channel, "tse_3019.tw");
+  expectEq("impl.timeoutMs", im.timeoutMs, 3000);
+  expectEq("impl.maxRetries", im.maxRetries, 0);
+  expectEq("impl.httpMethod", im.httpMethod, "GET");
+  expectEq("impl.fallbackDisabledScaffoldCandidate", im.fallbackDisabledScaffoldCandidate, true);
+  expectEq("impl.defaultRealDataMode", im.defaultRealDataMode, "fixture");
+  expectEq("impl.shadowOnly", im.shadowOnly, true);
+  expectEq("impl.appDefaultLiveFetch", im.appDefaultLiveFetch, false);
+  expectEq("impl.symbolUniverseExpanded", im.symbolUniverseExpanded, false);
+  expectEq("impl.smokeScriptInSafetyChain", im.smokeScriptInSafetyChain, false);
+  for (const f of [
+    "operationalUseAllowed", "portfolioApiSwitchAllowed", "productionReady", "brokerApiAllowed",
+    "buySellCommandGenerated", "autoOrderRequested", "realDataConnected", "supabaseConnected",
+    "envReadPerformed", "fetchPerformed", "apiRouteCreated", "portfolioApiSwitched",
+    "databaseWritePerformed", "productionSwitchAllowed",
+  ]) {
+    expectEq(`impl.${f}`, im[f], false);
+  }
+
   return {
     result: { name: "guard_checks", status: issues.length > 0 ? "FAIL" : "PASS", details: [...details, ...issues] },
     decision: g.decision,
@@ -465,6 +515,42 @@ function checkSafety(): CheckResult {
 }
 
 // ---------------------------------------------------------------------------
+// Gate 6b: Safety chain composition (impl validator IN, smoke script OUT)
+// ---------------------------------------------------------------------------
+
+function checkSafetyChainComposition(): CheckResult {
+  const details: string[] = [];
+  const issues: string[] = [];
+  const pkgRaw = readFile(resolve(PKG_REL));
+  if (pkgRaw == null) {
+    return { name: "safety_chain_composition", status: "FAIL", details: ["FAIL  Cannot read package.json."] };
+  }
+  let safetyChain = "";
+  try {
+    const pkg = JSON.parse(pkgRaw) as { scripts?: Record<string, string> };
+    safetyChain = pkg.scripts?.["test:safety-chain"] ?? "";
+  } catch {
+    return { name: "safety_chain_composition", status: "FAIL", details: ["FAIL  package.json is not valid JSON."] };
+  }
+
+  if (safetyChain.includes("test:limited-live-fetch-dry-run-implementation"))
+    details.push("PASS  test:safety-chain includes test:limited-live-fetch-dry-run-implementation.");
+  else issues.push("FAIL  test:safety-chain must include test:limited-live-fetch-dry-run-implementation.");
+
+  if (!safetyChain.includes(SMOKE_SCRIPT_NAME))
+    details.push(`PASS  test:safety-chain does NOT include ${SMOKE_SCRIPT_NAME} (manual only).`);
+  else issues.push(`FAIL  test:safety-chain must NOT include ${SMOKE_SCRIPT_NAME}.`);
+
+  // The guard's own check set must not reference the smoke script.
+  const guard = buildSafetyChainCiGuardContract({ generatedAt: FIXED_TS });
+  if (!guard.checks.some((c) => c.sourceScript === SMOKE_SCRIPT_NAME))
+    details.push(`PASS  CHAIN_SPECS does NOT include ${SMOKE_SCRIPT_NAME}.`);
+  else issues.push(`FAIL  CHAIN_SPECS must NOT include ${SMOKE_SCRIPT_NAME}.`);
+
+  return { name: "safety_chain_composition", status: issues.length > 0 ? "FAIL" : "PASS", details: [...details, ...issues] };
+}
+
+// ---------------------------------------------------------------------------
 // Gate 7: package.json + README
 // ---------------------------------------------------------------------------
 
@@ -500,6 +586,7 @@ const uiCheck = checkUi();
 const pkgCheck = checkTerms("package_checks", pkgBody, PKG_REL, PKG_TERMS);
 const readmeCheck = checkTerms("readme_checks", readmeBody, README_REL, README_TERMS);
 const safetyCheck = checkSafety();
+const compositionCheck = checkSafetyChainComposition();
 
 const allChecks: CheckResult[] = [
   fileCheck,
@@ -510,6 +597,7 @@ const allChecks: CheckResult[] = [
   pkgCheck,
   readmeCheck,
   safetyCheck,
+  compositionCheck,
 ];
 const overallStatus = combineStatus(allChecks.map((c) => c.status));
 
@@ -528,6 +616,7 @@ const summary: GuardSummary = {
     package_checks: pkgCheck.status,
     readme_checks: readmeCheck.status,
     safety: safetyCheck.status,
+    safety_chain_composition: compositionCheck.status,
   },
   decision,
   total_checks: total,

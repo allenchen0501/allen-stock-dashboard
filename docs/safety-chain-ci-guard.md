@@ -43,8 +43,11 @@ CI guard 覆蓋的 scripts（V60–V72）：
 - test:phase-2b-shadow-comparison-ui-shell（Phase 2b Shadow Comparison UI Shell；expectedDecision NO_GO、mode INTERFACE_ONLY_NOT_CONNECTED、real quote candidate status DISABLED）
 - test:staging-shadow-runtime-scaffold（Staging Shadow Runtime Scaffold；expectedDecision NO_GO、mode SCAFFOLD_ONLY_NOT_CONNECTED、liveFetchAllowed/envReadAllowed/supabaseConnectionAllowed/portfolioApiSwitchAllowed/productionReady false、serviceRoleForbidden true）
 - test:limited-live-fetch-dry-run-pr-scope（Limited Live Fetch Dry-run PR Scope；expectedDecision NO_GO、mode SCOPE_ONLY_NO_NETWORK_CODE、networkCodeAdded/liveFetchAllowed/envReadPerformed/supabaseConnected/apiRouteCreated/portfolioApiSwitched/productionReady false、ownerApprovalReceived false）
+- test:limited-live-fetch-dry-run-implementation（Limited Live Fetch Dry-run Implementation；expectedDecision LIVE_FETCH_DRY_RUN_NON_OPERATIONAL、mode LIMITED_LIVE_FETCH_DRY_RUN_SHADOW_ONLY、approvedProviderOnly true、approvedProvider TWSE_TPEX、symbol 3019、channel tse_3019.tw、timeoutMs 3000、maxRetries 0、httpMethod GET、fallbackDisabledScaffoldCandidate true、defaultRealDataMode fixture、shadowOnly true、operationalUseAllowed/portfolioApiSwitchAllowed/productionReady/brokerApiAllowed/buySellCommandGenerated/autoOrderRequested false）
 
-> 自 Limited Live Fetch Scope Safety Chain Integration 起，guard 共覆蓋 **17** 支 check（V60–V72 + Phase 2 locked implementation + Phase 2b shadow comparison UI shell + Staging Shadow Runtime Scaffold + Limited Live Fetch Dry-run PR Scope）。
+> 自 Limited Live Fetch Implementation Safety Chain Integration 起，guard 共覆蓋 **18** 支 check（V60–V72 + Phase 2 locked implementation + Phase 2b shadow comparison UI shell + Staging Shadow Runtime Scaffold + Limited Live Fetch Dry-run PR Scope + Limited Live Fetch Dry-run Implementation）。
+>
+> **manual smoke script `smoke:limited-live-fetch:3019` 永遠不納入 CI guard / safety chain。** 它只能手動執行；失敗只顯示 fallback disabled scaffold candidate，不得作為 CI 條件，guard validator 會明確檢查 `test:safety-chain` 與 CHAIN_SPECS 都不含此 smoke script。
 
 ---
 
