@@ -183,6 +183,80 @@ pushCheck("03_deterministic_repeat", [
 ]);
 
 // ---------------------------------------------------------------------------
+// Offline fallback matrix (malformed / missing / wrong-field responses)
+// Pure parser only; fixed clock; never touches the network.
+// ---------------------------------------------------------------------------
+
+const VALID_TLONG = String(TLONG_MS);
+
+interface MatrixCase {
+  name: string;
+  input: unknown;
+}
+
+// Cases that MUST fall back to the disabled scaffold candidate (required field
+// corrupted / wrong instrument / structurally malformed response).
+const FALLBACK_MATRIX: MatrixCase[] = [
+  { name: "empty_msgArray", input: { msgArray: [], rtcode: "0000" } },
+  { name: "missing_msgArray", input: { rtcode: "0000" } },
+  { name: "wrong_symbol_c_9999", input: { msgArray: [{ ch: "tse_3019.tw", c: "9999", z: "142.5", tlong: VALID_TLONG }] } },
+  // A wrong channel echoes a non-3019 instrument code; the parser's symbol guard rejects it.
+  { name: "wrong_channel_tse_9999", input: { msgArray: [{ ch: "tse_9999.tw", c: "9999", z: "142.5", tlong: VALID_TLONG }] } },
+  { name: "missing_price_z", input: { msgArray: [{ ch: "tse_3019.tw", c: "3019", o: "140.5", tlong: VALID_TLONG }] } },
+  { name: "invalid_price_dash", input: { msgArray: [{ ch: "tse_3019.tw", c: "3019", z: "-", tlong: VALID_TLONG }] } },
+  { name: "non_numeric_price_abc", input: { msgArray: [{ ch: "tse_3019.tw", c: "3019", z: "abc", tlong: VALID_TLONG }] } },
+  { name: "missing_tlong", input: { msgArray: [{ ch: "tse_3019.tw", c: "3019", z: "142.5" }] } },
+  { name: "invalid_tlong_abc", input: { msgArray: [{ ch: "tse_3019.tw", c: "3019", z: "142.5", tlong: "abc" }] } },
+  { name: "malformed_root_null", input: null },
+  { name: "malformed_root_array", input: [1, 2, 3] },
+  { name: "malformed_entry_not_object", input: { msgArray: ["not-an-object"] } },
+];
+
+let fallbackAllSafe = true;
+for (const c of FALLBACK_MATRIX) {
+  const cand = parseLimitedLiveFetchResponse("3019", c.input, fixedNow) as unknown as Record<string, unknown>;
+  const safe =
+    cand.symbol === "3019" &&
+    cand.isRealData === false &&
+    cand.isConnected === false &&
+    cand.isDisabled === true &&
+    cand.verificationStatus === "SCAFFOLD_ONLY" &&
+    cand.operationalUseAllowed === false &&
+    cand.buySellCommandGenerated === false &&
+    cand.autoOrderRequested === false &&
+    cand.receivedAt === FIXED_NOW_ISO;
+  if (!safe) fallbackAllSafe = false;
+  pushCheck(`matrix_${c.name}`, [
+    { ok: safe, pass: `Fallback case "${c.name}" → safe disabled scaffold candidate (deterministic receivedAt).`, fail: `Fallback case "${c.name}" did NOT return a safe disabled scaffold candidate: ${JSON.stringify(cand)}.` },
+  ]);
+}
+
+pushCheck("matrix_case_count", [
+  { ok: FALLBACK_MATRIX.length >= 10, pass: `Fallback matrix has ${FALLBACK_MATRIX.length} cases (>= 10).`, fail: `Fallback matrix must have >= 10 cases (got ${FALLBACK_MATRIX.length}).` },
+  { ok: fallbackAllSafe, pass: "Every fallback matrix case returned a safe disabled scaffold candidate.", fail: "Every fallback matrix case must return a safe disabled scaffold candidate." },
+]);
+
+// Optional-field cases: `volume` is OPTIONAL in the parser (volume=null is allowed by
+// design and is NOT a hard fallback). These must still never produce an operational
+// quote — volume corruption stays non-operational with a deterministic receivedAt.
+const OPTIONAL_SAFE_MATRIX: MatrixCase[] = [
+  { name: "missing_volume", input: { msgArray: [{ ch: "tse_3019.tw", c: "3019", z: "142.5", o: "140.5", h: "142.5", l: "139.5", y: "138", tlong: VALID_TLONG }] } },
+  { name: "non_numeric_volume", input: { msgArray: [{ ch: "tse_3019.tw", c: "3019", z: "142.5", o: "140.5", h: "142.5", l: "139.5", y: "138", v: "abc", tlong: VALID_TLONG }] } },
+];
+for (const c of OPTIONAL_SAFE_MATRIX) {
+  const cand = parseLimitedLiveFetchResponse("3019", c.input, fixedNow) as unknown as Record<string, unknown>;
+  const safe =
+    cand.volume === null &&
+    cand.operationalUseAllowed === false &&
+    cand.buySellCommandGenerated === false &&
+    cand.autoOrderRequested === false &&
+    cand.receivedAt === FIXED_NOW_ISO;
+  pushCheck(`optional_${c.name}`, [
+    { ok: safe, pass: `Optional-field case "${c.name}" → volume=null, non-operational, deterministic receivedAt.`, fail: `Optional-field case "${c.name}" must stay non-operational with volume=null: ${JSON.stringify(cand)}.` },
+  ]);
+}
+
+// ---------------------------------------------------------------------------
 // Safety boundary (static provider scan + guard + package composition)
 // ---------------------------------------------------------------------------
 
@@ -266,6 +340,8 @@ const summary = {
   fixed_now: FIXED_NOW_ISO,
   live_fetch_performed: false,
   smoke_invoked: false,
+  fallback_matrix_case_count: FALLBACK_MATRIX.length,
+  optional_field_case_count: OPTIONAL_SAFE_MATRIX.length,
   total_checks: checks.length,
   passed_checks: checks.filter((c) => c.status === "PASS").length,
   failed_checks: checks.filter((c) => c.status === "FAIL").length,
