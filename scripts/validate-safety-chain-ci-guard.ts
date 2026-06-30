@@ -22,8 +22,10 @@ const path = require("node:path") as typeof import("node:path");
 
 const builderModule = require("../use-cases/war-room/build-safety-chain-ci-guard-contract") as typeof import("../use-cases/war-room/build-safety-chain-ci-guard-contract");
 const phase2Module = require("../use-cases/war-room/build-phase-2-locked-implementation-contract") as typeof import("../use-cases/war-room/build-phase-2-locked-implementation-contract");
+const phase2bModule = require("../use-cases/war-room/build-shadow-quote-comparison-view-model") as typeof import("../use-cases/war-room/build-shadow-quote-comparison-view-model");
 const { buildSafetyChainCiGuardContract } = builderModule;
 const { buildPhase2LockedImplementationContract } = phase2Module;
+const { buildShadowQuoteComparisonViewModel } = phase2bModule;
 
 // ---------------------------------------------------------------------------
 // Types
@@ -131,6 +133,7 @@ const REQUIRED_SCRIPTS = [
   "test:evidence-ledger-transition",
   "test:ledger-integrity-rollup",
   "test:phase-2-locked-implementation",
+  "test:phase-2b-shadow-comparison-ui-shell",
 ];
 
 // ---------------------------------------------------------------------------
@@ -271,10 +274,11 @@ function checkGuard(): { result: CheckResult; decision: string; total: number; p
   if (g.validation.valid) details.push("PASS  validation.valid === true.");
   else issues.push("FAIL  validation.valid must be true.");
 
-  // Total checks = 14 (V60–V72 + Phase 2) or at least includes the Phase 2 check.
+  // Total checks = 15 (V60–V72 + Phase 2 + Phase 2b) or at least includes both checks.
   const phase2Check = g.checks.find((c) => c.sourceScript === "test:phase-2-locked-implementation");
-  if (g.checks.length >= 14 || phase2Check) details.push(`PASS  totalChecks = ${g.checks.length} (>= 14 / includes Phase 2).`);
-  else issues.push(`FAIL  totalChecks must be 14 or include Phase 2 (got ${g.checks.length}).`);
+  const phase2bCheck = g.checks.find((c) => c.sourceScript === "test:phase-2b-shadow-comparison-ui-shell");
+  if (g.checks.length >= 15 || (phase2Check && phase2bCheck)) details.push(`PASS  totalChecks = ${g.checks.length} (>= 15 / includes Phase 2 + Phase 2b).`);
+  else issues.push(`FAIL  totalChecks must be 15 or include Phase 2 + Phase 2b (got ${g.checks.length}).`);
   if (phase2Check) {
     if (phase2Check.critical === true) details.push("PASS  Phase 2 check critical === true.");
     else issues.push("FAIL  Phase 2 check must be critical.");
@@ -291,6 +295,29 @@ function checkGuard(): { result: CheckResult; decision: string; total: number; p
   expectEq("phase2.decision", phase2.decision, "NO_GO");
   expectEq("phase2.mode", phase2.mode, "INTERFACE_ONLY_NOT_CONNECTED");
   expectEq("phase2.productionReady", (phase2 as unknown as Record<string, unknown>).productionReady, false);
+
+  // Phase 2b check present + critical/passed.
+  if (phase2bCheck) {
+    if (phase2bCheck.critical === true) details.push("PASS  Phase 2b check critical === true.");
+    else issues.push("FAIL  Phase 2b check must be critical.");
+    if (phase2bCheck.passed === true) details.push("PASS  Phase 2b check passed === true.");
+    else issues.push(`FAIL  Phase 2b check must pass (${phase2bCheck.failureReason}).`);
+    if (phase2bCheck.expectedDecision === "NO_GO") details.push("PASS  Phase 2b expectedDecision NO_GO.");
+    else issues.push("FAIL  Phase 2b expectedDecision must be NO_GO.");
+  } else {
+    issues.push("FAIL  guard must include a Phase 2b shadow comparison UI shell check.");
+  }
+
+  // Phase 2b view model itself: decision NO_GO / mode INTERFACE_ONLY_NOT_CONNECTED /
+  // real quote candidate DISABLED / connection flags false.
+  const phase2b = buildShadowQuoteComparisonViewModel({ generatedAt: FIXED_TS });
+  const p2b = phase2b as unknown as Record<string, unknown>;
+  expectEq("phase2b.decision", phase2b.decision, "NO_GO");
+  expectEq("phase2b.mode", phase2b.mode, "INTERFACE_ONLY_NOT_CONNECTED");
+  expectEq("phase2b.realQuoteCandidateStatus", phase2b.realQuoteCandidateStatus, "DISABLED");
+  for (const f of ["realDataConnected", "fetchPerformed", "envReadPerformed", "supabaseConnected", "productionReady"]) {
+    expectEq(`phase2b.${f}`, p2b[f], false);
+  }
 
   return {
     result: { name: "guard_checks", status: issues.length > 0 ? "FAIL" : "PASS", details: [...details, ...issues] },
