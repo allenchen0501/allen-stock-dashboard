@@ -39,6 +39,9 @@ CI guard 覆蓋的 scripts（V60–V72）：
 - test:unified-connection-evidence-ledger
 - test:evidence-ledger-transition
 - test:ledger-integrity-rollup
+- test:phase-2-locked-implementation（Phase 2 Locked Real Quote Interface；expectedDecision NO_GO、mode INTERFACE_ONLY_NOT_CONNECTED）
+
+> 自 Phase 2 Safety Chain Integration 起，guard 共覆蓋 **14** 支 check（V60–V72 + Phase 2 locked implementation）。
 
 ---
 

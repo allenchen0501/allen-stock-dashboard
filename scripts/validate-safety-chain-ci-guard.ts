@@ -21,7 +21,9 @@ const fs = require("node:fs") as typeof import("node:fs");
 const path = require("node:path") as typeof import("node:path");
 
 const builderModule = require("../use-cases/war-room/build-safety-chain-ci-guard-contract") as typeof import("../use-cases/war-room/build-safety-chain-ci-guard-contract");
+const phase2Module = require("../use-cases/war-room/build-phase-2-locked-implementation-contract") as typeof import("../use-cases/war-room/build-phase-2-locked-implementation-contract");
 const { buildSafetyChainCiGuardContract } = builderModule;
+const { buildPhase2LockedImplementationContract } = phase2Module;
 
 // ---------------------------------------------------------------------------
 // Types
@@ -128,6 +130,7 @@ const REQUIRED_SCRIPTS = [
   "test:unified-connection-evidence-ledger",
   "test:evidence-ledger-transition",
   "test:ledger-integrity-rollup",
+  "test:phase-2-locked-implementation",
 ];
 
 // ---------------------------------------------------------------------------
@@ -267,6 +270,27 @@ function checkGuard(): { result: CheckResult; decision: string; total: number; p
 
   if (g.validation.valid) details.push("PASS  validation.valid === true.");
   else issues.push("FAIL  validation.valid must be true.");
+
+  // Total checks = 14 (V60–V72 + Phase 2) or at least includes the Phase 2 check.
+  const phase2Check = g.checks.find((c) => c.sourceScript === "test:phase-2-locked-implementation");
+  if (g.checks.length >= 14 || phase2Check) details.push(`PASS  totalChecks = ${g.checks.length} (>= 14 / includes Phase 2).`);
+  else issues.push(`FAIL  totalChecks must be 14 or include Phase 2 (got ${g.checks.length}).`);
+  if (phase2Check) {
+    if (phase2Check.critical === true) details.push("PASS  Phase 2 check critical === true.");
+    else issues.push("FAIL  Phase 2 check must be critical.");
+    if (phase2Check.passed === true) details.push("PASS  Phase 2 check passed === true.");
+    else issues.push(`FAIL  Phase 2 check must pass (${phase2Check.failureReason}).`);
+    if (phase2Check.expectedDecision === "NO_GO") details.push("PASS  Phase 2 expectedDecision NO_GO.");
+    else issues.push("FAIL  Phase 2 expectedDecision must be NO_GO.");
+  } else {
+    issues.push("FAIL  guard must include a Phase 2 locked implementation check.");
+  }
+
+  // Phase 2 contract itself: decision NO_GO + mode INTERFACE_ONLY_NOT_CONNECTED.
+  const phase2 = buildPhase2LockedImplementationContract({ generatedAt: FIXED_TS });
+  expectEq("phase2.decision", phase2.decision, "NO_GO");
+  expectEq("phase2.mode", phase2.mode, "INTERFACE_ONLY_NOT_CONNECTED");
+  expectEq("phase2.productionReady", (phase2 as unknown as Record<string, unknown>).productionReady, false);
 
   return {
     result: { name: "guard_checks", status: issues.length > 0 ? "FAIL" : "PASS", details: [...details, ...issues] },

@@ -28,6 +28,7 @@ import { buildDowngradedTradePlanUiBehaviorContract } from "./build-downgraded-t
 import { buildUnifiedConnectionEvidenceLedgerContract } from "./build-unified-connection-evidence-ledger-contract";
 import { buildEvidenceLedgerTransitionContract } from "./build-evidence-ledger-transition-contract";
 import { buildLedgerIntegrityRollupContract } from "./build-ledger-integrity-rollup-contract";
+import { buildPhase2LockedImplementationContract } from "./build-phase-2-locked-implementation-contract";
 import {
   SAFETY_CHAIN_CI_GUARD_FORBIDDEN_TRUE_FLAGS,
   SAFETY_CHAIN_CI_GUARD_SAFETY_LABELS,
@@ -92,6 +93,7 @@ const CHAIN_SPECS: ChainSpec[] = [
   spec("V70", "test:unified-connection-evidence-ledger", "build-unified-connection-evidence-ledger-contract.ts", "NO_GO", "SPEC_ONLY_PENDING_EVIDENCE", "EVIDENCE", buildUnifiedConnectionEvidenceLedgerContract),
   spec("V71", "test:evidence-ledger-transition", "build-evidence-ledger-transition-contract.ts", "NO_GO", "SPEC_ONLY_PREVIEW_NOT_CONNECTED", "EVIDENCE", buildEvidenceLedgerTransitionContract),
   spec("V72", "test:ledger-integrity-rollup", "build-ledger-integrity-rollup-contract.ts", "NO_GO", "SPEC_ONLY_SAFETY_GATE", "ROLLUP", buildLedgerIntegrityRollupContract),
+  spec("PHASE2", "test:phase-2-locked-implementation", "build-phase-2-locked-implementation-contract.ts", "NO_GO", "INTERFACE_ONLY_NOT_CONNECTED", "REAL_QUOTE_INTERFACE", buildPhase2LockedImplementationContract),
 ];
 
 function decisionOf(bundle: unknown): string {
