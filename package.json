@@ -95,7 +95,8 @@
     "test:limited-live-fetch-deterministic-clock": "node --require ./scripts/register-typescript.cjs ./scripts/validate-limited-live-fetch-deterministic-clock.ts",
     "test:limited-live-fetch-golden-snapshot": "node --require ./scripts/register-typescript.cjs ./scripts/validate-limited-live-fetch-golden-snapshot.ts",
     "test:limited-live-fetch-mock-fetch-boundary": "node --require ./scripts/register-typescript.cjs ./scripts/validate-limited-live-fetch-mock-fetch-boundary.ts",
-    "test:limited-live-fetch-default-no-fetch-boundary": "node --require ./scripts/register-typescript.cjs ./scripts/validate-limited-live-fetch-default-no-fetch-boundary.ts"
+    "test:limited-live-fetch-default-no-fetch-boundary": "node --require ./scripts/register-typescript.cjs ./scripts/validate-limited-live-fetch-default-no-fetch-boundary.ts",
+    "test:limited-live-fetch-safety-chain-inventory": "node --require ./scripts/register-typescript.cjs ./scripts/validate-limited-live-fetch-safety-chain-inventory.ts"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.108.2",
