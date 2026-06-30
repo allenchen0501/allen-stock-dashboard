@@ -60,6 +60,22 @@ export interface PublicReadonlyQuoteCandidate {
 }
 
 // ---------------------------------------------------------------------------
+// Read-only candidate options
+// ---------------------------------------------------------------------------
+
+/**
+ * Options for getReadonlyQuoteCandidate / the limited live fetch dry-run.
+ * Both fields are optional and default to the existing runtime behavior:
+ *   - dryRunLiveFetch defaults to false (scaffold-only, no network call).
+ *   - now defaults to the real clock (`new Date()`); inject a deterministic clock
+ *     ONLY in tests to make `receivedAt` reproducible. It does not change scope.
+ */
+export type PublicReadonlyQuoteCandidateOptions = {
+  dryRunLiveFetch?: boolean;
+  now?: () => Date;
+};
+
+// ---------------------------------------------------------------------------
 // Provider interface
 // ---------------------------------------------------------------------------
 
@@ -70,10 +86,11 @@ export interface PublicQuoteProvider {
   capabilities: PublicQuoteProviderCapability[];
   // Scaffold interface. The default path performs NO network call. An approved
   // provider may opt into a limited read-only live fetch dry-run ONLY when the caller
-  // explicitly passes { dryRunLiveFetch: true } (shadow-only, default fixture).
+  // explicitly passes { dryRunLiveFetch: true } (shadow-only, default fixture). An
+  // optional { now } clock makes receivedAt deterministic in tests only.
   getReadonlyQuoteCandidate(
     symbol: string,
-    options?: { dryRunLiveFetch?: boolean },
+    options?: PublicReadonlyQuoteCandidateOptions,
   ): Promise<PublicReadonlyQuoteCandidate>;
 }
 

@@ -28,10 +28,20 @@
 import type {
   PublicQuoteProvider,
   PublicReadonlyQuoteCandidate,
+  PublicReadonlyQuoteCandidateOptions,
   PublicQuoteVerificationStatus,
 } from "./public-quote-provider.types";
 
 const SCAFFOLD = "(scaffold-only / not connected)";
+
+/**
+ * Resolve the clock for `receivedAt`. Returns the injected `now()` when a deterministic
+ * clock is provided (tests only); otherwise the real clock. Default runtime behavior is
+ * unchanged — no caller passes `now`, so this returns `new Date()`.
+ */
+function resolveNow(now?: () => Date): Date {
+  return now ? now() : new Date();
+}
 
 // ---------------------------------------------------------------------------
 // Limited live fetch dry-run constants (approved scope)
@@ -71,8 +81,16 @@ export const LIMITED_LIVE_FETCH_ALLOWED_RESPONSE_FIELDS = [
 // Scaffold candidate (default + fallback)
 // ---------------------------------------------------------------------------
 
-/** Deterministic scaffold-only verification candidate. No clock, no network. */
-export function buildTwseTpexScaffoldCandidate(symbol: string): PublicReadonlyQuoteCandidate {
+/**
+ * Scaffold-only verification candidate (default + fallback). No network.
+ * `receivedAt` stays the scaffold placeholder by default; when a deterministic clock is
+ * injected (tests only) it becomes that clock's ISO string, so fallback candidates can
+ * be snapshot-tested. Default behavior (no `now`) is unchanged.
+ */
+export function buildTwseTpexScaffoldCandidate(
+  symbol: string,
+  now?: () => Date,
+): PublicReadonlyQuoteCandidate {
   return {
     symbol,
     market: "TW",
@@ -85,7 +103,7 @@ export function buildTwseTpexScaffoldCandidate(symbol: string): PublicReadonlyQu
     previousClose: null,
     volume: null,
     sourceTimestamp: SCAFFOLD,
-    receivedAt: SCAFFOLD,
+    receivedAt: now ? now().toISOString() : SCAFFOLD,
     isRealData: false,
     isConnected: false,
     isDisabled: true,
@@ -116,10 +134,11 @@ function toFiniteNumber(value: unknown): number | null {
 export function parseLimitedLiveFetchResponse(
   symbol: string,
   json: unknown,
+  now?: () => Date,
 ): PublicReadonlyQuoteCandidate {
   const root = json as { msgArray?: unknown } | null | undefined;
   const arr = root && Array.isArray(root.msgArray) ? root.msgArray : null;
-  if (!arr || arr.length === 0) return buildTwseTpexScaffoldCandidate(symbol);
+  if (!arr || arr.length === 0) return buildTwseTpexScaffoldCandidate(symbol, now);
 
   const rawEntry = arr[0] as Record<string, unknown>;
   // Field allowlist: copy ONLY permitted fields out of the upstream entry.
@@ -131,11 +150,11 @@ export function parseLimitedLiveFetchResponse(
 
   // Schema validation: must be the approved symbol with a usable price + timestamp.
   if (picked.c !== LIMITED_LIVE_FETCH_APPROVED_SYMBOL) {
-    return buildTwseTpexScaffoldCandidate(symbol);
+    return buildTwseTpexScaffoldCandidate(symbol, now);
   }
   const price = toFiniteNumber(picked.z);
   const tlong = toFiniteNumber(picked.tlong);
-  if (price === null || tlong === null) return buildTwseTpexScaffoldCandidate(symbol);
+  if (price === null || tlong === null) return buildTwseTpexScaffoldCandidate(symbol, now);
 
   const verificationStatus: PublicQuoteVerificationStatus = "LIVE_FETCH_DRY_RUN";
   return {
@@ -150,7 +169,8 @@ export function parseLimitedLiveFetchResponse(
     previousClose: toFiniteNumber(picked.y),
     volume: toFiniteNumber(picked.v),
     sourceTimestamp: new Date(tlong).toISOString(),
-    receivedAt: new Date().toISOString(),
+    // receivedAt: injected deterministic clock if provided, else the real clock.
+    receivedAt: resolveNow(now).toISOString(),
     isRealData: true,
     isConnected: true, // fetch succeeded — NOT operational, NOT production ready.
     isDisabled: false,
@@ -172,14 +192,17 @@ export function parseLimitedLiveFetchResponse(
  */
 export async function getTwseTpexLimitedLiveFetchCandidate(
   symbol: string,
+  options?: PublicReadonlyQuoteCandidateOptions,
 ): Promise<PublicReadonlyQuoteCandidate> {
+  // Optional deterministic clock (tests only). Default is the real clock.
+  const now = options?.now;
   // Restrict to the single approved symbol + channel. Anything else falls back.
   if (symbol !== LIMITED_LIVE_FETCH_APPROVED_SYMBOL) {
-    return buildTwseTpexScaffoldCandidate(symbol);
+    return buildTwseTpexScaffoldCandidate(symbol, now);
   }
   const channel = LIMITED_LIVE_FETCH_APPROVED_CHANNEL;
   if (channel !== `tse_${LIMITED_LIVE_FETCH_APPROVED_SYMBOL}.tw`) {
-    return buildTwseTpexScaffoldCandidate(symbol);
+    return buildTwseTpexScaffoldCandidate(symbol, now);
   }
 
   const controller = new AbortController();
@@ -194,12 +217,12 @@ export async function getTwseTpexLimitedLiveFetchCandidate(
       redirect: "error",
       credentials: "omit",
     });
-    if (!response.ok) return buildTwseTpexScaffoldCandidate(symbol);
+    if (!response.ok) return buildTwseTpexScaffoldCandidate(symbol, now);
     const json = (await response.json()) as unknown;
-    return parseLimitedLiveFetchResponse(symbol, json);
+    return parseLimitedLiveFetchResponse(symbol, json, now);
   } catch {
     // timeout / network error / JSON parse error → fallback disabled scaffold candidate.
-    return buildTwseTpexScaffoldCandidate(symbol);
+    return buildTwseTpexScaffoldCandidate(symbol, now);
   } finally {
     clearTimeout(timer);
   }
@@ -223,17 +246,17 @@ export function buildTwseTpexVerificationProviderScaffold(): PublicQuoteProvider
     capabilities: ["OFFICIAL_VERIFICATION_CANDIDATE", "NO_ORDER", "NO_BROKER", "NO_WRITE"],
     getReadonlyQuoteCandidate(
       symbol: string,
-      options?: { dryRunLiveFetch?: boolean },
+      options?: PublicReadonlyQuoteCandidateOptions,
     ): Promise<PublicReadonlyQuoteCandidate> {
       const dryRunLiveFetch = options?.dryRunLiveFetch === true;
       if (!dryRunLiveFetch) {
         // DEFAULT (dryRunLiveFetch=false): scaffold only — no network call.
-        return Promise.resolve(buildTwseTpexScaffoldCandidate(symbol));
+        return Promise.resolve(buildTwseTpexScaffoldCandidate(symbol, options?.now));
       }
       if (symbol !== LIMITED_LIVE_FETCH_APPROVED_SYMBOL) {
-        return Promise.resolve(buildTwseTpexScaffoldCandidate(symbol));
+        return Promise.resolve(buildTwseTpexScaffoldCandidate(symbol, options?.now));
       }
-      return getTwseTpexLimitedLiveFetchCandidate(symbol);
+      return getTwseTpexLimitedLiveFetchCandidate(symbol, options);
     },
   };
 }
