@@ -30,6 +30,7 @@ import { buildEvidenceLedgerTransitionContract } from "./build-evidence-ledger-t
 import { buildLedgerIntegrityRollupContract } from "./build-ledger-integrity-rollup-contract";
 import { buildPhase2LockedImplementationContract } from "./build-phase-2-locked-implementation-contract";
 import { buildShadowQuoteComparisonViewModel } from "./build-shadow-quote-comparison-view-model";
+import { buildStagingShadowRuntimeContract } from "./build-shadow-runtime-comparison";
 import {
   SAFETY_CHAIN_CI_GUARD_FORBIDDEN_TRUE_FLAGS,
   SAFETY_CHAIN_CI_GUARD_SAFETY_LABELS,
@@ -96,6 +97,7 @@ const CHAIN_SPECS: ChainSpec[] = [
   spec("V72", "test:ledger-integrity-rollup", "build-ledger-integrity-rollup-contract.ts", "NO_GO", "SPEC_ONLY_SAFETY_GATE", "ROLLUP", buildLedgerIntegrityRollupContract),
   spec("PHASE2", "test:phase-2-locked-implementation", "build-phase-2-locked-implementation-contract.ts", "NO_GO", "INTERFACE_ONLY_NOT_CONNECTED", "REAL_QUOTE_INTERFACE", buildPhase2LockedImplementationContract),
   spec("PHASE2B", "test:phase-2b-shadow-comparison-ui-shell", "build-shadow-quote-comparison-view-model.ts", "NO_GO", "INTERFACE_ONLY_NOT_CONNECTED", "SHADOW_UI_SHELL", buildShadowQuoteComparisonViewModel),
+  spec("SHADOW_RUNTIME_SCAFFOLD", "test:staging-shadow-runtime-scaffold", "build-shadow-runtime-comparison.ts", "NO_GO", "SCAFFOLD_ONLY_NOT_CONNECTED", "MARKET_DATA_SCAFFOLD", buildStagingShadowRuntimeContract),
 ];
 
 function decisionOf(bundle: unknown): string {

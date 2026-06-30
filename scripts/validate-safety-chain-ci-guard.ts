@@ -23,9 +23,11 @@ const path = require("node:path") as typeof import("node:path");
 const builderModule = require("../use-cases/war-room/build-safety-chain-ci-guard-contract") as typeof import("../use-cases/war-room/build-safety-chain-ci-guard-contract");
 const phase2Module = require("../use-cases/war-room/build-phase-2-locked-implementation-contract") as typeof import("../use-cases/war-room/build-phase-2-locked-implementation-contract");
 const phase2bModule = require("../use-cases/war-room/build-shadow-quote-comparison-view-model") as typeof import("../use-cases/war-room/build-shadow-quote-comparison-view-model");
+const scaffoldModule = require("../use-cases/war-room/build-shadow-runtime-comparison") as typeof import("../use-cases/war-room/build-shadow-runtime-comparison");
 const { buildSafetyChainCiGuardContract } = builderModule;
 const { buildPhase2LockedImplementationContract } = phase2Module;
 const { buildShadowQuoteComparisonViewModel } = phase2bModule;
+const { buildStagingShadowRuntimeContract } = scaffoldModule;
 
 // ---------------------------------------------------------------------------
 // Types
@@ -134,6 +136,7 @@ const REQUIRED_SCRIPTS = [
   "test:ledger-integrity-rollup",
   "test:phase-2-locked-implementation",
   "test:phase-2b-shadow-comparison-ui-shell",
+  "test:staging-shadow-runtime-scaffold",
 ];
 
 // ---------------------------------------------------------------------------
@@ -274,11 +277,12 @@ function checkGuard(): { result: CheckResult; decision: string; total: number; p
   if (g.validation.valid) details.push("PASS  validation.valid === true.");
   else issues.push("FAIL  validation.valid must be true.");
 
-  // Total checks = 15 (V60–V72 + Phase 2 + Phase 2b) or at least includes both checks.
+  // Total checks = 16 (V60–V72 + Phase 2 + Phase 2b + Shadow Runtime Scaffold) or at least includes the checks.
   const phase2Check = g.checks.find((c) => c.sourceScript === "test:phase-2-locked-implementation");
   const phase2bCheck = g.checks.find((c) => c.sourceScript === "test:phase-2b-shadow-comparison-ui-shell");
-  if (g.checks.length >= 15 || (phase2Check && phase2bCheck)) details.push(`PASS  totalChecks = ${g.checks.length} (>= 15 / includes Phase 2 + Phase 2b).`);
-  else issues.push(`FAIL  totalChecks must be 15 or include Phase 2 + Phase 2b (got ${g.checks.length}).`);
+  const scaffoldCheck = g.checks.find((c) => c.sourceScript === "test:staging-shadow-runtime-scaffold");
+  if (g.checks.length >= 16 || (phase2Check && phase2bCheck && scaffoldCheck)) details.push(`PASS  totalChecks = ${g.checks.length} (>= 16 / includes Phase 2 + Phase 2b + scaffold).`);
+  else issues.push(`FAIL  totalChecks must be 16 or include Phase 2 + Phase 2b + scaffold (got ${g.checks.length}).`);
   if (phase2Check) {
     if (phase2Check.critical === true) details.push("PASS  Phase 2 check critical === true.");
     else issues.push("FAIL  Phase 2 check must be critical.");
@@ -318,6 +322,30 @@ function checkGuard(): { result: CheckResult; decision: string; total: number; p
   for (const f of ["realDataConnected", "fetchPerformed", "envReadPerformed", "supabaseConnected", "productionReady"]) {
     expectEq(`phase2b.${f}`, p2b[f], false);
   }
+
+  // Staging Shadow Runtime Scaffold check present + critical/passed.
+  if (scaffoldCheck) {
+    if (scaffoldCheck.critical === true) details.push("PASS  Scaffold check critical === true.");
+    else issues.push("FAIL  Scaffold check must be critical.");
+    if (scaffoldCheck.passed === true) details.push("PASS  Scaffold check passed === true.");
+    else issues.push(`FAIL  Scaffold check must pass (${scaffoldCheck.failureReason}).`);
+    if (scaffoldCheck.expectedDecision === "NO_GO") details.push("PASS  Scaffold expectedDecision NO_GO.");
+    else issues.push("FAIL  Scaffold expectedDecision must be NO_GO.");
+  } else {
+    issues.push("FAIL  guard must include a Staging Shadow Runtime Scaffold check.");
+  }
+
+  // Staging Shadow Runtime Scaffold contract itself.
+  const scaffold = buildStagingShadowRuntimeContract({ generatedAt: FIXED_TS });
+  const sc = scaffold as unknown as Record<string, unknown>;
+  expectEq("scaffold.decision", scaffold.decision, "NO_GO");
+  expectEq("scaffold.mode", scaffold.mode, "SCAFFOLD_ONLY_NOT_CONNECTED");
+  expectEq("scaffold.liveFetchAllowed", sc.liveFetchAllowed, false);
+  expectEq("scaffold.envReadAllowed", sc.envReadAllowed, false);
+  expectEq("scaffold.supabaseConnectionAllowed", sc.supabaseConnectionAllowed, false);
+  expectEq("scaffold.portfolioApiSwitchAllowed", sc.portfolioApiSwitchAllowed, false);
+  expectEq("scaffold.productionReady", sc.productionReady, false);
+  expectEq("scaffold.serviceRoleForbidden", sc.serviceRoleForbidden, true);
 
   return {
     result: { name: "guard_checks", status: issues.length > 0 ? "FAIL" : "PASS", details: [...details, ...issues] },

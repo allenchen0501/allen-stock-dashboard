@@ -41,8 +41,9 @@ CI guard 覆蓋的 scripts（V60–V72）：
 - test:ledger-integrity-rollup
 - test:phase-2-locked-implementation（Phase 2 Locked Real Quote Interface；expectedDecision NO_GO、mode INTERFACE_ONLY_NOT_CONNECTED）
 - test:phase-2b-shadow-comparison-ui-shell（Phase 2b Shadow Comparison UI Shell；expectedDecision NO_GO、mode INTERFACE_ONLY_NOT_CONNECTED、real quote candidate status DISABLED）
+- test:staging-shadow-runtime-scaffold（Staging Shadow Runtime Scaffold；expectedDecision NO_GO、mode SCAFFOLD_ONLY_NOT_CONNECTED、liveFetchAllowed/envReadAllowed/supabaseConnectionAllowed/portfolioApiSwitchAllowed/productionReady false、serviceRoleForbidden true）
 
-> 自 Phase 2b Safety Chain Integration 起，guard 共覆蓋 **15** 支 check（V60–V72 + Phase 2 locked implementation + Phase 2b shadow comparison UI shell）。
+> 自 Staging Shadow Runtime Scaffold Safety Chain Integration 起，guard 共覆蓋 **16** 支 check（V60–V72 + Phase 2 locked implementation + Phase 2b shadow comparison UI shell + Staging Shadow Runtime Scaffold）。
 
 ---
 
