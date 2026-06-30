@@ -28,6 +28,7 @@ const scopeModule = require("../use-cases/war-room/build-limited-live-fetch-scop
 const implModule = require("../use-cases/war-room/build-limited-live-fetch-implementation-contract") as typeof import("../use-cases/war-room/build-limited-live-fetch-implementation-contract");
 const goldenModule = require("../use-cases/war-room/build-golden-snapshot-contract") as typeof import("../use-cases/war-room/build-golden-snapshot-contract");
 const mockBoundaryModule = require("../use-cases/war-room/build-mock-fetch-boundary-contract") as typeof import("../use-cases/war-room/build-mock-fetch-boundary-contract");
+const defaultNoFetchModule = require("../use-cases/war-room/build-default-no-fetch-boundary-contract") as typeof import("../use-cases/war-room/build-default-no-fetch-boundary-contract");
 const { buildSafetyChainCiGuardContract } = builderModule;
 const { buildPhase2LockedImplementationContract } = phase2Module;
 const { buildShadowQuoteComparisonViewModel } = phase2bModule;
@@ -36,6 +37,7 @@ const { buildLimitedLiveFetchScopeContract } = scopeModule;
 const { buildLimitedLiveFetchImplementationContract } = implModule;
 const { buildGoldenSnapshotContract } = goldenModule;
 const { buildMockFetchBoundaryContract } = mockBoundaryModule;
+const { buildDefaultNoFetchBoundaryContract } = defaultNoFetchModule;
 
 // ---------------------------------------------------------------------------
 // Types
@@ -149,11 +151,13 @@ const REQUIRED_SCRIPTS = [
   "test:limited-live-fetch-dry-run-implementation",
   "test:limited-live-fetch-golden-snapshot",
   "test:limited-live-fetch-mock-fetch-boundary",
+  "test:limited-live-fetch-default-no-fetch-boundary",
 ];
 
 // The manual smoke script must NEVER be part of the safety chain.
 const SMOKE_SCRIPT_NAME = "smoke:limited-live-fetch:3019";
 const MOCK_FETCH_BOUNDARY_SCRIPT_NAME = "test:limited-live-fetch-mock-fetch-boundary";
+const DEFAULT_NO_FETCH_SCRIPT_NAME = "test:limited-live-fetch-default-no-fetch-boundary";
 // These validators are standalone (manual) and must NOT be newly added to the chain by
 // this PR. (The golden snapshot validator IS being added this PR and is asserted above.)
 const OBSERVATION_SCRIPTS = [
@@ -309,8 +313,9 @@ function checkGuard(): { result: CheckResult; decision: string; total: number; p
   const implCheck = g.checks.find((c) => c.sourceScript === "test:limited-live-fetch-dry-run-implementation");
   const goldenCheck = g.checks.find((c) => c.sourceScript === "test:limited-live-fetch-golden-snapshot");
   const mockBoundaryCheck = g.checks.find((c) => c.sourceScript === MOCK_FETCH_BOUNDARY_SCRIPT_NAME);
-  if (g.checks.length >= 20 || (phase2Check && phase2bCheck && scaffoldCheck && scopeCheck && implCheck && goldenCheck && mockBoundaryCheck)) details.push(`PASS  totalChecks = ${g.checks.length} (>= 20 / includes Phase 2 + Phase 2b + scaffold + live fetch scope + implementation + golden snapshot + mock fetch boundary).`);
-  else issues.push(`FAIL  totalChecks must be 20 or include all extended checks (got ${g.checks.length}).`);
+  const defaultNoFetchCheck = g.checks.find((c) => c.sourceScript === DEFAULT_NO_FETCH_SCRIPT_NAME);
+  if (g.checks.length >= 21 || (phase2Check && phase2bCheck && scaffoldCheck && scopeCheck && implCheck && goldenCheck && mockBoundaryCheck && defaultNoFetchCheck)) details.push(`PASS  totalChecks = ${g.checks.length} (>= 21 / includes Phase 2 + Phase 2b + scaffold + live fetch scope + implementation + golden snapshot + mock fetch boundary + default no-fetch boundary).`);
+  else issues.push(`FAIL  totalChecks must be 21 or include all extended checks (got ${g.checks.length}).`);
   if (phase2Check) {
     if (phase2Check.critical === true) details.push("PASS  Phase 2 check critical === true.");
     else issues.push("FAIL  Phase 2 check must be critical.");
@@ -535,6 +540,50 @@ function checkGuard(): { result: CheckResult; decision: string; total: number; p
     expectEq(`mock.${f}`, mk[f], false);
   }
 
+  // Default No-Fetch Boundary check present + critical/passed.
+  if (defaultNoFetchCheck) {
+    if (defaultNoFetchCheck.critical === true) details.push("PASS  Default no-fetch boundary check critical === true.");
+    else issues.push("FAIL  Default no-fetch boundary check must be critical.");
+    if (defaultNoFetchCheck.passed === true) details.push("PASS  Default no-fetch boundary check passed === true.");
+    else issues.push(`FAIL  Default no-fetch boundary check must pass (${defaultNoFetchCheck.failureReason}).`);
+    if (defaultNoFetchCheck.expectedDecision === "OFFLINE_DETERMINISTIC_DEFAULT_NO_FETCH_OK") details.push("PASS  Default no-fetch boundary expectedDecision OFFLINE_DETERMINISTIC_DEFAULT_NO_FETCH_OK.");
+    else issues.push("FAIL  Default no-fetch boundary expectedDecision must be OFFLINE_DETERMINISTIC_DEFAULT_NO_FETCH_OK.");
+    if (defaultNoFetchCheck.expectedMode === "OFFLINE_DETERMINISTIC_DEFAULT_RUNTIME_PATH") details.push("PASS  Default no-fetch boundary mode OFFLINE_DETERMINISTIC_DEFAULT_RUNTIME_PATH.");
+    else issues.push("FAIL  Default no-fetch boundary mode must be OFFLINE_DETERMINISTIC_DEFAULT_RUNTIME_PATH.");
+  } else {
+    issues.push("FAIL  guard must include a Default No-Fetch Boundary Validator for Limited Live Fetch check.");
+  }
+
+  // Default No-Fetch Boundary contract itself: offline / deterministic / default-path /
+  // zero fetch calls / non-operational.
+  const noFetch = buildDefaultNoFetchBoundaryContract({ generatedAt: FIXED_TS });
+  const nf = noFetch as unknown as Record<string, unknown>;
+  expectEq("noFetch.decision", noFetch.decision, "OFFLINE_DETERMINISTIC_DEFAULT_NO_FETCH_OK");
+  expectEq("noFetch.mode", noFetch.mode, "OFFLINE_DETERMINISTIC_DEFAULT_RUNTIME_PATH");
+  expectEq("noFetch.offline", nf.offline, true);
+  expectEq("noFetch.deterministic", nf.deterministic, true);
+  expectEq("noFetch.defaultRuntimePath", nf.defaultRuntimePath, true);
+  expectEq("noFetch.dryRunLiveFetchDefault", nf.dryRunLiveFetchDefault, false);
+  expectEq("noFetch.defaultPathFetchCallCount", nf.defaultPathFetchCallCount, 0);
+  expectEq("noFetch.explicitDryRunFalseFetchCallCount", nf.explicitDryRunFalseFetchCallCount, 0);
+  expectEq("noFetch.unsupportedSymbolDefaultPathSafeFallback", nf.unsupportedSymbolDefaultPathSafeFallback, true);
+  expectEq("noFetch.realNetworkUsed", nf.realNetworkUsed, false);
+  expectEq("noFetch.fetchMockRestored", nf.fetchMockRestored, true);
+  expectEq("noFetch.liveFetchPerformed", nf.liveFetchPerformed, false);
+  expectEq("noFetch.smokeInvoked", nf.smokeInvoked, false);
+  expectEq("noFetch.smokeManualOnly", nf.smokeManualOnly, true);
+  expectEq("noFetch.approvedSymbol", nf.approvedSymbol, "3019");
+  expectEq("noFetch.approvedChannel", nf.approvedChannel, "tse_3019.tw");
+  expectEq("noFetch.timeoutMs", nf.timeoutMs, 3000);
+  expectEq("noFetch.maxRetries", nf.maxRetries, 0);
+  for (const f of [
+    "productionDataSwitchAllowed", "operationalUseAllowed", "productionReady", "productionSwitchAllowed",
+    "brokerApiAllowed", "buySellCommandGenerated", "autoOrderRequested", "realDataConnected",
+    "supabaseConnected", "envReadPerformed", "apiRouteCreated", "portfolioApiSwitched", "databaseWritePerformed",
+  ]) {
+    expectEq(`noFetch.${f}`, nf[f], false);
+  }
+
   return {
     result: { name: "guard_checks", status: issues.length > 0 ? "FAIL" : "PASS", details: [...details, ...issues] },
     decision: g.decision,
@@ -648,10 +697,15 @@ function checkSafetyChainComposition(): CheckResult {
     details.push(`PASS  test:safety-chain includes ${GOLDEN_SCRIPT_NAME}.`);
   else issues.push(`FAIL  test:safety-chain must include ${GOLDEN_SCRIPT_NAME}.`);
 
-  // Mock fetch boundary validator IS part of the chain this PR.
+  // Mock fetch boundary validator IS part of the chain.
   if (safetyChain.includes(MOCK_FETCH_BOUNDARY_SCRIPT_NAME))
     details.push(`PASS  test:safety-chain includes ${MOCK_FETCH_BOUNDARY_SCRIPT_NAME}.`);
   else issues.push(`FAIL  test:safety-chain must include ${MOCK_FETCH_BOUNDARY_SCRIPT_NAME}.`);
+
+  // Default no-fetch boundary validator IS part of the chain this PR.
+  if (safetyChain.includes(DEFAULT_NO_FETCH_SCRIPT_NAME))
+    details.push(`PASS  test:safety-chain includes ${DEFAULT_NO_FETCH_SCRIPT_NAME}.`);
+  else issues.push(`FAIL  test:safety-chain must include ${DEFAULT_NO_FETCH_SCRIPT_NAME}.`);
 
   if (!safetyChain.includes(SMOKE_SCRIPT_NAME))
     details.push(`PASS  test:safety-chain does NOT include ${SMOKE_SCRIPT_NAME} (manual only).`);
@@ -678,9 +732,12 @@ function checkSafetyChainComposition(): CheckResult {
   if (guard.checks.some((c) => c.sourceScript === MOCK_FETCH_BOUNDARY_SCRIPT_NAME))
     details.push(`PASS  CHAIN_SPECS includes ${MOCK_FETCH_BOUNDARY_SCRIPT_NAME}.`);
   else issues.push(`FAIL  CHAIN_SPECS must include ${MOCK_FETCH_BOUNDARY_SCRIPT_NAME}.`);
-  if (guard.result.totalChecks === 20)
-    details.push("PASS  guard totalChecks === 20.");
-  else issues.push(`FAIL  guard totalChecks must be 20 (got ${guard.result.totalChecks}).`);
+  if (guard.checks.some((c) => c.sourceScript === DEFAULT_NO_FETCH_SCRIPT_NAME))
+    details.push(`PASS  CHAIN_SPECS includes ${DEFAULT_NO_FETCH_SCRIPT_NAME}.`);
+  else issues.push(`FAIL  CHAIN_SPECS must include ${DEFAULT_NO_FETCH_SCRIPT_NAME}.`);
+  if (guard.result.totalChecks === 21)
+    details.push("PASS  guard totalChecks === 21.");
+  else issues.push(`FAIL  guard totalChecks must be 21 (got ${guard.result.totalChecks}).`);
 
   return { name: "safety_chain_composition", status: issues.length > 0 ? "FAIL" : "PASS", details: [...details, ...issues] };
 }

@@ -250,7 +250,7 @@ try {
   totalChecks = -1;
 }
 pushCheck("26_safety_chain_checks", [
-  { ok: totalChecks === 20, pass: `Safety chain CI guard has 20 checks (got ${totalChecks}).`, fail: `Safety chain CI guard must have 20 checks (got ${totalChecks}).` },
+  { ok: totalChecks === 21, pass: `Safety chain CI guard has 21 checks (got ${totalChecks}).`, fail: `Safety chain CI guard must have 21 checks (got ${totalChecks}).` },
 ]);
 
 // 27. Deterministic validator not in safety chain.

@@ -21,6 +21,7 @@ import { ShadowQuoteComparisonCard } from "@/components/war-room/shadow-quote-co
 import { buildStagingShadowRuntimeContract } from "@/use-cases/war-room/build-shadow-runtime-comparison";
 import { buildGoldenSnapshotContract } from "@/use-cases/war-room/build-golden-snapshot-contract";
 import { buildMockFetchBoundaryContract } from "@/use-cases/war-room/build-mock-fetch-boundary-contract";
+import { buildDefaultNoFetchBoundaryContract } from "@/use-cases/war-room/build-default-no-fetch-boundary-contract";
 
 // V60: dedicated engineering / safety monitoring page. The fixture-only spec /
 // runtime / shadow-runner monitoring panels live here, moved away from the primary
@@ -68,6 +69,7 @@ export default function SystemSafetyPage() {
   const shadowRuntime = buildStagingShadowRuntimeContract({ generatedAt: "2026-06-23T00:00:00.000Z" });
   const golden = buildGoldenSnapshotContract({ generatedAt: "2026-06-23T00:00:00.000Z" });
   const mockBoundary = buildMockFetchBoundaryContract({ generatedAt: "2026-06-23T00:00:00.000Z" });
+  const defaultNoFetch = buildDefaultNoFetchBoundaryContract({ generatedAt: "2026-06-23T00:00:00.000Z" });
 
   return (
     <div className="page-wrap">
@@ -536,7 +538,7 @@ export default function SystemSafetyPage() {
               <span className={ciGuard.result.allCriticalPassed ? "font-semibold text-positive" : "font-semibold text-negative"}>
                 {ciGuard.decision}
               </span>
-              。READY_FOR_UI_REVIEW is not production ready。Phase 2 + Phase 2b + Staging Shadow Runtime Scaffold + Limited Live Fetch Scope + Limited Live Fetch Implementation + Golden Snapshot + Mock Fetch Boundary included（{ciGuard.result.totalChecks} checks）。manual smoke script is NOT part of the safety chain。
+              。READY_FOR_UI_REVIEW is not production ready。Phase 2 + Phase 2b + Staging Shadow Runtime Scaffold + Limited Live Fetch Scope + Limited Live Fetch Implementation + Golden Snapshot + Mock Fetch Boundary + Default No-Fetch included（{ciGuard.result.totalChecks} checks）。manual smoke script is NOT part of the safety chain。
             </p>
           </div>
           <div className="grid grid-cols-2 gap-3 px-5 py-4 sm:px-6 lg:grid-cols-4">
@@ -799,6 +801,51 @@ export default function SystemSafetyPage() {
           <div className="border-t border-line/60 px-5 py-3 sm:px-6">
             <p className="text-[9px] text-slate-600">
               request boundary 以攔截 fetch + 注入 clock 驗證，純離線、不打真網路；smoke 永遠 manual only、不在 safety chain。
+            </p>
+          </div>
+        </section>
+      </div>
+      <div className="mt-5">
+        <section className="panel-shell overflow-hidden">
+          <div className="border-b border-line/80 px-5 py-4 sm:px-6">
+            <h2 className="text-[15px] font-semibold tracking-wide text-slate-100">
+              Default No-Fetch Boundary Validator for Limited Live Fetch（offline / default runtime path）
+            </h2>
+            <p className="mt-1 text-[10px] text-slate-500">
+              {defaultNoFetch.contractVersion} · mode = OFFLINE_DETERMINISTIC_DEFAULT_RUNTIME_PATH · 已納入 safety chain（共 {ciGuard.result.totalChecks} checks）。
+              spy globalThis.fetch，驗證 default runtime path（無 dryRunLiveFetch=true）的 fetch call count = 0、回 safe scaffold/disabled/non-operational candidate。
+              此卡為靜態說明，**no real network、no live fetch、no smoke、no production switch**。
+            </p>
+          </div>
+          <div className="grid grid-cols-2 gap-3 px-5 py-4 sm:px-6 lg:grid-cols-4">
+            <div className="rounded-xl border border-line bg-white/[0.012] px-4 py-3">
+              <p className="text-[9px] uppercase tracking-[0.15em] text-slate-500">offline / default path</p>
+              <p className="mt-1 text-[12px] font-semibold text-slate-200">
+                offline={String(defaultNoFetch.offline)} · defaultRuntimePath={String(defaultNoFetch.defaultRuntimePath)} · dryRunLiveFetchDefault={String(defaultNoFetch.dryRunLiveFetchDefault)}
+              </p>
+            </div>
+            <div className="rounded-xl border border-line bg-white/[0.012] px-4 py-3">
+              <p className="text-[9px] uppercase tracking-[0.15em] text-slate-500">fetch call count</p>
+              <p className="mt-1 text-[12px] font-semibold text-slate-200">
+                defaultPath={defaultNoFetch.defaultPathFetchCallCount} · explicitFalse={defaultNoFetch.explicitDryRunFalseFetchCallCount} · realNetworkUsed={String(defaultNoFetch.realNetworkUsed)}
+              </p>
+            </div>
+            <div className="rounded-xl border border-line bg-white/[0.012] px-4 py-3">
+              <p className="text-[9px] uppercase tracking-[0.15em] text-slate-500">fallback / smoke</p>
+              <p className="mt-1 text-[12px] font-semibold text-slate-200">
+                unsupportedSafeFallback={String(defaultNoFetch.unsupportedSymbolDefaultPathSafeFallback)} · fetchMockRestored={String(defaultNoFetch.fetchMockRestored)} · smokeManualOnly={String(defaultNoFetch.smokeManualOnly)}
+              </p>
+            </div>
+            <div className="rounded-xl border border-line bg-white/[0.012] px-4 py-3">
+              <p className="text-[9px] uppercase tracking-[0.15em] text-slate-500">production</p>
+              <p className="mt-1 text-[12px] font-semibold text-slate-200">
+                productionDataSwitchAllowed={String(defaultNoFetch.productionDataSwitchAllowed)} · operationalUseAllowed={String(defaultNoFetch.operationalUseAllowed)} · productionReady={String(defaultNoFetch.productionReady)}
+              </p>
+            </div>
+          </div>
+          <div className="border-t border-line/60 px-5 py-3 sm:px-6">
+            <p className="text-[9px] text-slate-600">
+              default runtime path 以 spy fetch 驗證 0 次 fetch；只有明確 dryRunLiveFetch=true 才會 live fetch（manual smoke only，不在 safety chain）。
             </p>
           </div>
         </section>
