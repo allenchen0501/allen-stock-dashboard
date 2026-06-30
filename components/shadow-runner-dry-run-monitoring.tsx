@@ -99,7 +99,7 @@ export function ShadowRunnerDryRunMonitoring() {
               Shadow Runner Dry-run Monitoring · /api/portfolio/shadow-runner-dry-run
             </p>
             <h2 className="text-[16px] font-semibold tracking-wide text-slate-100">
-              Shadow Runner Dry-run Monitoring
+              影子執行試運行監控（Shadow Runner Dry-run Monitoring）
             </h2>
           </div>
           <span className="rounded-full border border-amber/20 bg-amber/[0.06] px-2.5 py-1 text-[8px] font-semibold text-amber">

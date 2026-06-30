@@ -100,7 +100,7 @@ export function FirstAuthorizedSourceDryRunMonitoring() {
               First Authorized Source Dry-Run Monitoring · /api/portfolio/first-authorized-source-dry-run
             </p>
             <h2 className="text-[16px] font-semibold tracking-wide text-slate-100">
-              First Authorized Source Dry-Run Monitoring
+              首個授權來源試運行監控（First Authorized Source Dry-Run Monitoring）
             </h2>
           </div>
           <span className="rounded-full border border-amber/20 bg-amber/[0.06] px-2.5 py-1 text-[8px] font-semibold text-amber">

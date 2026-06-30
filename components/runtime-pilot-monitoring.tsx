@@ -97,7 +97,7 @@ export function RuntimePilotMonitoring() {
               Runtime Pilot Monitoring · /api/portfolio/runtime-pilot-dry-run
             </p>
             <h2 className="text-[16px] font-semibold tracking-wide text-slate-100">
-              Runtime Pilot Monitoring
+              Runtime 試運行監控（Runtime Pilot Monitoring）
             </h2>
           </div>
           <span className="rounded-full border border-amber/20 bg-amber/[0.06] px-2.5 py-1 text-[8px] font-semibold text-amber">

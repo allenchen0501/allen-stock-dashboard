@@ -26,10 +26,17 @@ import { buildTimeoutBoundaryContract } from "@/use-cases/war-room/build-timeout
 
 // V60: dedicated engineering / safety monitoring page. The fixture-only spec /
 // runtime / shadow-runner monitoring panels live here, moved away from the primary
-// trading view (`/holdings`). These existing monitoring components are unchanged —
-// only relocated. V63 adds a spec-only Allen Score engine / trade plan consistency
-// health card (deterministic, no runtime). Still fixture/mock safe mode: no
-// Supabase, no env, no DB, no real market data, no /api/portfolio switch.
+// trading view (`/holdings`). The page is engineering-only and fixture/mock safe mode:
+// no Supabase, no env, no DB, no real market data, no /api/portfolio switch.
+//
+// 前台顯示文字一律繁體中文；技術狀態碼 / contract key / mode 代碼（例如
+// NOT_CONNECTED、SPEC_ONLY_CI_GUARD、PHASE_2_LOCKED_INTERFACE）保留為技術標記，
+// 旁邊以繁中說明。底層 contract key 不更動。
+
+/** 將布林值轉成繁中狀態文字，避免前台直接顯示 true / false。 */
+function zhBool(value: boolean, trueText = "是", falseText = "否"): string {
+  return value ? trueText : falseText;
+}
 
 export default function SystemSafetyPage() {
   const engine = buildAllenScoreDeterministicScoringEngineContract({ generatedAt: "2026-06-23T00:00:00.000Z" });
@@ -76,40 +83,40 @@ export default function SystemSafetyPage() {
   return (
     <div className="page-wrap">
       <PageHeading
-        eyebrow="Engineering Safety"
-        title="系統安全監控 / Engineering Safety"
-        description="工程安全監控面板（spec-only / fixture-only / mock_or_contract）。此頁為工程用途，非操作交易依據；目前非真實資料，不可作為操作依據。"
+        eyebrow="工程安全監控"
+        title="系統安全監控"
+        description="工程安全監控面板（spec-only 規格檢查／fixture-only 固定樣本／mock_or_contract）。此頁為工程用途，非操作交易依據；目前非真實資料，不可作為操作依據。"
       />
       <div className="mt-5">
         <section className="panel-shell overflow-hidden">
           <div className="border-b border-line/80 px-5 py-4 sm:px-6">
             <h2 className="text-[15px] font-semibold tracking-wide text-slate-100">
-              Allen Score Engine / Trade Plan Consistency（spec-only）
+              Allen 評分引擎／交易計畫一致性（spec-only 規格檢查）
             </h2>
             <p className="mt-1 text-[10px] text-slate-500">
-              deterministic / fixture-only。no runtime、no fetch、no Supabase connection、no env read、no DB write。
+              可重現 / 固定樣本。不啟用 runtime、不 fetch、不連 Supabase、不讀 env、不寫 DB。
             </p>
           </div>
           <div className="grid grid-cols-2 gap-3 px-5 py-4 sm:px-6 lg:grid-cols-4">
             <div className="rounded-xl border border-line bg-white/[0.012] px-4 py-3">
-              <p className="text-[9px] uppercase tracking-[0.15em] text-slate-500">Scoring engine ({engine.contractVersion})</p>
+              <p className="text-[9px] uppercase tracking-[0.15em] text-slate-500">評分引擎（{engine.contractVersion}）</p>
               <p className={`mt-1 text-[14px] font-semibold ${engineConsistent ? "text-positive" : "text-negative"}`}>
-                grade↔score {engineConsistent ? "verified" : "NOT verified"}
+                等級↔分數 {engineConsistent ? "已驗證" : "未通過"}
               </p>
             </div>
             <div className="rounded-xl border border-line bg-white/[0.012] px-4 py-3">
-              <p className="text-[9px] uppercase tracking-[0.15em] text-slate-500">Trade plans ({tradePlan.contractVersion})</p>
+              <p className="text-[9px] uppercase tracking-[0.15em] text-slate-500">交易計畫（{tradePlan.contractVersion}）</p>
               <p className={`mt-1 text-[14px] font-semibold ${tradePlan.allValid ? "text-positive" : "text-negative"}`}>
-                {validPlans}/{tradePlan.validations.length} valid
+                {validPlans}/{tradePlan.validations.length} 通過
               </p>
             </div>
             <div className="rounded-xl border border-line bg-white/[0.012] px-4 py-3">
-              <p className="text-[9px] uppercase tracking-[0.15em] text-slate-500">Decision</p>
+              <p className="text-[9px] uppercase tracking-[0.15em] text-slate-500">判定</p>
               <p className="mt-1 text-[14px] font-semibold text-slate-200">{tradePlan.decision}</p>
             </div>
             <div className="rounded-xl border border-line bg-white/[0.012] px-4 py-3">
-              <p className="text-[9px] uppercase tracking-[0.15em] text-slate-500">Mode</p>
-              <p className="mt-1 text-[12px] font-semibold text-amber">fixture/mock，不可作為正式操作依據</p>
+              <p className="text-[9px] uppercase tracking-[0.15em] text-slate-500">模式</p>
+              <p className="mt-1 text-[12px] font-semibold text-amber">fixture/mock 固定樣本，不可作為正式操作依據</p>
             </div>
           </div>
         </section>
@@ -118,35 +125,35 @@ export default function SystemSafetyPage() {
         <section className="panel-shell overflow-hidden">
           <div className="border-b border-line/80 px-5 py-4 sm:px-6">
             <h2 className="text-[15px] font-semibold tracking-wide text-slate-100">
-              Trade Plan Fixture Source / Mapping Boundary（spec-only）
+              交易計畫 fixture 來源／對應邊界（Mapping Boundary，spec-only）
             </h2>
             <p className="mt-1 text-[10px] text-slate-500">
-              fixture source descriptor + future real quote mapping boundary（{fixtureSource.contractVersion}）。
-              deterministic / fixture-only：no runtime、no fetch、no Supabase connection、no env read、no DB write。
+              fixture 來源描述欄位 + 未來真實報價對應邊界（{fixtureSource.contractVersion}）。
+              可重現 / 固定樣本：不啟用 runtime、不 fetch、不連 Supabase、不讀 env、不寫 DB。
             </p>
           </div>
           <div className="grid grid-cols-2 gap-3 px-5 py-4 sm:px-6 lg:grid-cols-4">
             <div className="rounded-xl border border-line bg-white/[0.012] px-4 py-3">
-              <p className="text-[9px] uppercase tracking-[0.15em] text-slate-500">Descriptors valid</p>
+              <p className="text-[9px] uppercase tracking-[0.15em] text-slate-500">描述欄位通過數</p>
               <p className={`mt-1 text-[14px] font-semibold ${fixtureSource.allValid ? "text-positive" : "text-negative"}`}>
                 {validDescriptors}/{fixtureSource.validations.length}
               </p>
             </div>
             <div className="rounded-xl border border-line bg-white/[0.012] px-4 py-3">
-              <p className="text-[9px] uppercase tracking-[0.15em] text-slate-500">realMappingStatus</p>
+              <p className="text-[9px] uppercase tracking-[0.15em] text-slate-500">真實對應狀態（realMappingStatus）</p>
               <p className="mt-1 text-[14px] font-semibold text-amber">{fixtureSource.source.realMappingStatus}</p>
               <p className="mt-1 text-[9px] text-slate-600">未連真實報價</p>
             </div>
             <div className="rounded-xl border border-line bg-white/[0.012] px-4 py-3">
-              <p className="text-[9px] uppercase tracking-[0.15em] text-slate-500">Manual sign-off</p>
+              <p className="text-[9px] uppercase tracking-[0.15em] text-slate-500">人工簽核</p>
               <p className="mt-1 text-[12px] font-semibold text-slate-200">
-                required {String(mb.manualSignoffRequired)} · completed {String(mb.manualSignoffCompleted)}
+                需要 {zhBool(mb.manualSignoffRequired)} · 已完成 {zhBool(mb.manualSignoffCompleted)}
               </p>
             </div>
             <div className="rounded-xl border border-line bg-white/[0.012] px-4 py-3">
-              <p className="text-[9px] uppercase tracking-[0.15em] text-slate-500">Production switch</p>
+              <p className="text-[9px] uppercase tracking-[0.15em] text-slate-500">正式切換</p>
               <p className="mt-1 text-[12px] font-semibold text-slate-200">
-                allowed {String(mb.productionSwitchAllowed)} · staging read-only {String(mb.stagingReadOnlyRequired)}
+                允許 {zhBool(mb.productionSwitchAllowed, "是", "禁止")} · staging 唯讀 {zhBool(mb.stagingReadOnlyRequired, "需要", "否")}
               </p>
             </div>
           </div>
@@ -159,44 +166,44 @@ export default function SystemSafetyPage() {
         <section className="panel-shell overflow-hidden">
           <div className="border-b border-line/80 px-5 py-4 sm:px-6">
             <h2 className="text-[15px] font-semibold tracking-wide text-slate-100">
-              Descriptor-to-Real Quote Mapping Readiness（spec-only）
+              描述欄位對應真實報價準備狀態（Descriptor-to-Real Quote Mapping Readiness，spec-only）
             </h2>
             <p className="mt-1 text-[10px] text-slate-500">
-              {mapping.specName}（{mapping.contractVersion}）。deterministic / fixture-only：no runtime、no fetch、
-              no Supabase connection、no env read、no DB write、no API route。
+              {mapping.specName}（{mapping.contractVersion}）。可重現 / 固定樣本：不啟用 runtime、不 fetch、
+              不連 Supabase、不讀 env、不寫 DB、不新增 API route。
             </p>
           </div>
           <div className="grid grid-cols-2 gap-3 px-5 py-4 sm:px-6 lg:grid-cols-4">
             <div className="rounded-xl border border-line bg-white/[0.012] px-4 py-3">
-              <p className="text-[9px] uppercase tracking-[0.15em] text-slate-500">Mapping items valid</p>
+              <p className="text-[9px] uppercase tracking-[0.15em] text-slate-500">對應項目通過數</p>
               <p className={`mt-1 text-[14px] font-semibold ${mapping.allValid ? "text-positive" : "text-negative"}`}>
                 {validMappings}/{mapping.validations.length}
               </p>
             </div>
             <div className="rounded-xl border border-line bg-white/[0.012] px-4 py-3">
-              <p className="text-[9px] uppercase tracking-[0.15em] text-slate-500">mappingReadiness</p>
+              <p className="text-[9px] uppercase tracking-[0.15em] text-slate-500">對應準備度（mappingReadiness）</p>
               <p className="mt-1 text-[12px] font-semibold text-amber">{mappingItem?.mappingReadiness}</p>
-              <p className="mt-1 text-[9px] text-slate-600">realMappingStatus = {mappingItem?.realMappingStatus}</p>
+              <p className="mt-1 text-[9px] text-slate-600">真實對應狀態（realMappingStatus）= {mappingItem?.realMappingStatus}</p>
             </div>
             <div className="rounded-xl border border-line bg-white/[0.012] px-4 py-3">
-              <p className="text-[9px] uppercase tracking-[0.15em] text-slate-500">realQuote / staging</p>
+              <p className="text-[9px] uppercase tracking-[0.15em] text-slate-500">真實報價／staging</p>
               <p className="mt-1 text-[11px] font-semibold text-slate-200">
-                realQuoteConnected {String(mappingItem?.realQuoteConnected)} · stagingReadOnlyConnected{" "}
-                {String(mappingItem?.stagingReadOnlyConnected)}
+                真實報價已連線 {zhBool(!!mappingItem?.realQuoteConnected)} · staging 唯讀已連線{" "}
+                {zhBool(!!mappingItem?.stagingReadOnlyConnected)}
               </p>
             </div>
             <div className="rounded-xl border border-line bg-white/[0.012] px-4 py-3">
-              <p className="text-[9px] uppercase tracking-[0.15em] text-slate-500">shadow / production / op</p>
+              <p className="text-[9px] uppercase tracking-[0.15em] text-slate-500">影子／正式／操作</p>
               <p className="mt-1 text-[11px] font-semibold text-slate-200">
-                shadowComparisonCompleted {String(mappingItem?.shadowComparisonCompleted)} · productionSwitchAllowed{" "}
-                {String(mappingItem?.productionSwitchAllowed)} · operationalUseAllowed{" "}
-                {String(mappingItem?.operationalUseAllowed)}
+                影子比對已完成 {zhBool(!!mappingItem?.shadowComparisonCompleted)} · 正式切換允許{" "}
+                {zhBool(!!mappingItem?.productionSwitchAllowed, "是", "禁止")} · operationalUseAllowed 操作允許{" "}
+                {zhBool(!!mappingItem?.operationalUseAllowed, "是", "禁止")}
               </p>
             </div>
           </div>
           <div className="border-t border-line/60 px-5 py-3 sm:px-6">
             <p className="text-[9px] text-slate-600">
-              futureRealQuoteField → CandidatePriceLevelDescriptor field → CandidateTradePlan field（spec-only）；
+              未來真實報價欄位 → 候選價位描述欄位 → 候選交易計畫欄位（spec-only 規格）；
               尚未連真實行情，fixture 區間不可作為正式操作依據。
             </p>
           </div>
@@ -206,46 +213,46 @@ export default function SystemSafetyPage() {
         <section className="panel-shell overflow-hidden">
           <div className="border-b border-line/80 px-5 py-4 sm:px-6">
             <h2 className="text-[15px] font-semibold tracking-wide text-slate-100">
-              Authorized Real Quote Field Catalog（spec-only）
+              授權真實報價欄位目錄（Authorized Real Quote Field Catalog，spec-only）
             </h2>
             <p className="mt-1 text-[10px] text-slate-500">
-              {catalog.specName}（{catalog.contractVersion}）· sourceCatalogMode = {catalog.sourceCatalogMode}。
-              deterministic / fixture-only：no runtime、no fetch、no Supabase connection、no env read、no DB write、no API route。
+              {catalog.specName}（{catalog.contractVersion}）· 來源目錄模式 sourceCatalogMode = {catalog.sourceCatalogMode}。
+              可重現 / 固定樣本：不啟用 runtime、不 fetch、不連 Supabase、不讀 env、不寫 DB、不新增 API route。
             </p>
           </div>
           <div className="grid grid-cols-2 gap-3 px-5 py-4 sm:px-6 lg:grid-cols-4">
             <div className="rounded-xl border border-line bg-white/[0.012] px-4 py-3">
-              <p className="text-[9px] uppercase tracking-[0.15em] text-slate-500">Source candidates</p>
+              <p className="text-[9px] uppercase tracking-[0.15em] text-slate-500">來源候選</p>
               <p className="mt-1 text-[14px] font-semibold text-slate-100">{catalog.sourceCandidates.length}</p>
               <p className={`mt-1 text-[9px] font-semibold ${allSourcesNotConnected ? "text-positive" : "text-negative"}`}>
-                all NOT_CONNECTED {String(allSourcesNotConnected)}
+                全部 NOT_CONNECTED 未連線 {zhBool(allSourcesNotConnected)}
               </p>
             </div>
             <div className="rounded-xl border border-line bg-white/[0.012] px-4 py-3">
-              <p className="text-[9px] uppercase tracking-[0.15em] text-slate-500">Field catalog items</p>
+              <p className="text-[9px] uppercase tracking-[0.15em] text-slate-500">欄位目錄項目</p>
               <p className="mt-1 text-[14px] font-semibold text-slate-100">{catalog.fieldCatalogItems.length}</p>
               <p className="mt-1 text-[9px] text-slate-600">
-                runtimeEnabled false {String(allRuntimeDisabled)} · fetchAllowed false {String(allFetchDisallowed)}
+                runtime 未啟用 {zhBool(allRuntimeDisabled)} · fetch 禁止 {zhBool(allFetchDisallowed)}
               </p>
             </div>
             <div className="rounded-xl border border-line bg-white/[0.012] px-4 py-3">
-              <p className="text-[9px] uppercase tracking-[0.15em] text-slate-500">sign-off / staging / shadow</p>
+              <p className="text-[9px] uppercase tracking-[0.15em] text-slate-500">簽核／staging／影子</p>
               <p className="mt-1 text-[11px] font-semibold text-slate-200">
-                manualSignoffCompleted {String(sb.manualSignoffCompleted)} · stagingReadOnlyConnected{" "}
-                {String(sb.stagingReadOnlyConnected)} · shadowComparisonCompleted {String(sb.shadowComparisonCompleted)}
+                人工簽核完成 {zhBool(sb.manualSignoffCompleted)} · staging 唯讀已連線{" "}
+                {zhBool(sb.stagingReadOnlyConnected)} · 影子比對完成 {zhBool(sb.shadowComparisonCompleted)}
               </p>
             </div>
             <div className="rounded-xl border border-line bg-white/[0.012] px-4 py-3">
-              <p className="text-[9px] uppercase tracking-[0.15em] text-slate-500">production / service role</p>
+              <p className="text-[9px] uppercase tracking-[0.15em] text-slate-500">正式／service role</p>
               <p className="mt-1 text-[11px] font-semibold text-slate-200">
-                productionSwitchAllowed {String(sb.productionSwitchAllowed)} · serviceRoleAllowedInAppRuntime{" "}
-                {String(sb.serviceRoleAllowedInAppRuntime)} · writeOperationsAllowed {String(sb.writeOperationsAllowed)}
+                正式切換允許 {zhBool(sb.productionSwitchAllowed, "是", "禁止")} · app runtime 用 service role{" "}
+                {zhBool(sb.serviceRoleAllowedInAppRuntime, "是", "禁止")} · 寫入操作 {zhBool(sb.writeOperationsAllowed, "是", "禁止")}
               </p>
             </div>
           </div>
           <div className="border-t border-line/60 px-5 py-3 sm:px-6">
             <p className="text-[9px] text-slate-600">
-              尚未授權任何真實行情來源，fixture 區間不可作為正式操作依據（operationalUseAllowed false）。
+              尚未授權任何真實行情來源，fixture 區間不可作為正式操作依據（operationalUseAllowed 操作允許＝否）。
             </p>
           </div>
         </section>
@@ -254,43 +261,43 @@ export default function SystemSafetyPage() {
         <section className="panel-shell overflow-hidden">
           <div className="border-b border-line/80 px-5 py-4 sm:px-6">
             <h2 className="text-[15px] font-semibold tracking-wide text-slate-100">
-              Real Quote Source Conflict Resolution Policy（spec-only）
+              真實報價來源衝突處理規則（Real Quote Source Conflict Resolution Policy，spec-only）
             </h2>
             <p className="mt-1 text-[10px] text-slate-500">
-              {conflict.specName}（{conflict.contractVersion}）· policyMode = {conflict.policyMode}。
-              deterministic conflict resolution / fixture-only：no runtime、no fetch、no Supabase connection、no env read、no DB write、no API route。
+              {conflict.specName}（{conflict.contractVersion}）· 規則模式 policyMode = {conflict.policyMode}。
+              可重現衝突處理 / 固定樣本：不啟用 runtime、不 fetch、不連 Supabase、不讀 env、不寫 DB、不新增 API route。
             </p>
           </div>
           <div className="grid grid-cols-2 gap-3 px-5 py-4 sm:px-6 lg:grid-cols-4">
             <div className="rounded-xl border border-line bg-white/[0.012] px-4 py-3">
-              <p className="text-[9px] uppercase tracking-[0.15em] text-slate-500">Conflict rules</p>
+              <p className="text-[9px] uppercase tracking-[0.15em] text-slate-500">衝突規則</p>
               <p className="mt-1 text-[14px] font-semibold text-slate-100">{conflict.conflictRules.length}</p>
             </div>
             <div className="rounded-xl border border-line bg-white/[0.012] px-4 py-3">
-              <p className="text-[9px] uppercase tracking-[0.15em] text-slate-500">Sample resolutions</p>
+              <p className="text-[9px] uppercase tracking-[0.15em] text-slate-500">範例解析</p>
               <p className="mt-1 text-[14px] font-semibold text-slate-100">{conflict.sampleResolutionResults.length}</p>
               <p className={`mt-1 text-[9px] font-semibold ${allConflictOpFalse ? "text-positive" : "text-negative"}`}>
-                operationalUseAllowed false {String(allConflictOpFalse)}
+                operationalUseAllowed 操作允許＝否 {zhBool(allConflictOpFalse)}
               </p>
             </div>
             <div className="rounded-xl border border-line bg-white/[0.012] px-4 py-3">
-              <p className="text-[9px] uppercase tracking-[0.15em] text-slate-500">sign-off / production</p>
+              <p className="text-[9px] uppercase tracking-[0.15em] text-slate-500">簽核／正式</p>
               <p className="mt-1 text-[11px] font-semibold text-slate-200">
-                manualSignoffCompleted {String(!allConflictSignoffNotDone ? true : false)} · productionSwitchAllowed{" "}
-                {String(conflict.productionReady)}
+                人工簽核完成 {zhBool(!allConflictSignoffNotDone)} · 正式切換允許{" "}
+                {zhBool(conflict.productionReady, "是", "禁止")}
               </p>
             </div>
             <div className="rounded-xl border border-line bg-white/[0.012] px-4 py-3">
-              <p className="text-[9px] uppercase tracking-[0.15em] text-slate-500">connection</p>
+              <p className="text-[9px] uppercase tracking-[0.15em] text-slate-500">連線狀態</p>
               <p className="mt-1 text-[11px] font-semibold text-slate-200">
-                realDataConnected {String(conflict.realDataConnected)} · fetchPerformed {String(conflict.fetchPerformed)} ·
-                supabaseConnected {String(conflict.supabaseConnected)}
+                真實資料已連線 {zhBool(conflict.realDataConnected)} · 已 fetch {zhBool(conflict.fetchPerformed)} ·
+                Supabase 已連線 {zhBool(conflict.supabaseConnected)}
               </p>
             </div>
           </div>
           <div className="border-t border-line/60 px-5 py-3 sm:px-6">
             <p className="text-[9px] text-slate-600">
-              多來源衝突解析尚未接真實資料，fixture 區間不可作為正式操作依據（degraded / BLOCKED_NOT_CONNECTED）。
+              多來源衝突解析尚未接真實資料，fixture 區間不可作為正式操作依據（degraded 降級 / BLOCKED_NOT_CONNECTED 未連線）。
             </p>
           </div>
         </section>
@@ -299,44 +306,44 @@ export default function SystemSafetyPage() {
         <section className="panel-shell overflow-hidden">
           <div className="border-b border-line/80 px-5 py-4 sm:px-6">
             <h2 className="text-[15px] font-semibold tracking-wide text-slate-100">
-              Conflict to Trade Plan Verification Downgrade（spec-only）
+              衝突對交易計畫的驗證降級（Conflict to Trade Plan Verification Downgrade，spec-only）
             </h2>
             <p className="mt-1 text-[10px] text-slate-500">
-              {downgrade.specName}（{downgrade.contractVersion}）· matrixMode = {downgrade.matrixMode}。
-              deterministic / fixture-only：no runtime、no fetch、no Supabase connection、no env read、no DB write、no API route。
+              {downgrade.specName}（{downgrade.contractVersion}）· 矩陣模式 matrixMode = {downgrade.matrixMode}。
+              可重現 / 固定樣本：不啟用 runtime、不 fetch、不連 Supabase、不讀 env、不寫 DB、不新增 API route。
             </p>
           </div>
           <div className="grid grid-cols-2 gap-3 px-5 py-4 sm:px-6 lg:grid-cols-4">
             <div className="rounded-xl border border-line bg-white/[0.012] px-4 py-3">
-              <p className="text-[9px] uppercase tracking-[0.15em] text-slate-500">Downgrade rules</p>
+              <p className="text-[9px] uppercase tracking-[0.15em] text-slate-500">降級規則</p>
               <p className="mt-1 text-[14px] font-semibold text-slate-100">{downgrade.downgradeRules.length}</p>
             </div>
             <div className="rounded-xl border border-line bg-white/[0.012] px-4 py-3">
-              <p className="text-[9px] uppercase tracking-[0.15em] text-slate-500">Sample downgrades</p>
+              <p className="text-[9px] uppercase tracking-[0.15em] text-slate-500">範例降級</p>
               <p className="mt-1 text-[14px] font-semibold text-slate-100">{downgrade.sampleDowngradeResults.length}</p>
               <p className={`mt-1 text-[9px] font-semibold ${allDowngradeObservation ? "text-positive" : "text-negative"}`}>
-                observationOnly true {String(allDowngradeObservation)}
+                observationOnly 僅觀察＝是 {zhBool(allDowngradeObservation)}
               </p>
             </div>
             <div className="rounded-xl border border-line bg-white/[0.012] px-4 py-3">
-              <p className="text-[9px] uppercase tracking-[0.15em] text-slate-500">operational / sign-off</p>
+              <p className="text-[9px] uppercase tracking-[0.15em] text-slate-500">操作／簽核</p>
               <p className="mt-1 text-[11px] font-semibold text-slate-200">
-                operationalUseAllowed false {String(allDowngradeOpFalse)} · manualSignoffCompleted{" "}
-                {String(!allDowngradeSignoffNotDone)}
+                operationalUseAllowed 操作允許＝否 {zhBool(allDowngradeOpFalse)} · 人工簽核完成{" "}
+                {zhBool(!allDowngradeSignoffNotDone)}
               </p>
             </div>
             <div className="rounded-xl border border-line bg-white/[0.012] px-4 py-3">
-              <p className="text-[9px] uppercase tracking-[0.15em] text-slate-500">production / connection</p>
+              <p className="text-[9px] uppercase tracking-[0.15em] text-slate-500">正式／連線</p>
               <p className="mt-1 text-[11px] font-semibold text-slate-200">
-                productionSwitchAllowed {String(downgrade.productionReady)} · realDataConnected{" "}
-                {String(downgrade.realDataConnected)} · fetchPerformed {String(downgrade.fetchPerformed)} ·
-                supabaseConnected {String(downgrade.supabaseConnected)}
+                正式切換允許 {zhBool(downgrade.productionReady, "是", "禁止")} · 真實資料已連線{" "}
+                {zhBool(downgrade.realDataConnected)} · 已 fetch {zhBool(downgrade.fetchPerformed)} ·
+                Supabase 已連線 {zhBool(downgrade.supabaseConnected)}
               </p>
             </div>
           </div>
           <div className="border-t border-line/60 px-5 py-3 sm:px-6">
             <p className="text-[9px] text-slate-600">
-              來源衝突或缺值時，承接區會降級為觀察，不可作為正式操作依據（VERIFIED 為 future-only，不在目前 sample 使用）。
+              來源衝突或缺值時，承接區會降級為觀察，不可作為正式操作依據（VERIFIED 已驗證為 future-only 未來限定，不在目前 sample 使用）。
             </p>
           </div>
         </section>
@@ -345,44 +352,44 @@ export default function SystemSafetyPage() {
         <section className="panel-shell overflow-hidden">
           <div className="border-b border-line/80 px-5 py-4 sm:px-6">
             <h2 className="text-[15px] font-semibold tracking-wide text-slate-100">
-              Downgraded Trade Plan UI Behavior（spec-only）
+              降級交易計畫的介面行為（Downgraded Trade Plan UI Behavior，spec-only）
             </h2>
             <p className="mt-1 text-[10px] text-slate-500">
-              {uiBehavior.specName}（{uiBehavior.contractVersion}）· behaviorMode = {uiBehavior.behaviorMode}。
-              deterministic / fixture-only：no runtime、no fetch、no Supabase connection、no env read、no DB write、no API route。
+              {uiBehavior.specName}（{uiBehavior.contractVersion}）· 行為模式 behaviorMode = {uiBehavior.behaviorMode}。
+              可重現 / 固定樣本：不啟用 runtime、不 fetch、不連 Supabase、不讀 env、不寫 DB、不新增 API route。
             </p>
           </div>
           <div className="grid grid-cols-2 gap-3 px-5 py-4 sm:px-6 lg:grid-cols-4">
             <div className="rounded-xl border border-line bg-white/[0.012] px-4 py-3">
-              <p className="text-[9px] uppercase tracking-[0.15em] text-slate-500">UI states</p>
+              <p className="text-[9px] uppercase tracking-[0.15em] text-slate-500">介面狀態</p>
               <p className="mt-1 text-[14px] font-semibold text-slate-100">{uiBehavior.uiStates.length}</p>
               <p className={`mt-1 text-[9px] font-semibold ${allUiObservation ? "text-positive" : "text-negative"}`}>
-                observationOnly true {String(allUiObservation)}
+                observationOnly 僅觀察＝是 {zhBool(allUiObservation)}
               </p>
             </div>
             <div className="rounded-xl border border-line bg-white/[0.012] px-4 py-3">
-              <p className="text-[9px] uppercase tracking-[0.15em] text-slate-500">operational / sign-off</p>
+              <p className="text-[9px] uppercase tracking-[0.15em] text-slate-500">操作／簽核</p>
               <p className="mt-1 text-[11px] font-semibold text-slate-200">
-                operationalUseAllowed false {String(allUiOpFalse)} · manualSignoffCompleted {String(!allUiSignoffNotDone)}
+                operationalUseAllowed 操作允許＝否 {zhBool(allUiOpFalse)} · 人工簽核完成 {zhBool(!allUiSignoffNotDone)}
               </p>
             </div>
             <div className="rounded-xl border border-line bg-white/[0.012] px-4 py-3">
-              <p className="text-[9px] uppercase tracking-[0.15em] text-slate-500">production</p>
+              <p className="text-[9px] uppercase tracking-[0.15em] text-slate-500">正式環境</p>
               <p className="mt-1 text-[11px] font-semibold text-slate-200">
-                productionSwitchAllowed {String(uiBehavior.productionReady)}
+                正式切換允許 {zhBool(uiBehavior.productionReady, "是", "禁止")}
               </p>
             </div>
             <div className="rounded-xl border border-line bg-white/[0.012] px-4 py-3">
-              <p className="text-[9px] uppercase tracking-[0.15em] text-slate-500">connection</p>
+              <p className="text-[9px] uppercase tracking-[0.15em] text-slate-500">連線狀態</p>
               <p className="mt-1 text-[11px] font-semibold text-slate-200">
-                realDataConnected {String(uiBehavior.realDataConnected)} · fetchPerformed {String(uiBehavior.fetchPerformed)} ·
-                supabaseConnected {String(uiBehavior.supabaseConnected)}
+                真實資料已連線 {zhBool(uiBehavior.realDataConnected)} · 已 fetch {zhBool(uiBehavior.fetchPerformed)} ·
+                Supabase 已連線 {zhBool(uiBehavior.supabaseConnected)}
               </p>
             </div>
           </div>
           <div className="border-t border-line/60 px-5 py-3 sm:px-6">
             <p className="text-[9px] text-slate-600">
-              依 TradePlanDisplayMode 決定承接區 / 目標區 / 風報比顯示或隱藏；這不是買賣指令，不可作為正式操作依據。
+              依交易計畫顯示模式決定承接區／目標區／風報比顯示或隱藏；這不是買賣指令，不可作為正式操作依據。
             </p>
           </div>
         </section>
@@ -391,45 +398,45 @@ export default function SystemSafetyPage() {
         <section className="panel-shell overflow-hidden">
           <div className="border-b border-line/80 px-5 py-4 sm:px-6">
             <h2 className="text-[15px] font-semibold tracking-wide text-slate-100">
-              Unified Connection Evidence Ledger（spec-only）
+              統一連線證據帳本（Unified Connection Evidence Ledger，spec-only）
             </h2>
             <p className="mt-1 text-[10px] text-slate-500">
-              {ledger.specName}（{ledger.contractVersion}）· ledgerMode = {ledger.ledgerMode} · decision ={" "}
+              {ledger.specName}（{ledger.contractVersion}）· 帳本模式 ledgerMode = {ledger.ledgerMode} · 判定 ={" "}
               <span className="font-semibold text-negative">{ledger.decision}</span>。
-              deterministic / spec-only：no runtime、no fetch、no Supabase connection、no env read、no DB write、no API route。
+              可重現 / 規格檢查：不啟用 runtime、不 fetch、不連 Supabase、不讀 env、不寫 DB、不新增 API route。
             </p>
           </div>
           <div className="grid grid-cols-2 gap-3 px-5 py-4 sm:px-6 lg:grid-cols-4">
             <div className="rounded-xl border border-line bg-white/[0.012] px-4 py-3">
-              <p className="text-[9px] uppercase tracking-[0.15em] text-slate-500">Evidence items</p>
+              <p className="text-[9px] uppercase tracking-[0.15em] text-slate-500">證據項目</p>
               <p className="mt-1 text-[14px] font-semibold text-slate-100">{ledger.evidenceItems.length}</p>
-              <p className="mt-1 text-[9px] text-slate-600">pending {ledgerPendingCount} · completed {ledgerCompletedCount}</p>
+              <p className="mt-1 text-[9px] text-slate-600">待處理 {ledgerPendingCount} · 已完成 {ledgerCompletedCount}</p>
             </div>
             <div className="rounded-xl border border-line bg-white/[0.012] px-4 py-3">
-              <p className="text-[9px] uppercase tracking-[0.15em] text-slate-500">connection allowed</p>
+              <p className="text-[9px] uppercase tracking-[0.15em] text-slate-500">連線允許</p>
               <p className="mt-1 text-[11px] font-semibold text-slate-200">
-                staging {String(ledger.stagingConnectionAllowed)} · realQuote {String(ledger.realQuoteConnectionAllowed)} ·
-                production {String(ledger.productionSwitchAllowed)}
+                staging {zhBool(ledger.stagingConnectionAllowed, "允許", "禁止")} · 真實報價 {zhBool(ledger.realQuoteConnectionAllowed, "允許", "禁止")} ·
+                正式 {zhBool(ledger.productionSwitchAllowed, "允許", "禁止")}
               </p>
             </div>
             <div className="rounded-xl border border-line bg-white/[0.012] px-4 py-3">
-              <p className="text-[9px] uppercase tracking-[0.15em] text-slate-500">sign-off / evidence</p>
+              <p className="text-[9px] uppercase tracking-[0.15em] text-slate-500">簽核／證據</p>
               <p className="mt-1 text-[11px] font-semibold text-slate-200">
-                manualSignoffCompleted {String(ledger.manualSignoffCompleted)} · actualEvidenceAttached{" "}
-                {String(ledger.actualEvidenceAttached)}
+                人工簽核完成 {zhBool(ledger.manualSignoffCompleted)} · actualEvidenceAttached 實際證據已附{" "}
+                {zhBool(ledger.actualEvidenceAttached)}
               </p>
             </div>
             <div className="rounded-xl border border-line bg-white/[0.012] px-4 py-3">
-              <p className="text-[9px] uppercase tracking-[0.15em] text-slate-500">connection</p>
+              <p className="text-[9px] uppercase tracking-[0.15em] text-slate-500">連線狀態</p>
               <p className="mt-1 text-[11px] font-semibold text-slate-200">
-                realDataConnected {String(ledger.realDataConnected)} · supabaseConnected {String(ledger.supabaseConnected)} ·
-                productionReady {String(ledger.productionReady)}
+                真實資料已連線 {zhBool(ledger.realDataConnected)} · Supabase 已連線 {zhBool(ledger.supabaseConnected)} ·
+                正式就緒 {zhBool(ledger.productionReady)}
               </p>
             </div>
           </div>
           <div className="border-t border-line/60 px-5 py-3 sm:px-6">
             <p className="text-[9px] text-slate-600">
-              真實行情與 staging 連線仍需人工 evidence，不可作為正式操作依據（V64–V69 evidence 收斂為單一 ledger）。
+              真實行情與 staging 連線仍需人工證據，不可作為正式操作依據（V64–V69 證據收斂為單一帳本）。
             </p>
           </div>
         </section>
@@ -438,46 +445,46 @@ export default function SystemSafetyPage() {
         <section className="panel-shell overflow-hidden">
           <div className="border-b border-line/80 px-5 py-4 sm:px-6">
             <h2 className="text-[15px] font-semibold tracking-wide text-slate-100">
-              Evidence Ledger Transition Engine（spec-only）
+              證據帳本狀態轉移引擎（Evidence Ledger Transition Engine，spec-only）
             </h2>
             <p className="mt-1 text-[10px] text-slate-500">
-              {transition.specName}（{transition.contractVersion}）· transitionMode = {transition.transitionMode} ·
-              decision = <span className="font-semibold text-negative">{transition.decision}</span>。
-              deterministic / preview-only：no runtime、no fetch、no Supabase connection、no env read、no DB write、no API route。
+              {transition.specName}（{transition.contractVersion}）· 轉移模式 transitionMode = {transition.transitionMode} ·
+              判定 = <span className="font-semibold text-negative">{transition.decision}</span>。
+              可重現 / 僅預覽：不啟用 runtime、不 fetch、不連 Supabase、不讀 env、不寫 DB、不新增 API route。
             </p>
           </div>
           <div className="grid grid-cols-2 gap-3 px-5 py-4 sm:px-6 lg:grid-cols-4">
             <div className="rounded-xl border border-line bg-white/[0.012] px-4 py-3">
-              <p className="text-[9px] uppercase tracking-[0.15em] text-slate-500">Preview results</p>
+              <p className="text-[9px] uppercase tracking-[0.15em] text-slate-500">預覽結果</p>
               <p className="mt-1 text-[14px] font-semibold text-slate-100">{transition.transitionPreviewResults.length}</p>
-              <p className="mt-1 text-[9px] text-slate-600">actualLedgerMutated {String(transition.actualLedgerMutated)}</p>
+              <p className="mt-1 text-[9px] text-slate-600">actualLedgerMutated 帳本實際變更 {zhBool(transition.actualLedgerMutated)}</p>
             </div>
             <div className="rounded-xl border border-line bg-white/[0.012] px-4 py-3">
-              <p className="text-[9px] uppercase tracking-[0.15em] text-slate-500">Source contract integrity</p>
+              <p className="text-[9px] uppercase tracking-[0.15em] text-slate-500">來源合約完整性</p>
               <p className="mt-1 text-[14px] font-semibold text-slate-100">{transition.sourceContractIntegrityItems.length}</p>
               <p className={`mt-1 text-[9px] font-semibold ${allSourceContractsExist ? "text-positive" : "text-negative"}`}>
-                all exist {String(allSourceContractsExist)}
+                全部存在 {zhBool(allSourceContractsExist)}
               </p>
             </div>
             <div className="rounded-xl border border-line bg-white/[0.012] px-4 py-3">
-              <p className="text-[9px] uppercase tracking-[0.15em] text-slate-500">ledger after preview</p>
+              <p className="text-[9px] uppercase tracking-[0.15em] text-slate-500">預覽後帳本</p>
               <p className="mt-1 text-[12px] font-semibold text-slate-200">
-                ledgerDecisionAfterPreview {transition.ledgerDecisionAfterPreview}
+                預覽後帳本判定 {transition.ledgerDecisionAfterPreview}
               </p>
             </div>
             <div className="rounded-xl border border-line bg-white/[0.012] px-4 py-3">
-              <p className="text-[9px] uppercase tracking-[0.15em] text-slate-500">connection</p>
+              <p className="text-[9px] uppercase tracking-[0.15em] text-slate-500">連線狀態</p>
               <p className="mt-1 text-[11px] font-semibold text-slate-200">
-                staging {String(transition.recalculationResult.stagingConnectionAllowed)} · realQuote{" "}
-                {String(transition.recalculationResult.realQuoteConnectionAllowed)} · production{" "}
-                {String(transition.recalculationResult.productionSwitchAllowed)} · productionReady{" "}
-                {String(transition.productionReady)}
+                staging {zhBool(transition.recalculationResult.stagingConnectionAllowed, "允許", "禁止")} · 真實報價{" "}
+                {zhBool(transition.recalculationResult.realQuoteConnectionAllowed, "允許", "禁止")} · 正式{" "}
+                {zhBool(transition.recalculationResult.productionSwitchAllowed, "允許", "禁止")} · 正式就緒{" "}
+                {zhBool(transition.productionReady)}
               </p>
             </div>
           </div>
           <div className="border-t border-line/60 px-5 py-3 sm:px-6">
             <p className="text-[9px] text-slate-600">
-              即使 preview 單項 evidence，真實行情與 staging 連線仍維持鎖定（actualLedgerMutated false、ledger decision NO_GO）。
+              即使預覽單項證據，真實行情與 staging 連線仍維持鎖定（actualLedgerMutated 帳本實際變更＝否、帳本判定 NO_GO 不可放行）。
             </p>
           </div>
         </section>
@@ -486,45 +493,45 @@ export default function SystemSafetyPage() {
         <section className="panel-shell overflow-hidden">
           <div className="border-b border-line/80 px-5 py-4 sm:px-6">
             <h2 className="text-[15px] font-semibold tracking-wide text-slate-100">
-              Ledger Integrity Rollup & Safety Gate（spec-only）
+              帳本完整性彙整與安全閘（Ledger Integrity Rollup & Safety Gate，spec-only）
             </h2>
             <p className="mt-1 text-[10px] text-slate-500">
-              {rollup.specName}（{rollup.contractVersion}）· rollupMode = {rollup.rollupMode} · decision ={" "}
+              {rollup.specName}（{rollup.contractVersion}）· 彙整模式 rollupMode = {rollup.rollupMode} · 判定 ={" "}
               <span className="font-semibold text-negative">{rollup.decision}</span>。
-              deterministic / spec-only：no runtime、no fetch、no Supabase connection、no env read、no DB write、no API route。
+              可重現 / 規格檢查：不啟用 runtime、不 fetch、不連 Supabase、不讀 env、不寫 DB、不新增 API route。
             </p>
           </div>
           <div className="grid grid-cols-2 gap-3 px-5 py-4 sm:px-6 lg:grid-cols-4">
             <div className="rounded-xl border border-line bg-white/[0.012] px-4 py-3">
-              <p className="text-[9px] uppercase tracking-[0.15em] text-slate-500">Rollup items</p>
+              <p className="text-[9px] uppercase tracking-[0.15em] text-slate-500">彙整項目</p>
               <p className="mt-1 text-[14px] font-semibold text-slate-100">{rollup.rollupItems.length}</p>
               <p className={`mt-1 text-[9px] font-semibold ${rollup.allSourceContractsExist ? "text-positive" : "text-negative"}`}>
-                sourceIntegrityOk {String(rollup.sourceIntegrityOk)} · allSourceContractsExist {String(rollup.allSourceContractsExist)}
+                來源完整性正常 {zhBool(rollup.sourceIntegrityOk)} · 來源合約全部存在 {zhBool(rollup.allSourceContractsExist)}
               </p>
             </div>
             <div className="rounded-xl border border-line bg-white/[0.012] px-4 py-3">
-              <p className="text-[9px] uppercase tracking-[0.15em] text-slate-500">Safety gate blockers</p>
+              <p className="text-[9px] uppercase tracking-[0.15em] text-slate-500">安全閘阻擋項（safetyGateBlockers）</p>
               <p className="mt-1 text-[14px] font-semibold text-negative">{rollup.safetyGateBlockers.length}</p>
-              <p className="mt-1 text-[9px] text-slate-600">allEvidencePending {String(rollup.allEvidencePending)}</p>
+              <p className="mt-1 text-[9px] text-slate-600">所有證據待處理 {zhBool(rollup.allEvidencePending)}</p>
             </div>
             <div className="rounded-xl border border-line bg-white/[0.012] px-4 py-3">
-              <p className="text-[9px] uppercase tracking-[0.15em] text-slate-500">preview / mutation</p>
+              <p className="text-[9px] uppercase tracking-[0.15em] text-slate-500">預覽／變更</p>
               <p className="mt-1 text-[11px] font-semibold text-slate-200">
-                allTransitionsPreviewOnly {String(rollup.allTransitionsPreviewOnly)} · actualLedgerMutated{" "}
-                {String(rollup.actualLedgerMutated)}
+                所有轉移僅預覽 {zhBool(rollup.allTransitionsPreviewOnly)} · actualLedgerMutated 帳本實際變更{" "}
+                {zhBool(rollup.actualLedgerMutated)}
               </p>
             </div>
             <div className="rounded-xl border border-line bg-white/[0.012] px-4 py-3">
-              <p className="text-[9px] uppercase tracking-[0.15em] text-slate-500">connection</p>
+              <p className="text-[9px] uppercase tracking-[0.15em] text-slate-500">連線狀態</p>
               <p className="mt-1 text-[11px] font-semibold text-slate-200">
-                staging {String(rollup.stagingConnectionAllowed)} · realQuote {String(rollup.realQuoteConnectionAllowed)} ·
-                production {String(rollup.productionSwitchAllowed)} · productionReady {String(rollup.productionReady)}
+                staging {zhBool(rollup.stagingConnectionAllowed, "允許", "禁止")} · 真實報價 {zhBool(rollup.realQuoteConnectionAllowed, "允許", "禁止")} ·
+                正式 {zhBool(rollup.productionSwitchAllowed, "允許", "禁止")} · 正式就緒 {zhBool(rollup.productionReady)}
               </p>
             </div>
           </div>
           <div className="border-t border-line/60 px-5 py-3 sm:px-6">
             <p className="text-[9px] text-slate-600">
-              source contracts 完整，但 evidence 全部 pending，真實行情仍鎖定（{rollup.safetyGateBlockers.length} 個 safety gate blocker 未解除）。
+              來源合約完整，但證據全部待處理，真實行情仍鎖定（{rollup.safetyGateBlockers.length} 個安全閘阻擋項未解除）。
             </p>
           </div>
         </section>
@@ -533,46 +540,46 @@ export default function SystemSafetyPage() {
         <section className="panel-shell overflow-hidden">
           <div className="border-b border-line/80 px-5 py-4 sm:px-6">
             <h2 className="text-[15px] font-semibold tracking-wide text-slate-100">
-              Safety Chain CI Guard（spec-only）
+              安全鏈 CI 防護（Safety Chain CI Guard，spec-only）
             </h2>
             <p className="mt-1 text-[10px] text-slate-500">
-              {ciGuard.specName}（{ciGuard.contractVersion}）· guardMode = SPEC_ONLY_CI_GUARD · decision ={" "}
+              {ciGuard.specName}（{ciGuard.contractVersion}）· 防護模式 guardMode = SPEC_ONLY_CI_GUARD · 判定 ={" "}
               <span className={ciGuard.result.allCriticalPassed ? "font-semibold text-positive" : "font-semibold text-negative"}>
                 {ciGuard.decision}
               </span>
-              。READY_FOR_UI_REVIEW is not production ready。Phase 2 + Phase 2b + Staging Shadow Runtime Scaffold + Limited Live Fetch Scope + Limited Live Fetch Implementation + Golden Snapshot + Mock Fetch Boundary + Default No-Fetch + Timeout Boundary included（{ciGuard.result.totalChecks} checks）。manual smoke script is NOT part of the safety chain。
+              （CI 防護已就緒，但尚未達正式環境就緒）。涵蓋 Phase 2 + Phase 2b + Staging 影子執行環境鷹架 + 受限即時抓取範圍 + 受限即時抓取實作 + 黃金快照驗證 + 模擬請求邊界驗證 + 預設不請求邊界驗證 + 逾時／中止邊界驗證（共 {ciGuard.result.totalChecks} 項檢查）。手動 smoke script 不納入安全鏈。
             </p>
           </div>
           <div className="grid grid-cols-2 gap-3 px-5 py-4 sm:px-6 lg:grid-cols-4">
             <div className="rounded-xl border border-line bg-white/[0.012] px-4 py-3">
-              <p className="text-[9px] uppercase tracking-[0.15em] text-slate-500">Chain checks</p>
+              <p className="text-[9px] uppercase tracking-[0.15em] text-slate-500">安全鏈檢查</p>
               <p className={`mt-1 text-[14px] font-semibold ${ciGuard.result.allCriticalPassed ? "text-positive" : "text-negative"}`}>
                 {ciGuard.result.passedChecks}/{ciGuard.result.totalChecks}
               </p>
-              <p className="mt-1 text-[9px] text-slate-600">allCriticalPassed {String(ciGuard.result.allCriticalPassed)}</p>
+              <p className="mt-1 text-[9px] text-slate-600">所有關鍵檢查通過 {zhBool(ciGuard.result.allCriticalPassed)}</p>
             </div>
             <div className="rounded-xl border border-line bg-white/[0.012] px-4 py-3">
-              <p className="text-[9px] uppercase tracking-[0.15em] text-slate-500">runtime / no-go locks</p>
+              <p className="text-[9px] uppercase tracking-[0.15em] text-slate-500">runtime／NO_GO 鎖定</p>
               <p className="mt-1 text-[11px] font-semibold text-slate-200">
-                allRuntimeFlagsFalse {String(ciGuard.result.allRuntimeFlagsFalse)} · allNoGoLocksPreserved{" "}
-                {String(ciGuard.result.allNoGoLocksPreserved)}
+                所有 runtime 旗標為否 {zhBool(ciGuard.result.allRuntimeFlagsFalse)} · 所有 NO_GO 鎖定保留{" "}
+                {zhBool(ciGuard.result.allNoGoLocksPreserved)}
               </p>
             </div>
             <div className="rounded-xl border border-line bg-white/[0.012] px-4 py-3">
-              <p className="text-[9px] uppercase tracking-[0.15em] text-slate-500">operational / production</p>
+              <p className="text-[9px] uppercase tracking-[0.15em] text-slate-500">操作／正式</p>
               <p className="mt-1 text-[11px] font-semibold text-slate-200">
-                allOperationalUseBlocked {String(ciGuard.result.allOperationalUseBlocked)} · productionSwitchStillBlocked{" "}
-                {String(ciGuard.result.productionSwitchStillBlocked)}
+                所有操作使用已封鎖 {zhBool(ciGuard.result.allOperationalUseBlocked)} · productionSwitchStillBlocked 正式切換仍封鎖{" "}
+                {zhBool(ciGuard.result.productionSwitchStillBlocked)}
               </p>
             </div>
             <div className="rounded-xl border border-line bg-white/[0.012] px-4 py-3">
-              <p className="text-[9px] uppercase tracking-[0.15em] text-slate-500">production ready</p>
-              <p className="mt-1 text-[12px] font-semibold text-slate-200">productionReady {String(ciGuard.productionReady)}</p>
+              <p className="text-[9px] uppercase tracking-[0.15em] text-slate-500">正式就緒</p>
+              <p className="mt-1 text-[12px] font-semibold text-slate-200">正式就緒 productionReady {zhBool(ciGuard.productionReady)}</p>
             </div>
           </div>
           <div className="border-t border-line/60 px-5 py-3 sm:px-6">
             <p className="text-[9px] text-slate-600">
-              一個指令彙總 V60–V72 安全鏈；任何 commit 偷翻 NO_GO / runtime / production switch 旗標即被攔下（npm run test:safety-chain）。
+              一個指令彙總 V60–V72 安全鏈；任何 commit 偷翻 NO_GO（不可放行）／runtime／正式切換旗標即被攔下（npm run test:safety-chain）。
             </p>
           </div>
         </section>
@@ -581,46 +588,46 @@ export default function SystemSafetyPage() {
         <section className="panel-shell overflow-hidden">
           <div className="border-b border-line/80 px-5 py-4 sm:px-6">
             <h2 className="text-[15px] font-semibold tracking-wide text-slate-100">
-              Phase 2 Locked Real Quote Interface（interface-only）
+              Phase 2 鎖定真實報價介面（interface-only，僅介面未連線）
             </h2>
             <p className="mt-1 text-[10px] text-slate-500">
-              PHASE_2_LOCKED_INTERFACE · INTERFACE_ONLY_NOT_CONNECTED · decision ={" "}
+              PHASE_2_LOCKED_INTERFACE · INTERFACE_ONLY_NOT_CONNECTED · 判定 ={" "}
               <span className="font-semibold text-negative">{phase2.decision}</span>。
-              DisabledRealQuoteProvider；real quote interface 已定義但未連線：no fetch、no env read、no Supabase connection、no real market data、no API route、no order-execution source。
+              DisabledRealQuoteProvider；真實報價介面已定義但未連線：不 fetch、不讀 env、不連 Supabase、無真實行情、不新增 API route、無下單來源。
             </p>
           </div>
           <div className="grid grid-cols-2 gap-3 px-5 py-4 sm:px-6 lg:grid-cols-4">
             <div className="rounded-xl border border-line bg-white/[0.012] px-4 py-3">
-              <p className="text-[9px] uppercase tracking-[0.15em] text-slate-500">default mode</p>
+              <p className="text-[9px] uppercase tracking-[0.15em] text-slate-500">預設模式</p>
               <p className="mt-1 text-[14px] font-semibold text-slate-100">{phase2.defaultRealDataMode}</p>
               <p className="mt-1 text-[9px] text-slate-600">
-                shadowModeAllowed {String(phase2.shadowModeAllowed)} · realReadonlyAllowed {String(phase2.realReadonlyAllowed)}
+                影子模式允許 {zhBool(phase2.shadowModeAllowed, "是", "禁止")} · 真實唯讀允許 {zhBool(phase2.realReadonlyAllowed, "是", "禁止")}
               </p>
             </div>
             <div className="rounded-xl border border-line bg-white/[0.012] px-4 py-3">
-              <p className="text-[9px] uppercase tracking-[0.15em] text-slate-500">providers</p>
+              <p className="text-[9px] uppercase tracking-[0.15em] text-slate-500">報價來源</p>
               <p className="mt-1 text-[11px] font-semibold text-slate-200">
                 {phase2.providerCatalog.map((p) => `${p.providerId}:${p.status}`).join(" · ")}
               </p>
             </div>
             <div className="rounded-xl border border-line bg-white/[0.012] px-4 py-3">
-              <p className="text-[9px] uppercase tracking-[0.15em] text-slate-500">connection</p>
+              <p className="text-[9px] uppercase tracking-[0.15em] text-slate-500">連線狀態</p>
               <p className="mt-1 text-[11px] font-semibold text-slate-200">
-                realDataConnected {String(phase2.realDataConnected)} · fetchPerformed {String(phase2.fetchPerformed)} ·
-                supabaseConnected {String(phase2.supabaseConnected)}
+                真實資料已連線 {zhBool(phase2.realDataConnected)} · 已 fetch {zhBool(phase2.fetchPerformed)} ·
+                Supabase 已連線 {zhBool(phase2.supabaseConnected)}
               </p>
             </div>
             <div className="rounded-xl border border-line bg-white/[0.012] px-4 py-3">
-              <p className="text-[9px] uppercase tracking-[0.15em] text-slate-500">sample shadow</p>
+              <p className="text-[9px] uppercase tracking-[0.15em] text-slate-500">影子比對範例</p>
               <p className="mt-1 text-[11px] font-semibold text-slate-200">
-                missingRealQuote {String(phase2.sampleShadowComparison.missingRealQuote)} · operationalUseAllowed{" "}
-                {String(phase2.sampleShadowComparison.operationalUseAllowed)}
+                缺真實報價 {zhBool(phase2.sampleShadowComparison.missingRealQuote)} · operationalUseAllowed 操作允許{" "}
+                {zhBool(phase2.sampleShadowComparison.operationalUseAllowed, "是", "禁止")}
               </p>
             </div>
           </div>
           <div className="border-t border-line/60 px-5 py-3 sm:px-6">
             <p className="text-[9px] text-slate-600">
-              interface 已鎖定：shadow mode still locked、real-readonly still locked；shadow 衝突 / 缺值映射回 V67 / V68 / V69 降級鏈（observation only）。
+              介面已鎖定：影子模式仍鎖定、真實唯讀仍鎖定；影子衝突／缺值映射回 V67／V68／V69 降級鏈（僅觀察）。
             </p>
           </div>
         </section>
@@ -632,44 +639,44 @@ export default function SystemSafetyPage() {
         <section className="panel-shell overflow-hidden">
           <div className="border-b border-line/80 px-5 py-4 sm:px-6">
             <h2 className="text-[15px] font-semibold tracking-wide text-slate-100">
-              Staging Shadow Runtime Scaffold（scaffold-only）
+              Staging 影子執行環境鷹架（Staging Shadow Runtime Scaffold，scaffold-only）
             </h2>
             <p className="mt-1 text-[10px] text-slate-500">
-              {shadowRuntime.contractVersion} · mode = SCAFFOLD_ONLY_NOT_CONNECTED · decision ={" "}
-              <span className="font-semibold text-negative">NO_GO</span>。Yahoo / TWSE / TPEx provider 皆 scaffold-only / NOT_CONNECTED：
-              no live fetch、no env read、no Supabase connection、no API route、no order、no broker。
+              {shadowRuntime.contractVersion} · 模式 mode = SCAFFOLD_ONLY_NOT_CONNECTED · 判定 ={" "}
+              <span className="font-semibold text-negative">NO_GO</span>（不可放行）。Yahoo／TWSE／TPEx 來源皆為鷹架／未連線：
+              不 live fetch、不讀 env、不連 Supabase、不新增 API route、不下單、不接券商。
             </p>
           </div>
           <div className="grid grid-cols-2 gap-3 px-5 py-4 sm:px-6 lg:grid-cols-4">
             <div className="rounded-xl border border-line bg-white/[0.012] px-4 py-3">
-              <p className="text-[9px] uppercase tracking-[0.15em] text-slate-500">default mode</p>
+              <p className="text-[9px] uppercase tracking-[0.15em] text-slate-500">預設模式</p>
               <p className="mt-1 text-[14px] font-semibold text-slate-100">{shadowRuntime.defaultRealDataMode}</p>
-              <p className="mt-1 text-[9px] text-slate-600">shadowRuntimeAllowed={String(shadowRuntime.shadowRuntimeAllowed)}</p>
+              <p className="mt-1 text-[9px] text-slate-600">影子執行環境允許 {zhBool(shadowRuntime.shadowRuntimeAllowed, "是", "禁止")}</p>
             </div>
             <div className="rounded-xl border border-line bg-white/[0.012] px-4 py-3">
-              <p className="text-[9px] uppercase tracking-[0.15em] text-slate-500">runtime gates</p>
+              <p className="text-[9px] uppercase tracking-[0.15em] text-slate-500">runtime 閘門</p>
               <p className="mt-1 text-[11px] font-semibold text-slate-200">
-                liveFetchAllowed={String(shadowRuntime.liveFetchAllowed)} · envReadAllowed={String(shadowRuntime.envReadAllowed)}
+                live fetch 允許 {zhBool(shadowRuntime.liveFetchAllowed, "是", "禁止")} · 讀 env 允許 {zhBool(shadowRuntime.envReadAllowed, "是", "禁止")}
               </p>
             </div>
             <div className="rounded-xl border border-line bg-white/[0.012] px-4 py-3">
-              <p className="text-[9px] uppercase tracking-[0.15em] text-slate-500">connection gates</p>
+              <p className="text-[9px] uppercase tracking-[0.15em] text-slate-500">連線閘門</p>
               <p className="mt-1 text-[11px] font-semibold text-slate-200">
-                supabaseConnectionAllowed={String(shadowRuntime.supabaseConnectionAllowed)} · portfolioApiSwitchAllowed=
-                {String(shadowRuntime.portfolioApiSwitchAllowed)}
+                Supabase 連線允許 {zhBool(shadowRuntime.supabaseConnectionAllowed, "是", "禁止")} · /api/portfolio 切換允許{" "}
+                {zhBool(shadowRuntime.portfolioApiSwitchAllowed, "是", "禁止")}
               </p>
             </div>
             <div className="rounded-xl border border-line bg-white/[0.012] px-4 py-3">
-              <p className="text-[9px] uppercase tracking-[0.15em] text-slate-500">production</p>
+              <p className="text-[9px] uppercase tracking-[0.15em] text-slate-500">正式環境</p>
               <p className="mt-1 text-[11px] font-semibold text-slate-200">
-                productionReady={String(shadowRuntime.productionReady)} · serviceRoleForbidden=
-                {String(shadowRuntime.serviceRoleForbidden)}
+                正式就緒 {zhBool(shadowRuntime.productionReady)} · service role 禁止{" "}
+                {zhBool(shadowRuntime.serviceRoleForbidden)}
               </p>
             </div>
           </div>
           <div className="border-t border-line/60 px-5 py-3 sm:px-6">
             <p className="text-[9px] text-slate-600">
-              scaffold only：providers 不 fetch / 不讀 env / 不連線；下一階段需再次 owner approval 才能 limited live fetch dry-run。
+              僅鷹架：來源不 fetch／不讀 env／不連線；下一階段需再次 owner 核准才能進行受限即時抓取試運行。
             </p>
           </div>
         </section>
@@ -678,41 +685,41 @@ export default function SystemSafetyPage() {
         <section className="panel-shell overflow-hidden">
           <div className="border-b border-line/80 px-5 py-4 sm:px-6">
             <h2 className="text-[15px] font-semibold tracking-wide text-slate-100">
-              Limited Live Fetch Dry-run（approved provider only）
+              受限即時抓取試運行（Limited Live Fetch Dry-run，僅授權來源）
             </h2>
             <p className="mt-1 text-[10px] text-slate-500">
-              approvedProvider = TWSE_TPEX · symbol = 3019 · channel = tse_3019.tw · shadow-only。
-              此卡為靜態說明，**不會執行 live fetch**：app 預設 dryRunLiveFetch=false。實際 dry-run 僅能由 manual smoke
-              script（npm run smoke:limited-live-fetch:3019）觸發。GET only、timeout=3000ms、maxRetries=0、field allowlist、
-              任何失敗 fallback disabled scaffold candidate。
+              授權來源 = TWSE_TPEX · 股票代號 = 3019 · 頻道 channel = tse_3019.tw · 僅影子。
+              此卡為靜態說明，**不會執行 live fetch**：app 預設 dryRunLiveFetch=false。實際試運行僅能由手動 smoke
+              script（npm run smoke:limited-live-fetch:3019）觸發。僅 GET、逾時 timeout=3000ms、重試 maxRetries=0、欄位白名單、
+              任何失敗即退回 disabled 鷹架候選。
             </p>
           </div>
           <div className="grid grid-cols-2 gap-3 px-5 py-4 sm:px-6 lg:grid-cols-4">
             <div className="rounded-xl border border-line bg-white/[0.012] px-4 py-3">
-              <p className="text-[9px] uppercase tracking-[0.15em] text-slate-500">approved provider</p>
+              <p className="text-[9px] uppercase tracking-[0.15em] text-slate-500">授權來源</p>
               <p className="mt-1 text-[14px] font-semibold text-slate-100">TWSE_TPEX</p>
-              <p className="mt-1 text-[9px] text-slate-600">symbol=3019 · shadowOnly=true</p>
+              <p className="mt-1 text-[9px] text-slate-600">代號=3019 · 僅影子=是</p>
             </div>
             <div className="rounded-xl border border-line bg-white/[0.012] px-4 py-3">
-              <p className="text-[9px] uppercase tracking-[0.15em] text-slate-500">default mode</p>
+              <p className="text-[9px] uppercase tracking-[0.15em] text-slate-500">預設模式</p>
               <p className="mt-1 text-[14px] font-semibold text-slate-100">fixture</p>
               <p className="mt-1 text-[9px] text-slate-600">app 不會預設 live fetch</p>
             </div>
             <div className="rounded-xl border border-line bg-white/[0.012] px-4 py-3">
-              <p className="text-[9px] uppercase tracking-[0.15em] text-slate-500">operational / portfolio</p>
+              <p className="text-[9px] uppercase tracking-[0.15em] text-slate-500">操作／portfolio</p>
               <p className="mt-1 text-[11px] font-semibold text-slate-200">
-                operationalUseAllowed=false · portfolioApiSwitchAllowed=false
+                operationalUseAllowed 操作允許＝否 · /api/portfolio 切換允許＝否
               </p>
             </div>
             <div className="rounded-xl border border-line bg-white/[0.012] px-4 py-3">
-              <p className="text-[9px] uppercase tracking-[0.15em] text-slate-500">production</p>
-              <p className="mt-1 text-[12px] font-semibold text-slate-200">productionReady=false</p>
+              <p className="text-[9px] uppercase tracking-[0.15em] text-slate-500">正式環境</p>
+              <p className="mt-1 text-[12px] font-semibold text-slate-200">正式就緒 productionReady＝否</p>
             </div>
           </div>
           <div className="border-t border-line/60 px-5 py-3 sm:px-6">
             <p className="text-[9px] text-slate-600">
-              isConnected 只代表 source fetch 成功，不代表 operational；no Supabase、no env read、no DB write、no API route、
-              no broker API、no buy/sell command、no auto order；not production ready。
+              isConnected 只代表來源 fetch 成功，不代表可操作；不連 Supabase、不讀 env、不寫 DB、不新增 API route、
+              不接券商 API、不產生買賣指令、不自動下單；尚未達正式就緒。
             </p>
           </div>
         </section>
@@ -721,43 +728,43 @@ export default function SystemSafetyPage() {
         <section className="panel-shell overflow-hidden">
           <div className="border-b border-line/80 px-5 py-4 sm:px-6">
             <h2 className="text-[15px] font-semibold tracking-wide text-slate-100">
-              Golden Snapshot Validator for Limited Live Fetch（offline / deterministic）
+              受限即時抓取黃金快照驗證（離線／可重現）
             </h2>
             <p className="mt-1 text-[10px] text-slate-500">
-              {golden.contractVersion} · mode = OFFLINE_DETERMINISTIC_PARSER_SNAPSHOT · 已納入 safety chain（共 {ciGuard.result.totalChecks} checks）。
-              offline deterministic parser validation：success snapshot + baseline fallback + {golden.fallbackMatrixCaseCount}-case fallback matrix。
-              此卡為靜態說明，**不會執行 live fetch、不跑 smoke、no production switch**。
+              {golden.contractVersion} · 模式 mode = OFFLINE_DETERMINISTIC_PARSER_SNAPSHOT · 已納入安全鏈（共 {ciGuard.result.totalChecks} 項檢查）。
+              離線可重現的解析器驗證：成功快照 + 基準退回 + {golden.fallbackMatrixCaseCount} 個退回矩陣案例。
+              此卡為靜態說明，**不會執行 live fetch、不跑 smoke、不做正式切換**。
             </p>
           </div>
           <div className="grid grid-cols-2 gap-3 px-5 py-4 sm:px-6 lg:grid-cols-4">
             <div className="rounded-xl border border-line bg-white/[0.012] px-4 py-3">
-              <p className="text-[9px] uppercase tracking-[0.15em] text-slate-500">offline / deterministic</p>
+              <p className="text-[9px] uppercase tracking-[0.15em] text-slate-500">離線／可重現</p>
               <p className="mt-1 text-[12px] font-semibold text-slate-200">
-                offline={String(golden.offline)} · deterministic={String(golden.deterministic)} · parserSnapshot={String(golden.parserSnapshot)}
+                離線 {zhBool(golden.offline)} · 可重現 {zhBool(golden.deterministic)} · 解析器快照 {zhBool(golden.parserSnapshot)}
               </p>
             </div>
             <div className="rounded-xl border border-line bg-white/[0.012] px-4 py-3">
-              <p className="text-[9px] uppercase tracking-[0.15em] text-slate-500">live / smoke</p>
+              <p className="text-[9px] uppercase tracking-[0.15em] text-slate-500">即時／smoke</p>
               <p className="mt-1 text-[12px] font-semibold text-slate-200">
-                liveFetchPerformed={String(golden.liveFetchPerformed)} · smokeManualOnly={String(golden.smokeManualOnly)} · smokeInvoked={String(golden.smokeInvoked)}
+                已執行 live fetch {zhBool(golden.liveFetchPerformed)} · smoke 僅手動 {zhBool(golden.smokeManualOnly)} · 已呼叫 smoke {zhBool(golden.smokeInvoked)}
               </p>
             </div>
             <div className="rounded-xl border border-line bg-white/[0.012] px-4 py-3">
-              <p className="text-[9px] uppercase tracking-[0.15em] text-slate-500">matrix / scope</p>
+              <p className="text-[9px] uppercase tracking-[0.15em] text-slate-500">矩陣／範圍</p>
               <p className="mt-1 text-[12px] font-semibold text-slate-200">
-                fallbackMatrix={golden.fallbackMatrixCaseCount} · symbol={golden.symbol} · channel={golden.channel}
+                退回矩陣={golden.fallbackMatrixCaseCount} · 代號={golden.symbol} · 頻道={golden.channel}
               </p>
             </div>
             <div className="rounded-xl border border-line bg-white/[0.012] px-4 py-3">
-              <p className="text-[9px] uppercase tracking-[0.15em] text-slate-500">production</p>
+              <p className="text-[9px] uppercase tracking-[0.15em] text-slate-500">正式環境</p>
               <p className="mt-1 text-[12px] font-semibold text-slate-200">
-                productionDataSwitchAllowed={String(golden.productionDataSwitchAllowed)} · operationalUseAllowed={String(golden.operationalUseAllowed)} · productionReady={String(golden.productionReady)}
+                正式資料切換允許 {zhBool(golden.productionDataSwitchAllowed, "是", "禁止")} · operationalUseAllowed 操作允許 {zhBool(golden.operationalUseAllowed, "是", "禁止")} · 正式就緒 {zhBool(golden.productionReady)}
               </p>
             </div>
           </div>
           <div className="border-t border-line/60 px-5 py-3 sm:px-6">
             <p className="text-[9px] text-slate-600">
-              parser success / fallback / fallback matrix 以固定 mock + 注入 clock 驗證，純離線；smoke 永遠 manual only、不在 safety chain。
+              解析器的成功／退回／退回矩陣以固定 mock + 注入 clock 驗證，純離線；smoke 永遠僅手動、不在安全鏈。
             </p>
           </div>
         </section>
@@ -766,43 +773,43 @@ export default function SystemSafetyPage() {
         <section className="panel-shell overflow-hidden">
           <div className="border-b border-line/80 px-5 py-4 sm:px-6">
             <h2 className="text-[15px] font-semibold tracking-wide text-slate-100">
-              Mock Fetch Boundary Validator for Limited Live Fetch（offline / mock fetch only）
+              受限即時抓取模擬請求邊界驗證（離線／僅模擬請求）
             </h2>
             <p className="mt-1 text-[10px] text-slate-500">
-              {mockBoundary.contractVersion} · mode = OFFLINE_DETERMINISTIC_REQUEST_BOUNDARY · 已納入 safety chain（共 {ciGuard.result.totalChecks} checks）。
-              攔截 globalThis.fetch（mock fetch only），驗證 request 僅打 approved channel tse_3019.tw、method GET，以及 unsupported symbol / fetch error / malformed response 安全 fallback。
-              此卡為靜態說明，**no real network、no live fetch、no smoke、no production switch**。
+              {mockBoundary.contractVersion} · 模式 mode = OFFLINE_DETERMINISTIC_REQUEST_BOUNDARY · 已納入安全鏈（共 {ciGuard.result.totalChecks} 項檢查）。
+              攔截 globalThis.fetch（僅模擬請求），驗證 request 僅打授權頻道 tse_3019.tw、僅 GET，以及未授權代號／fetch 錯誤／回應異常皆安全退回。
+              此卡為靜態說明，**不打真網路、不執行 live fetch、不跑 smoke、不做正式切換**。
             </p>
           </div>
           <div className="grid grid-cols-2 gap-3 px-5 py-4 sm:px-6 lg:grid-cols-4">
             <div className="rounded-xl border border-line bg-white/[0.012] px-4 py-3">
-              <p className="text-[9px] uppercase tracking-[0.15em] text-slate-500">offline / mock</p>
+              <p className="text-[9px] uppercase tracking-[0.15em] text-slate-500">離線／模擬</p>
               <p className="mt-1 text-[12px] font-semibold text-slate-200">
-                offline={String(mockBoundary.offline)} · mockFetchOnly={String(mockBoundary.mockFetchOnly)} · realNetworkUsed={String(mockBoundary.realNetworkUsed)}
+                離線 {zhBool(mockBoundary.offline)} · 僅模擬請求 {zhBool(mockBoundary.mockFetchOnly)} · 使用真網路 {zhBool(mockBoundary.realNetworkUsed)}
               </p>
             </div>
             <div className="rounded-xl border border-line bg-white/[0.012] px-4 py-3">
-              <p className="text-[9px] uppercase tracking-[0.15em] text-slate-500">fetch / smoke</p>
+              <p className="text-[9px] uppercase tracking-[0.15em] text-slate-500">fetch／smoke</p>
               <p className="mt-1 text-[12px] font-semibold text-slate-200">
-                fetchMockRestored={String(mockBoundary.fetchMockRestored)} · liveFetchPerformed={String(mockBoundary.liveFetchPerformed)} · smokeManualOnly={String(mockBoundary.smokeManualOnly)}
+                fetch mock 已還原 {zhBool(mockBoundary.fetchMockRestored)} · 已執行 live fetch {zhBool(mockBoundary.liveFetchPerformed)} · smoke 僅手動 {zhBool(mockBoundary.smokeManualOnly)}
               </p>
             </div>
             <div className="rounded-xl border border-line bg-white/[0.012] px-4 py-3">
-              <p className="text-[9px] uppercase tracking-[0.15em] text-slate-500">boundary cases</p>
+              <p className="text-[9px] uppercase tracking-[0.15em] text-slate-500">邊界案例</p>
               <p className="mt-1 text-[12px] font-semibold text-slate-200">
-                successCase={String(mockBoundary.fetchCalledOnceForSuccessCase)} · unsupported={String(mockBoundary.unsupportedSymbolSafeFallback)} · error={String(mockBoundary.fetchErrorSafeFallback)} · malformed={String(mockBoundary.malformedResponseSafeFallback)}
+                成功案例 {zhBool(mockBoundary.fetchCalledOnceForSuccessCase)} · 未授權代號 {zhBool(mockBoundary.unsupportedSymbolSafeFallback)} · 錯誤 {zhBool(mockBoundary.fetchErrorSafeFallback)} · 異常回應 {zhBool(mockBoundary.malformedResponseSafeFallback)}
               </p>
             </div>
             <div className="rounded-xl border border-line bg-white/[0.012] px-4 py-3">
-              <p className="text-[9px] uppercase tracking-[0.15em] text-slate-500">production</p>
+              <p className="text-[9px] uppercase tracking-[0.15em] text-slate-500">正式環境</p>
               <p className="mt-1 text-[12px] font-semibold text-slate-200">
-                productionDataSwitchAllowed={String(mockBoundary.productionDataSwitchAllowed)} · operationalUseAllowed={String(mockBoundary.operationalUseAllowed)} · productionReady={String(mockBoundary.productionReady)}
+                正式資料切換允許 {zhBool(mockBoundary.productionDataSwitchAllowed, "是", "禁止")} · operationalUseAllowed 操作允許 {zhBool(mockBoundary.operationalUseAllowed, "是", "禁止")} · 正式就緒 {zhBool(mockBoundary.productionReady)}
               </p>
             </div>
           </div>
           <div className="border-t border-line/60 px-5 py-3 sm:px-6">
             <p className="text-[9px] text-slate-600">
-              request boundary 以攔截 fetch + 注入 clock 驗證，純離線、不打真網路；smoke 永遠 manual only、不在 safety chain。
+              請求邊界以攔截 fetch + 注入 clock 驗證，純離線、不打真網路；smoke 永遠僅手動、不在安全鏈。
             </p>
           </div>
         </section>
@@ -811,43 +818,43 @@ export default function SystemSafetyPage() {
         <section className="panel-shell overflow-hidden">
           <div className="border-b border-line/80 px-5 py-4 sm:px-6">
             <h2 className="text-[15px] font-semibold tracking-wide text-slate-100">
-              Default No-Fetch Boundary Validator for Limited Live Fetch（offline / default runtime path）
+              受限即時抓取預設不請求邊界驗證(離線／預設執行路徑)
             </h2>
             <p className="mt-1 text-[10px] text-slate-500">
-              {defaultNoFetch.contractVersion} · mode = OFFLINE_DETERMINISTIC_DEFAULT_RUNTIME_PATH · 已納入 safety chain（共 {ciGuard.result.totalChecks} checks）。
-              spy globalThis.fetch，驗證 default runtime path（無 dryRunLiveFetch=true）的 fetch call count = 0、回 safe scaffold/disabled/non-operational candidate。
-              此卡為靜態說明，**no real network、no live fetch、no smoke、no production switch**。
+              {defaultNoFetch.contractVersion} · 模式 mode = OFFLINE_DETERMINISTIC_DEFAULT_RUNTIME_PATH · 已納入安全鏈（共 {ciGuard.result.totalChecks} 項檢查）。
+              以 spy 監看 globalThis.fetch，驗證預設執行路徑（無 dryRunLiveFetch=true）的 fetch 次數 = 0、回傳安全鷹架／disabled／不可操作候選。
+              此卡為靜態說明，**不打真網路、不執行 live fetch、不跑 smoke、不做正式切換**。
             </p>
           </div>
           <div className="grid grid-cols-2 gap-3 px-5 py-4 sm:px-6 lg:grid-cols-4">
             <div className="rounded-xl border border-line bg-white/[0.012] px-4 py-3">
-              <p className="text-[9px] uppercase tracking-[0.15em] text-slate-500">offline / default path</p>
+              <p className="text-[9px] uppercase tracking-[0.15em] text-slate-500">離線／預設路徑</p>
               <p className="mt-1 text-[12px] font-semibold text-slate-200">
-                offline={String(defaultNoFetch.offline)} · defaultRuntimePath={String(defaultNoFetch.defaultRuntimePath)} · dryRunLiveFetchDefault={String(defaultNoFetch.dryRunLiveFetchDefault)}
+                離線 {zhBool(defaultNoFetch.offline)} · 預設執行路徑 {zhBool(defaultNoFetch.defaultRuntimePath)} · dryRunLiveFetch 預設 {zhBool(defaultNoFetch.dryRunLiveFetchDefault, "是", "否")}
               </p>
             </div>
             <div className="rounded-xl border border-line bg-white/[0.012] px-4 py-3">
-              <p className="text-[9px] uppercase tracking-[0.15em] text-slate-500">fetch call count</p>
+              <p className="text-[9px] uppercase tracking-[0.15em] text-slate-500">fetch 次數</p>
               <p className="mt-1 text-[12px] font-semibold text-slate-200">
-                defaultPath={defaultNoFetch.defaultPathFetchCallCount} · explicitFalse={defaultNoFetch.explicitDryRunFalseFetchCallCount} · realNetworkUsed={String(defaultNoFetch.realNetworkUsed)}
+                預設路徑={defaultNoFetch.defaultPathFetchCallCount} · 明確 false={defaultNoFetch.explicitDryRunFalseFetchCallCount} · 使用真網路 {zhBool(defaultNoFetch.realNetworkUsed)}
               </p>
             </div>
             <div className="rounded-xl border border-line bg-white/[0.012] px-4 py-3">
-              <p className="text-[9px] uppercase tracking-[0.15em] text-slate-500">fallback / smoke</p>
+              <p className="text-[9px] uppercase tracking-[0.15em] text-slate-500">退回／smoke</p>
               <p className="mt-1 text-[12px] font-semibold text-slate-200">
-                unsupportedSafeFallback={String(defaultNoFetch.unsupportedSymbolDefaultPathSafeFallback)} · fetchMockRestored={String(defaultNoFetch.fetchMockRestored)} · smokeManualOnly={String(defaultNoFetch.smokeManualOnly)}
+                未授權代號安全退回 {zhBool(defaultNoFetch.unsupportedSymbolDefaultPathSafeFallback)} · fetch mock 已還原 {zhBool(defaultNoFetch.fetchMockRestored)} · smoke 僅手動 {zhBool(defaultNoFetch.smokeManualOnly)}
               </p>
             </div>
             <div className="rounded-xl border border-line bg-white/[0.012] px-4 py-3">
-              <p className="text-[9px] uppercase tracking-[0.15em] text-slate-500">production</p>
+              <p className="text-[9px] uppercase tracking-[0.15em] text-slate-500">正式環境</p>
               <p className="mt-1 text-[12px] font-semibold text-slate-200">
-                productionDataSwitchAllowed={String(defaultNoFetch.productionDataSwitchAllowed)} · operationalUseAllowed={String(defaultNoFetch.operationalUseAllowed)} · productionReady={String(defaultNoFetch.productionReady)}
+                正式資料切換允許 {zhBool(defaultNoFetch.productionDataSwitchAllowed, "是", "禁止")} · operationalUseAllowed 操作允許 {zhBool(defaultNoFetch.operationalUseAllowed, "是", "禁止")} · 正式就緒 {zhBool(defaultNoFetch.productionReady)}
               </p>
             </div>
           </div>
           <div className="border-t border-line/60 px-5 py-3 sm:px-6">
             <p className="text-[9px] text-slate-600">
-              default runtime path 以 spy fetch 驗證 0 次 fetch；只有明確 dryRunLiveFetch=true 才會 live fetch（manual smoke only，不在 safety chain）。
+              預設執行路徑以 spy fetch 驗證 0 次 fetch；只有明確 dryRunLiveFetch=true 才會 live fetch（僅手動 smoke，不在安全鏈）。
             </p>
           </div>
         </section>
@@ -856,43 +863,43 @@ export default function SystemSafetyPage() {
         <section className="panel-shell overflow-hidden">
           <div className="border-b border-line/80 px-5 py-4 sm:px-6">
             <h2 className="text-[15px] font-semibold tracking-wide text-slate-100">
-              Timeout Boundary Validator for Limited Live Fetch（offline / timeout abort fallback）
+              受限即時抓取逾時／中止邊界驗證（離線／逾時中止後退回）
             </h2>
             <p className="mt-1 text-[10px] text-slate-500">
-              {timeoutBoundary.contractVersion} · mode = OFFLINE_DETERMINISTIC_TIMEOUT_BOUNDARY · 已納入 safety chain（共 {ciGuard.result.totalChecks} checks）。
-              mock globalThis.fetch + 假化 3000ms abort timer，驗證 timeout / abort 後安全 fallback、不產生 operational quote。
-              此卡為靜態說明，**no real network、no live fetch、no smoke、no production switch**。
+              {timeoutBoundary.contractVersion} · 模式 mode = OFFLINE_DETERMINISTIC_TIMEOUT_BOUNDARY · 已納入安全鏈（共 {ciGuard.result.totalChecks} 項檢查）。
+              以 mock globalThis.fetch + 假化 3000ms 中止計時器，驗證逾時／中止後安全退回、不產生可操作報價。
+              此卡為靜態說明，**不打真網路、不執行 live fetch、不跑 smoke、不做正式切換**。
             </p>
           </div>
           <div className="grid grid-cols-2 gap-3 px-5 py-4 sm:px-6 lg:grid-cols-4">
             <div className="rounded-xl border border-line bg-white/[0.012] px-4 py-3">
-              <p className="text-[9px] uppercase tracking-[0.15em] text-slate-500">offline / timeout</p>
+              <p className="text-[9px] uppercase tracking-[0.15em] text-slate-500">離線／逾時</p>
               <p className="mt-1 text-[12px] font-semibold text-slate-200">
-                offline={String(timeoutBoundary.offline)} · timeoutBoundary={String(timeoutBoundary.timeoutBoundary)} · timeoutMs={timeoutBoundary.timeoutMs} · maxRetries={timeoutBoundary.maxRetries}
+                離線 {zhBool(timeoutBoundary.offline)} · 逾時邊界 {zhBool(timeoutBoundary.timeoutBoundary)} · 逾時 timeoutMs={timeoutBoundary.timeoutMs} · 重試 maxRetries={timeoutBoundary.maxRetries}
               </p>
             </div>
             <div className="rounded-xl border border-line bg-white/[0.012] px-4 py-3">
-              <p className="text-[9px] uppercase tracking-[0.15em] text-slate-500">abort fallback</p>
+              <p className="text-[9px] uppercase tracking-[0.15em] text-slate-500">中止退回</p>
               <p className="mt-1 text-[12px] font-semibold text-slate-200">
-                timeoutAbortSafeFallback={String(timeoutBoundary.timeoutAbortSafeFallback)} · receivedAtDeterministic={String(timeoutBoundary.receivedAtDeterministic)}
+                逾時／中止安全退回 {zhBool(timeoutBoundary.timeoutAbortSafeFallback)} · receivedAt 可重現 {zhBool(timeoutBoundary.receivedAtDeterministic)}
               </p>
             </div>
             <div className="rounded-xl border border-line bg-white/[0.012] px-4 py-3">
-              <p className="text-[9px] uppercase tracking-[0.15em] text-slate-500">network / restore</p>
+              <p className="text-[9px] uppercase tracking-[0.15em] text-slate-500">網路／還原</p>
               <p className="mt-1 text-[12px] font-semibold text-slate-200">
-                realNetworkUsed={String(timeoutBoundary.realNetworkUsed)} · fetchMockRestored={String(timeoutBoundary.fetchMockRestored)} · setTimeoutRestored={String(timeoutBoundary.setTimeoutRestored)}
+                使用真網路 {zhBool(timeoutBoundary.realNetworkUsed)} · fetch mock 已還原 {zhBool(timeoutBoundary.fetchMockRestored)} · setTimeout 已還原 {zhBool(timeoutBoundary.setTimeoutRestored)}
               </p>
             </div>
             <div className="rounded-xl border border-line bg-white/[0.012] px-4 py-3">
-              <p className="text-[9px] uppercase tracking-[0.15em] text-slate-500">production</p>
+              <p className="text-[9px] uppercase tracking-[0.15em] text-slate-500">正式環境</p>
               <p className="mt-1 text-[12px] font-semibold text-slate-200">
-                productionDataSwitchAllowed={String(timeoutBoundary.productionDataSwitchAllowed)} · operationalUseAllowed={String(timeoutBoundary.operationalUseAllowed)} · productionReady={String(timeoutBoundary.productionReady)}
+                正式資料切換允許 {zhBool(timeoutBoundary.productionDataSwitchAllowed, "是", "禁止")} · operationalUseAllowed 操作允許 {zhBool(timeoutBoundary.operationalUseAllowed, "是", "禁止")} · 正式就緒 {zhBool(timeoutBoundary.productionReady)}
               </p>
             </div>
           </div>
           <div className="border-t border-line/60 px-5 py-3 sm:px-6">
             <p className="text-[9px] text-slate-600">
-              timeout / abort 以 mock fetch + 假化 abort timer 驗證（不等真 3000ms、不打真網路）；測後還原 fetch 與 setTimeout；smoke 永遠 manual only、不在 safety chain。
+              逾時／中止以 mock fetch + 假化中止計時器驗證（不等真 3000ms、不打真網路）；測後還原 fetch 與 setTimeout；smoke 永遠僅手動、不在安全鏈。
             </p>
           </div>
         </section>

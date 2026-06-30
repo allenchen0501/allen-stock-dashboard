@@ -164,7 +164,7 @@ export function RuntimePilotReadiness() {
               Runtime Pilot Readiness · spec-only / fixture-only
             </p>
             <h2 className="text-[16px] font-semibold tracking-wide text-slate-100">
-              Runtime Pilot Readiness
+              Runtime 試運行就緒度（Runtime Pilot Readiness）
             </h2>
           </div>
           <div className="flex flex-col items-end gap-1">
