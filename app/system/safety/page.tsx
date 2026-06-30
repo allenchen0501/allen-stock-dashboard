@@ -15,6 +15,7 @@ import { buildUnifiedConnectionEvidenceLedgerContract } from "@/use-cases/war-ro
 import { buildEvidenceLedgerTransitionContract } from "@/use-cases/war-room/build-evidence-ledger-transition-contract";
 import { buildLedgerIntegrityRollupContract } from "@/use-cases/war-room/build-ledger-integrity-rollup-contract";
 import { buildSafetyChainCiGuardContract } from "@/use-cases/war-room/build-safety-chain-ci-guard-contract";
+import { buildPhase2LockedImplementationContract } from "@/use-cases/war-room/build-phase-2-locked-implementation-contract";
 
 // V60: dedicated engineering / safety monitoring page. The fixture-only spec /
 // runtime / shadow-runner monitoring panels live here, moved away from the primary
@@ -57,6 +58,7 @@ export default function SystemSafetyPage() {
   const allSourceContractsExist = transition.sourceContractIntegrityItems.every((s) => s.sourceContractExists === true);
   const rollup = buildLedgerIntegrityRollupContract({ generatedAt: "2026-06-23T00:00:00.000Z" });
   const ciGuard = buildSafetyChainCiGuardContract({ generatedAt: "2026-06-23T00:00:00.000Z" });
+  const phase2 = buildPhase2LockedImplementationContract({ generatedAt: "2026-06-23T00:00:00.000Z" });
 
   return (
     <div className="page-wrap">
@@ -558,6 +560,54 @@ export default function SystemSafetyPage() {
           <div className="border-t border-line/60 px-5 py-3 sm:px-6">
             <p className="text-[9px] text-slate-600">
               一個指令彙總 V60–V72 安全鏈；任何 commit 偷翻 NO_GO / runtime / production switch 旗標即被攔下（npm run test:safety-chain）。
+            </p>
+          </div>
+        </section>
+      </div>
+      <div className="mt-5">
+        <section className="panel-shell overflow-hidden">
+          <div className="border-b border-line/80 px-5 py-4 sm:px-6">
+            <h2 className="text-[15px] font-semibold tracking-wide text-slate-100">
+              Phase 2 Locked Real Quote Interface（interface-only）
+            </h2>
+            <p className="mt-1 text-[10px] text-slate-500">
+              PHASE_2_LOCKED_INTERFACE · INTERFACE_ONLY_NOT_CONNECTED · decision ={" "}
+              <span className="font-semibold text-negative">{phase2.decision}</span>。
+              DisabledRealQuoteProvider；real quote interface 已定義但未連線：no fetch、no env read、no Supabase connection、no real market data、no API route、no order-execution source。
+            </p>
+          </div>
+          <div className="grid grid-cols-2 gap-3 px-5 py-4 sm:px-6 lg:grid-cols-4">
+            <div className="rounded-xl border border-line bg-white/[0.012] px-4 py-3">
+              <p className="text-[9px] uppercase tracking-[0.15em] text-slate-500">default mode</p>
+              <p className="mt-1 text-[14px] font-semibold text-slate-100">{phase2.defaultRealDataMode}</p>
+              <p className="mt-1 text-[9px] text-slate-600">
+                shadowModeAllowed {String(phase2.shadowModeAllowed)} · realReadonlyAllowed {String(phase2.realReadonlyAllowed)}
+              </p>
+            </div>
+            <div className="rounded-xl border border-line bg-white/[0.012] px-4 py-3">
+              <p className="text-[9px] uppercase tracking-[0.15em] text-slate-500">providers</p>
+              <p className="mt-1 text-[11px] font-semibold text-slate-200">
+                {phase2.providerCatalog.map((p) => `${p.providerId}:${p.status}`).join(" · ")}
+              </p>
+            </div>
+            <div className="rounded-xl border border-line bg-white/[0.012] px-4 py-3">
+              <p className="text-[9px] uppercase tracking-[0.15em] text-slate-500">connection</p>
+              <p className="mt-1 text-[11px] font-semibold text-slate-200">
+                realDataConnected {String(phase2.realDataConnected)} · fetchPerformed {String(phase2.fetchPerformed)} ·
+                supabaseConnected {String(phase2.supabaseConnected)}
+              </p>
+            </div>
+            <div className="rounded-xl border border-line bg-white/[0.012] px-4 py-3">
+              <p className="text-[9px] uppercase tracking-[0.15em] text-slate-500">sample shadow</p>
+              <p className="mt-1 text-[11px] font-semibold text-slate-200">
+                missingRealQuote {String(phase2.sampleShadowComparison.missingRealQuote)} · operationalUseAllowed{" "}
+                {String(phase2.sampleShadowComparison.operationalUseAllowed)}
+              </p>
+            </div>
+          </div>
+          <div className="border-t border-line/60 px-5 py-3 sm:px-6">
+            <p className="text-[9px] text-slate-600">
+              interface 已鎖定：shadow mode still locked、real-readonly still locked；shadow 衝突 / 缺值映射回 V67 / V68 / V69 降級鏈（observation only）。
             </p>
           </div>
         </section>
