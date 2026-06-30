@@ -16,6 +16,8 @@ import { buildEvidenceLedgerTransitionContract } from "@/use-cases/war-room/buil
 import { buildLedgerIntegrityRollupContract } from "@/use-cases/war-room/build-ledger-integrity-rollup-contract";
 import { buildSafetyChainCiGuardContract } from "@/use-cases/war-room/build-safety-chain-ci-guard-contract";
 import { buildPhase2LockedImplementationContract } from "@/use-cases/war-room/build-phase-2-locked-implementation-contract";
+import { buildShadowQuoteComparisonViewModel } from "@/use-cases/war-room/build-shadow-quote-comparison-view-model";
+import { ShadowQuoteComparisonCard } from "@/components/war-room/shadow-quote-comparison-card";
 
 // V60: dedicated engineering / safety monitoring page. The fixture-only spec /
 // runtime / shadow-runner monitoring panels live here, moved away from the primary
@@ -59,6 +61,7 @@ export default function SystemSafetyPage() {
   const rollup = buildLedgerIntegrityRollupContract({ generatedAt: "2026-06-23T00:00:00.000Z" });
   const ciGuard = buildSafetyChainCiGuardContract({ generatedAt: "2026-06-23T00:00:00.000Z" });
   const phase2 = buildPhase2LockedImplementationContract({ generatedAt: "2026-06-23T00:00:00.000Z" });
+  const shadowVm = buildShadowQuoteComparisonViewModel({ generatedAt: "2026-06-23T00:00:00.000Z" });
 
   return (
     <div className="page-wrap">
@@ -611,6 +614,9 @@ export default function SystemSafetyPage() {
             </p>
           </div>
         </section>
+      </div>
+      <div className="mt-5">
+        <ShadowQuoteComparisonCard vm={shadowVm} />
       </div>
       <div className="mt-5">
         <RuntimePilotReadiness />
