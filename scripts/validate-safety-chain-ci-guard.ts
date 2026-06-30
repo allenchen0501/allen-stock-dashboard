@@ -24,10 +24,12 @@ const builderModule = require("../use-cases/war-room/build-safety-chain-ci-guard
 const phase2Module = require("../use-cases/war-room/build-phase-2-locked-implementation-contract") as typeof import("../use-cases/war-room/build-phase-2-locked-implementation-contract");
 const phase2bModule = require("../use-cases/war-room/build-shadow-quote-comparison-view-model") as typeof import("../use-cases/war-room/build-shadow-quote-comparison-view-model");
 const scaffoldModule = require("../use-cases/war-room/build-shadow-runtime-comparison") as typeof import("../use-cases/war-room/build-shadow-runtime-comparison");
+const scopeModule = require("../use-cases/war-room/build-limited-live-fetch-scope-contract") as typeof import("../use-cases/war-room/build-limited-live-fetch-scope-contract");
 const { buildSafetyChainCiGuardContract } = builderModule;
 const { buildPhase2LockedImplementationContract } = phase2Module;
 const { buildShadowQuoteComparisonViewModel } = phase2bModule;
 const { buildStagingShadowRuntimeContract } = scaffoldModule;
+const { buildLimitedLiveFetchScopeContract } = scopeModule;
 
 // ---------------------------------------------------------------------------
 // Types
@@ -137,6 +139,7 @@ const REQUIRED_SCRIPTS = [
   "test:phase-2-locked-implementation",
   "test:phase-2b-shadow-comparison-ui-shell",
   "test:staging-shadow-runtime-scaffold",
+  "test:limited-live-fetch-dry-run-pr-scope",
 ];
 
 // ---------------------------------------------------------------------------
@@ -277,12 +280,13 @@ function checkGuard(): { result: CheckResult; decision: string; total: number; p
   if (g.validation.valid) details.push("PASS  validation.valid === true.");
   else issues.push("FAIL  validation.valid must be true.");
 
-  // Total checks = 16 (V60–V72 + Phase 2 + Phase 2b + Shadow Runtime Scaffold) or at least includes the checks.
+  // Total checks = 17 (V60–V72 + Phase 2 + Phase 2b + Shadow Runtime Scaffold + Live Fetch Scope) or at least includes the checks.
   const phase2Check = g.checks.find((c) => c.sourceScript === "test:phase-2-locked-implementation");
   const phase2bCheck = g.checks.find((c) => c.sourceScript === "test:phase-2b-shadow-comparison-ui-shell");
   const scaffoldCheck = g.checks.find((c) => c.sourceScript === "test:staging-shadow-runtime-scaffold");
-  if (g.checks.length >= 16 || (phase2Check && phase2bCheck && scaffoldCheck)) details.push(`PASS  totalChecks = ${g.checks.length} (>= 16 / includes Phase 2 + Phase 2b + scaffold).`);
-  else issues.push(`FAIL  totalChecks must be 16 or include Phase 2 + Phase 2b + scaffold (got ${g.checks.length}).`);
+  const scopeCheck = g.checks.find((c) => c.sourceScript === "test:limited-live-fetch-dry-run-pr-scope");
+  if (g.checks.length >= 17 || (phase2Check && phase2bCheck && scaffoldCheck && scopeCheck)) details.push(`PASS  totalChecks = ${g.checks.length} (>= 17 / includes Phase 2 + Phase 2b + scaffold + live fetch scope).`);
+  else issues.push(`FAIL  totalChecks must be 17 or include all extended checks (got ${g.checks.length}).`);
   if (phase2Check) {
     if (phase2Check.critical === true) details.push("PASS  Phase 2 check critical === true.");
     else issues.push("FAIL  Phase 2 check must be critical.");
@@ -346,6 +350,34 @@ function checkGuard(): { result: CheckResult; decision: string; total: number; p
   expectEq("scaffold.portfolioApiSwitchAllowed", sc.portfolioApiSwitchAllowed, false);
   expectEq("scaffold.productionReady", sc.productionReady, false);
   expectEq("scaffold.serviceRoleForbidden", sc.serviceRoleForbidden, true);
+
+  // Limited Live Fetch Scope check present + critical/passed.
+  if (scopeCheck) {
+    if (scopeCheck.critical === true) details.push("PASS  Live fetch scope check critical === true.");
+    else issues.push("FAIL  Live fetch scope check must be critical.");
+    if (scopeCheck.passed === true) details.push("PASS  Live fetch scope check passed === true.");
+    else issues.push(`FAIL  Live fetch scope check must pass (${scopeCheck.failureReason}).`);
+    if (scopeCheck.expectedDecision === "NO_GO") details.push("PASS  Live fetch scope expectedDecision NO_GO.");
+    else issues.push("FAIL  Live fetch scope expectedDecision must be NO_GO.");
+  } else {
+    issues.push("FAIL  guard must include a Limited Live Fetch Dry-run PR Scope check.");
+  }
+
+  // Limited Live Fetch Scope contract itself: no network code, all gates false, NO_GO.
+  const scope = buildLimitedLiveFetchScopeContract({ generatedAt: FIXED_TS });
+  const sp = scope as unknown as Record<string, unknown>;
+  expectEq("scope.decision", scope.decision, "NO_GO");
+  expectEq("scope.mode", scope.mode, "SCOPE_ONLY_NO_NETWORK_CODE");
+  expectEq("scope.defaultRealDataMode", scope.defaultRealDataMode, "fixture");
+  for (const f of [
+    "liveFetchAllowed", "networkCodeAdded", "realDataConnected", "envReadPerformed", "supabaseConnected",
+    "apiRouteCreated", "portfolioApiSwitched", "databaseWritePerformed", "brokerApiAllowed",
+    "buySellCommandGenerated", "autoOrderRequested", "operationalUseAllowed", "productionReady",
+  ]) {
+    expectEq(`scope.${f}`, sp[f], false);
+  }
+  expectEq("scope.ownerApprovalRequired", sp.ownerApprovalRequired, true);
+  expectEq("scope.ownerApprovalReceived", sp.ownerApprovalReceived, false);
 
   return {
     result: { name: "guard_checks", status: issues.length > 0 ? "FAIL" : "PASS", details: [...details, ...issues] },

@@ -532,7 +532,7 @@ export default function SystemSafetyPage() {
               <span className={ciGuard.result.allCriticalPassed ? "font-semibold text-positive" : "font-semibold text-negative"}>
                 {ciGuard.decision}
               </span>
-              。READY_FOR_UI_REVIEW is not production ready。Phase 2 locked interface + Phase 2b shadow UI shell + Staging Shadow Runtime Scaffold included（{ciGuard.result.totalChecks} checks）。
+              。READY_FOR_UI_REVIEW is not production ready。Phase 2 + Phase 2b + Staging Shadow Runtime Scaffold + Limited Live Fetch Scope included（{ciGuard.result.totalChecks} checks）。
             </p>
           </div>
           <div className="grid grid-cols-2 gap-3 px-5 py-4 sm:px-6 lg:grid-cols-4">

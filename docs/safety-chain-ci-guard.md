@@ -42,8 +42,9 @@ CI guard 覆蓋的 scripts（V60–V72）：
 - test:phase-2-locked-implementation（Phase 2 Locked Real Quote Interface；expectedDecision NO_GO、mode INTERFACE_ONLY_NOT_CONNECTED）
 - test:phase-2b-shadow-comparison-ui-shell（Phase 2b Shadow Comparison UI Shell；expectedDecision NO_GO、mode INTERFACE_ONLY_NOT_CONNECTED、real quote candidate status DISABLED）
 - test:staging-shadow-runtime-scaffold（Staging Shadow Runtime Scaffold；expectedDecision NO_GO、mode SCAFFOLD_ONLY_NOT_CONNECTED、liveFetchAllowed/envReadAllowed/supabaseConnectionAllowed/portfolioApiSwitchAllowed/productionReady false、serviceRoleForbidden true）
+- test:limited-live-fetch-dry-run-pr-scope（Limited Live Fetch Dry-run PR Scope；expectedDecision NO_GO、mode SCOPE_ONLY_NO_NETWORK_CODE、networkCodeAdded/liveFetchAllowed/envReadPerformed/supabaseConnected/apiRouteCreated/portfolioApiSwitched/productionReady false、ownerApprovalReceived false）
 
-> 自 Staging Shadow Runtime Scaffold Safety Chain Integration 起，guard 共覆蓋 **16** 支 check（V60–V72 + Phase 2 locked implementation + Phase 2b shadow comparison UI shell + Staging Shadow Runtime Scaffold）。
+> 自 Limited Live Fetch Scope Safety Chain Integration 起，guard 共覆蓋 **17** 支 check（V60–V72 + Phase 2 locked implementation + Phase 2b shadow comparison UI shell + Staging Shadow Runtime Scaffold + Limited Live Fetch Dry-run PR Scope）。
 
 ---
 

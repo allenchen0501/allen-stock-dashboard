@@ -31,6 +31,7 @@ import { buildLedgerIntegrityRollupContract } from "./build-ledger-integrity-rol
 import { buildPhase2LockedImplementationContract } from "./build-phase-2-locked-implementation-contract";
 import { buildShadowQuoteComparisonViewModel } from "./build-shadow-quote-comparison-view-model";
 import { buildStagingShadowRuntimeContract } from "./build-shadow-runtime-comparison";
+import { buildLimitedLiveFetchScopeContract } from "./build-limited-live-fetch-scope-contract";
 import {
   SAFETY_CHAIN_CI_GUARD_FORBIDDEN_TRUE_FLAGS,
   SAFETY_CHAIN_CI_GUARD_SAFETY_LABELS,
@@ -98,6 +99,7 @@ const CHAIN_SPECS: ChainSpec[] = [
   spec("PHASE2", "test:phase-2-locked-implementation", "build-phase-2-locked-implementation-contract.ts", "NO_GO", "INTERFACE_ONLY_NOT_CONNECTED", "REAL_QUOTE_INTERFACE", buildPhase2LockedImplementationContract),
   spec("PHASE2B", "test:phase-2b-shadow-comparison-ui-shell", "build-shadow-quote-comparison-view-model.ts", "NO_GO", "INTERFACE_ONLY_NOT_CONNECTED", "SHADOW_UI_SHELL", buildShadowQuoteComparisonViewModel),
   spec("SHADOW_RUNTIME_SCAFFOLD", "test:staging-shadow-runtime-scaffold", "build-shadow-runtime-comparison.ts", "NO_GO", "SCAFFOLD_ONLY_NOT_CONNECTED", "MARKET_DATA_SCAFFOLD", buildStagingShadowRuntimeContract),
+  spec("LIMITED_LIVE_FETCH_SCOPE", "test:limited-live-fetch-dry-run-pr-scope", "build-limited-live-fetch-scope-contract.ts", "NO_GO", "SCOPE_ONLY_NO_NETWORK_CODE", "LIVE_FETCH_SCOPE", buildLimitedLiveFetchScopeContract),
 ];
 
 function decisionOf(bundle: unknown): string {
