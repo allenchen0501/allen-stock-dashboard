@@ -93,7 +93,8 @@
     "test:limited-live-fetch-3019-observation-round-1": "node --require ./scripts/register-typescript.cjs ./scripts/validate-limited-live-fetch-3019-observation-round-1.ts",
     "test:limited-live-fetch-3019-observation-round-2": "node --require ./scripts/register-typescript.cjs ./scripts/validate-limited-live-fetch-3019-observation-round-2.ts",
     "test:limited-live-fetch-deterministic-clock": "node --require ./scripts/register-typescript.cjs ./scripts/validate-limited-live-fetch-deterministic-clock.ts",
-    "test:limited-live-fetch-golden-snapshot": "node --require ./scripts/register-typescript.cjs ./scripts/validate-limited-live-fetch-golden-snapshot.ts"
+    "test:limited-live-fetch-golden-snapshot": "node --require ./scripts/register-typescript.cjs ./scripts/validate-limited-live-fetch-golden-snapshot.ts",
+    "test:limited-live-fetch-mock-fetch-boundary": "node --require ./scripts/register-typescript.cjs ./scripts/validate-limited-live-fetch-mock-fetch-boundary.ts"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.108.2",
