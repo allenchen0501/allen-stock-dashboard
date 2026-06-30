@@ -667,6 +667,49 @@ export default function SystemSafetyPage() {
         </section>
       </div>
       <div className="mt-5">
+        <section className="panel-shell overflow-hidden">
+          <div className="border-b border-line/80 px-5 py-4 sm:px-6">
+            <h2 className="text-[15px] font-semibold tracking-wide text-slate-100">
+              Limited Live Fetch Dry-run（approved provider only）
+            </h2>
+            <p className="mt-1 text-[10px] text-slate-500">
+              approvedProvider = TWSE_TPEX · symbol = 3019 · channel = tse_3019.tw · shadow-only。
+              此卡為靜態說明，**不會執行 live fetch**：app 預設 dryRunLiveFetch=false。實際 dry-run 僅能由 manual smoke
+              script（npm run smoke:limited-live-fetch:3019）觸發。GET only、timeout=3000ms、maxRetries=0、field allowlist、
+              任何失敗 fallback disabled scaffold candidate。
+            </p>
+          </div>
+          <div className="grid grid-cols-2 gap-3 px-5 py-4 sm:px-6 lg:grid-cols-4">
+            <div className="rounded-xl border border-line bg-white/[0.012] px-4 py-3">
+              <p className="text-[9px] uppercase tracking-[0.15em] text-slate-500">approved provider</p>
+              <p className="mt-1 text-[14px] font-semibold text-slate-100">TWSE_TPEX</p>
+              <p className="mt-1 text-[9px] text-slate-600">symbol=3019 · shadowOnly=true</p>
+            </div>
+            <div className="rounded-xl border border-line bg-white/[0.012] px-4 py-3">
+              <p className="text-[9px] uppercase tracking-[0.15em] text-slate-500">default mode</p>
+              <p className="mt-1 text-[14px] font-semibold text-slate-100">fixture</p>
+              <p className="mt-1 text-[9px] text-slate-600">app 不會預設 live fetch</p>
+            </div>
+            <div className="rounded-xl border border-line bg-white/[0.012] px-4 py-3">
+              <p className="text-[9px] uppercase tracking-[0.15em] text-slate-500">operational / portfolio</p>
+              <p className="mt-1 text-[11px] font-semibold text-slate-200">
+                operationalUseAllowed=false · portfolioApiSwitchAllowed=false
+              </p>
+            </div>
+            <div className="rounded-xl border border-line bg-white/[0.012] px-4 py-3">
+              <p className="text-[9px] uppercase tracking-[0.15em] text-slate-500">production</p>
+              <p className="mt-1 text-[12px] font-semibold text-slate-200">productionReady=false</p>
+            </div>
+          </div>
+          <div className="border-t border-line/60 px-5 py-3 sm:px-6">
+            <p className="text-[9px] text-slate-600">
+              isConnected 只代表 source fetch 成功，不代表 operational；no Supabase、no env read、no DB write、no API route、
+              no broker API、no buy/sell command、no auto order；not production ready。
+            </p>
+          </div>
+        </section>
+      </div>
+      <div className="mt-5">
         <RuntimePilotReadiness />
       </div>
       <div className="mt-5">

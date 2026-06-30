@@ -87,7 +87,9 @@
     "test:phase-2-locked-implementation": "node --require ./scripts/register-typescript.cjs ./scripts/validate-phase-2-locked-implementation.ts",
     "test:phase-2b-shadow-comparison-ui-shell": "node --require ./scripts/register-typescript.cjs ./scripts/validate-phase-2b-shadow-comparison-ui-shell.ts",
     "test:staging-shadow-runtime-scaffold": "node --require ./scripts/register-typescript.cjs ./scripts/validate-staging-shadow-runtime-scaffold.ts",
-    "test:limited-live-fetch-dry-run-pr-scope": "node --require ./scripts/register-typescript.cjs ./scripts/validate-limited-live-fetch-dry-run-pr-scope.ts"
+    "test:limited-live-fetch-dry-run-pr-scope": "node --require ./scripts/register-typescript.cjs ./scripts/validate-limited-live-fetch-dry-run-pr-scope.ts",
+    "test:limited-live-fetch-dry-run-implementation": "node --require ./scripts/register-typescript.cjs ./scripts/validate-limited-live-fetch-dry-run-implementation.ts",
+    "smoke:limited-live-fetch:3019": "node --require ./scripts/register-typescript.cjs ./scripts/run-limited-live-fetch-smoke-3019.ts"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.108.2",

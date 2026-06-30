@@ -163,6 +163,11 @@ const DOC_REQUIRED: string[] = [
 // the scaffold contract flag portfolioApiSwitchAllowed=false). We scan only for the
 // dangerous IMPORT / network forms.
 const RUNTIME_FORBIDDEN = ["@supabase", "createclient", "process.env", "fetch(", "axios"];
+// The approved provider (TWSE/TPEx) is now authorized for a LIMITED live fetch dry-run
+// (owner-approved, shadow-only). `fetch(` is excused for THAT file only; every other
+// forbidden token still applies, and the restricted shape of that fetch is enforced by
+// test:limited-live-fetch-dry-run-implementation. No other runtime file may fetch.
+const APPROVED_LIVE_FETCH_PROVIDER = "services/market-data/twse-tpex-verification-provider.ts";
 
 function checkNoNetworkCode(): CheckResult {
   const details: string[] = [];
@@ -172,9 +177,15 @@ function checkNoNetworkCode(): CheckResult {
     if (body == null) { issues.push(`FAIL  Cannot read ${rel}.`); continue; }
     const stripped = stripComments(body);
     const lower = stripped.toLowerCase();
-    for (const token of RUNTIME_FORBIDDEN) {
+    const forbidden = rel === APPROVED_LIVE_FETCH_PROVIDER
+      ? RUNTIME_FORBIDDEN.filter((t) => t !== "fetch(")
+      : RUNTIME_FORBIDDEN;
+    for (const token of forbidden) {
       if (lower.includes(token)) issues.push(`FAIL  "${token}" present in ${rel} (no network code allowed in this PR).`);
       else details.push(`PASS  No "${token}" in ${rel}.`);
+    }
+    if (rel === APPROVED_LIVE_FETCH_PROVIDER) {
+      details.push(`PASS  ${rel} is the approved limited-live-fetch provider ("fetch(" excused; restricted shape enforced by test:limited-live-fetch-dry-run-implementation).`);
     }
     if (stripped.includes("PRODUCTION_READY")) issues.push(`FAIL  "PRODUCTION_READY" present in ${rel}.`);
     else details.push(`PASS  No "PRODUCTION_READY" in ${rel}.`);

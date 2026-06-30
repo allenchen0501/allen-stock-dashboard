@@ -26,7 +26,12 @@ export type PublicQuoteProviderCapability =
   | "NO_BROKER"
   | "NO_WRITE";
 
-export type PublicQuoteVerificationStatus = "SCAFFOLD_ONLY" | "NOT_CONNECTED" | "DISABLED";
+export type PublicQuoteVerificationStatus =
+  | "SCAFFOLD_ONLY"
+  | "NOT_CONNECTED"
+  | "DISABLED"
+  // Limited live fetch dry-run only: source fetch succeeded (shadow-only, NOT operational).
+  | "LIVE_FETCH_DRY_RUN";
 
 // ---------------------------------------------------------------------------
 // Read-only quote candidate
@@ -63,9 +68,13 @@ export interface PublicQuoteProvider {
   providerName: string;
   runtimeStatus: PublicQuoteProviderRuntimeStatus;
   capabilities: PublicQuoteProviderCapability[];
-  // Scaffold interface only. A future runtime PR may add limited read-only network
-  // code inside approved provider files; THIS scaffold performs NO network call.
-  getReadonlyQuoteCandidate(symbol: string): Promise<PublicReadonlyQuoteCandidate>;
+  // Scaffold interface. The default path performs NO network call. An approved
+  // provider may opt into a limited read-only live fetch dry-run ONLY when the caller
+  // explicitly passes { dryRunLiveFetch: true } (shadow-only, default fixture).
+  getReadonlyQuoteCandidate(
+    symbol: string,
+    options?: { dryRunLiveFetch?: boolean },
+  ): Promise<PublicReadonlyQuoteCandidate>;
 }
 
 // ---------------------------------------------------------------------------

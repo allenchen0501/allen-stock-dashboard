@@ -237,6 +237,12 @@ function checkContract(): { result: CheckResult; decision: string } {
 // ---------------------------------------------------------------------------
 
 const PROVIDER_FORBIDDEN = ["fetch(", "axios", "process.env", "@supabase", "createclient", "service_role"];
+// The approved provider file (TWSE/TPEx) is authorized to perform a LIMITED live fetch
+// dry-run (owner-approved, shadow-only). `fetch(` is therefore excused for THAT file
+// only — every other forbidden token still applies, and the restricted shape of that
+// fetch is enforced by test:limited-live-fetch-dry-run-implementation. No other
+// provider file may contain `fetch(`.
+const APPROVED_LIVE_FETCH_PROVIDER = TWSE_REL;
 
 function checkProvidersNoNetwork(): CheckResult {
   const details: string[] = [];
@@ -245,9 +251,15 @@ function checkProvidersNoNetwork(): CheckResult {
     const body = readFile(resolve(rel));
     if (body == null) { issues.push(`FAIL  Cannot read ${rel}.`); continue; }
     const lower = stripComments(body).toLowerCase();
-    for (const token of PROVIDER_FORBIDDEN) {
+    const forbidden = rel === APPROVED_LIVE_FETCH_PROVIDER
+      ? PROVIDER_FORBIDDEN.filter((t) => t !== "fetch(")
+      : PROVIDER_FORBIDDEN;
+    for (const token of forbidden) {
       if (lower.includes(token)) issues.push(`FAIL  Provider ${rel} must not contain "${token}".`);
       else details.push(`PASS  ${rel} has no "${token}".`);
+    }
+    if (rel === APPROVED_LIVE_FETCH_PROVIDER) {
+      details.push(`PASS  ${rel} is the approved limited-live-fetch provider ("fetch(" excused; restricted shape enforced by test:limited-live-fetch-dry-run-implementation).`);
     }
   }
   return { name: "providers_no_network", status: issues.length > 0 ? "FAIL" : "PASS", details: [...details, ...issues] };
@@ -283,7 +295,12 @@ function checkSafety(): CheckResult {
     if (body == null) { issues.push(`FAIL  Cannot read ${rel}.`); continue; }
     const stripped = stripComments(body);
     const lower = stripped.toLowerCase();
-    for (const token of SPEC_FORBIDDEN) {
+    // The approved provider (TWSE/TPEx) may perform a limited live fetch dry-run; its
+    // `fetch(` is excused here only (every other forbidden token still applies).
+    const forbidden = rel === APPROVED_LIVE_FETCH_PROVIDER
+      ? SPEC_FORBIDDEN.filter((t) => t !== "fetch(")
+      : SPEC_FORBIDDEN;
+    for (const token of forbidden) {
       if (lower.includes(token)) issues.push(`FAIL  Forbidden "${token}" present in ${rel}.`);
       else details.push(`PASS  No "${token}" in ${rel}.`);
     }
