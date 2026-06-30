@@ -20,6 +20,7 @@ import { buildShadowQuoteComparisonViewModel } from "@/use-cases/war-room/build-
 import { ShadowQuoteComparisonCard } from "@/components/war-room/shadow-quote-comparison-card";
 import { buildStagingShadowRuntimeContract } from "@/use-cases/war-room/build-shadow-runtime-comparison";
 import { buildGoldenSnapshotContract } from "@/use-cases/war-room/build-golden-snapshot-contract";
+import { buildMockFetchBoundaryContract } from "@/use-cases/war-room/build-mock-fetch-boundary-contract";
 
 // V60: dedicated engineering / safety monitoring page. The fixture-only spec /
 // runtime / shadow-runner monitoring panels live here, moved away from the primary
@@ -66,6 +67,7 @@ export default function SystemSafetyPage() {
   const shadowVm = buildShadowQuoteComparisonViewModel({ generatedAt: "2026-06-23T00:00:00.000Z" });
   const shadowRuntime = buildStagingShadowRuntimeContract({ generatedAt: "2026-06-23T00:00:00.000Z" });
   const golden = buildGoldenSnapshotContract({ generatedAt: "2026-06-23T00:00:00.000Z" });
+  const mockBoundary = buildMockFetchBoundaryContract({ generatedAt: "2026-06-23T00:00:00.000Z" });
 
   return (
     <div className="page-wrap">
@@ -534,7 +536,7 @@ export default function SystemSafetyPage() {
               <span className={ciGuard.result.allCriticalPassed ? "font-semibold text-positive" : "font-semibold text-negative"}>
                 {ciGuard.decision}
               </span>
-              。READY_FOR_UI_REVIEW is not production ready。Phase 2 + Phase 2b + Staging Shadow Runtime Scaffold + Limited Live Fetch Scope + Limited Live Fetch Implementation + Golden Snapshot included（{ciGuard.result.totalChecks} checks）。manual smoke script is NOT part of the safety chain。
+              。READY_FOR_UI_REVIEW is not production ready。Phase 2 + Phase 2b + Staging Shadow Runtime Scaffold + Limited Live Fetch Scope + Limited Live Fetch Implementation + Golden Snapshot + Mock Fetch Boundary included（{ciGuard.result.totalChecks} checks）。manual smoke script is NOT part of the safety chain。
             </p>
           </div>
           <div className="grid grid-cols-2 gap-3 px-5 py-4 sm:px-6 lg:grid-cols-4">
@@ -752,6 +754,51 @@ export default function SystemSafetyPage() {
           <div className="border-t border-line/60 px-5 py-3 sm:px-6">
             <p className="text-[9px] text-slate-600">
               parser success / fallback / fallback matrix 以固定 mock + 注入 clock 驗證，純離線；smoke 永遠 manual only、不在 safety chain。
+            </p>
+          </div>
+        </section>
+      </div>
+      <div className="mt-5">
+        <section className="panel-shell overflow-hidden">
+          <div className="border-b border-line/80 px-5 py-4 sm:px-6">
+            <h2 className="text-[15px] font-semibold tracking-wide text-slate-100">
+              Mock Fetch Boundary Validator for Limited Live Fetch（offline / mock fetch only）
+            </h2>
+            <p className="mt-1 text-[10px] text-slate-500">
+              {mockBoundary.contractVersion} · mode = OFFLINE_DETERMINISTIC_REQUEST_BOUNDARY · 已納入 safety chain（共 {ciGuard.result.totalChecks} checks）。
+              攔截 globalThis.fetch（mock fetch only），驗證 request 僅打 approved channel tse_3019.tw、method GET，以及 unsupported symbol / fetch error / malformed response 安全 fallback。
+              此卡為靜態說明，**no real network、no live fetch、no smoke、no production switch**。
+            </p>
+          </div>
+          <div className="grid grid-cols-2 gap-3 px-5 py-4 sm:px-6 lg:grid-cols-4">
+            <div className="rounded-xl border border-line bg-white/[0.012] px-4 py-3">
+              <p className="text-[9px] uppercase tracking-[0.15em] text-slate-500">offline / mock</p>
+              <p className="mt-1 text-[12px] font-semibold text-slate-200">
+                offline={String(mockBoundary.offline)} · mockFetchOnly={String(mockBoundary.mockFetchOnly)} · realNetworkUsed={String(mockBoundary.realNetworkUsed)}
+              </p>
+            </div>
+            <div className="rounded-xl border border-line bg-white/[0.012] px-4 py-3">
+              <p className="text-[9px] uppercase tracking-[0.15em] text-slate-500">fetch / smoke</p>
+              <p className="mt-1 text-[12px] font-semibold text-slate-200">
+                fetchMockRestored={String(mockBoundary.fetchMockRestored)} · liveFetchPerformed={String(mockBoundary.liveFetchPerformed)} · smokeManualOnly={String(mockBoundary.smokeManualOnly)}
+              </p>
+            </div>
+            <div className="rounded-xl border border-line bg-white/[0.012] px-4 py-3">
+              <p className="text-[9px] uppercase tracking-[0.15em] text-slate-500">boundary cases</p>
+              <p className="mt-1 text-[12px] font-semibold text-slate-200">
+                successCase={String(mockBoundary.fetchCalledOnceForSuccessCase)} · unsupported={String(mockBoundary.unsupportedSymbolSafeFallback)} · error={String(mockBoundary.fetchErrorSafeFallback)} · malformed={String(mockBoundary.malformedResponseSafeFallback)}
+              </p>
+            </div>
+            <div className="rounded-xl border border-line bg-white/[0.012] px-4 py-3">
+              <p className="text-[9px] uppercase tracking-[0.15em] text-slate-500">production</p>
+              <p className="mt-1 text-[12px] font-semibold text-slate-200">
+                productionDataSwitchAllowed={String(mockBoundary.productionDataSwitchAllowed)} · operationalUseAllowed={String(mockBoundary.operationalUseAllowed)} · productionReady={String(mockBoundary.productionReady)}
+              </p>
+            </div>
+          </div>
+          <div className="border-t border-line/60 px-5 py-3 sm:px-6">
+            <p className="text-[9px] text-slate-600">
+              request boundary 以攔截 fetch + 注入 clock 驗證，純離線、不打真網路；smoke 永遠 manual only、不在 safety chain。
             </p>
           </div>
         </section>

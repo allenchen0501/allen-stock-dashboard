@@ -204,7 +204,8 @@ function runStaticChecks(): void {
     { ok: safetyChain.length > 0, pass: "test:safety-chain present.", fail: "test:safety-chain must exist." },
     { ok: !safetyChain.includes("smoke:limited-live-fetch:3019"), pass: "Smoke script NOT in safety chain.", fail: "Smoke script must NOT be in safety chain." },
     { ok: safetyChain.includes("test:limited-live-fetch-golden-snapshot"), pass: "Golden validator IS in safety chain.", fail: "Golden validator must remain in safety chain." },
-    { ok: !safetyChain.includes("test:limited-live-fetch-mock-fetch-boundary"), pass: "Mock fetch validator NOT in safety chain (standalone).", fail: "Mock fetch validator must NOT be in safety chain." },
+    // This validator is now part of the safety chain (Mock Fetch Boundary Safety Chain Integration).
+    { ok: safetyChain.includes("test:limited-live-fetch-mock-fetch-boundary"), pass: "Mock fetch validator IS in safety chain.", fail: "Mock fetch validator must be in safety chain." },
   ]);
 
   let totalChecks = -1;
@@ -213,8 +214,8 @@ function runStaticChecks(): void {
   } catch {
     totalChecks = -1;
   }
-  pushCheck("14_safety_chain_19", [
-    { ok: totalChecks === 19, pass: `Safety chain CI guard remains 19 checks (got ${totalChecks}).`, fail: `Safety chain CI guard must remain 19 checks (got ${totalChecks}).` },
+  pushCheck("14_safety_chain_20", [
+    { ok: totalChecks === 20, pass: `Safety chain CI guard has 20 checks (got ${totalChecks}).`, fail: `Safety chain CI guard must have 20 checks (got ${totalChecks}).` },
   ]);
 
   pushCheck("15_doc_and_script", [

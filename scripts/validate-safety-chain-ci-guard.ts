@@ -27,6 +27,7 @@ const scaffoldModule = require("../use-cases/war-room/build-shadow-runtime-compa
 const scopeModule = require("../use-cases/war-room/build-limited-live-fetch-scope-contract") as typeof import("../use-cases/war-room/build-limited-live-fetch-scope-contract");
 const implModule = require("../use-cases/war-room/build-limited-live-fetch-implementation-contract") as typeof import("../use-cases/war-room/build-limited-live-fetch-implementation-contract");
 const goldenModule = require("../use-cases/war-room/build-golden-snapshot-contract") as typeof import("../use-cases/war-room/build-golden-snapshot-contract");
+const mockBoundaryModule = require("../use-cases/war-room/build-mock-fetch-boundary-contract") as typeof import("../use-cases/war-room/build-mock-fetch-boundary-contract");
 const { buildSafetyChainCiGuardContract } = builderModule;
 const { buildPhase2LockedImplementationContract } = phase2Module;
 const { buildShadowQuoteComparisonViewModel } = phase2bModule;
@@ -34,6 +35,7 @@ const { buildStagingShadowRuntimeContract } = scaffoldModule;
 const { buildLimitedLiveFetchScopeContract } = scopeModule;
 const { buildLimitedLiveFetchImplementationContract } = implModule;
 const { buildGoldenSnapshotContract } = goldenModule;
+const { buildMockFetchBoundaryContract } = mockBoundaryModule;
 
 // ---------------------------------------------------------------------------
 // Types
@@ -146,10 +148,12 @@ const REQUIRED_SCRIPTS = [
   "test:limited-live-fetch-dry-run-pr-scope",
   "test:limited-live-fetch-dry-run-implementation",
   "test:limited-live-fetch-golden-snapshot",
+  "test:limited-live-fetch-mock-fetch-boundary",
 ];
 
 // The manual smoke script must NEVER be part of the safety chain.
 const SMOKE_SCRIPT_NAME = "smoke:limited-live-fetch:3019";
+const MOCK_FETCH_BOUNDARY_SCRIPT_NAME = "test:limited-live-fetch-mock-fetch-boundary";
 // These validators are standalone (manual) and must NOT be newly added to the chain by
 // this PR. (The golden snapshot validator IS being added this PR and is asserted above.)
 const OBSERVATION_SCRIPTS = [
@@ -304,8 +308,9 @@ function checkGuard(): { result: CheckResult; decision: string; total: number; p
   const scopeCheck = g.checks.find((c) => c.sourceScript === "test:limited-live-fetch-dry-run-pr-scope");
   const implCheck = g.checks.find((c) => c.sourceScript === "test:limited-live-fetch-dry-run-implementation");
   const goldenCheck = g.checks.find((c) => c.sourceScript === "test:limited-live-fetch-golden-snapshot");
-  if (g.checks.length >= 19 || (phase2Check && phase2bCheck && scaffoldCheck && scopeCheck && implCheck && goldenCheck)) details.push(`PASS  totalChecks = ${g.checks.length} (>= 19 / includes Phase 2 + Phase 2b + scaffold + live fetch scope + implementation + golden snapshot).`);
-  else issues.push(`FAIL  totalChecks must be 19 or include all extended checks (got ${g.checks.length}).`);
+  const mockBoundaryCheck = g.checks.find((c) => c.sourceScript === MOCK_FETCH_BOUNDARY_SCRIPT_NAME);
+  if (g.checks.length >= 20 || (phase2Check && phase2bCheck && scaffoldCheck && scopeCheck && implCheck && goldenCheck && mockBoundaryCheck)) details.push(`PASS  totalChecks = ${g.checks.length} (>= 20 / includes Phase 2 + Phase 2b + scaffold + live fetch scope + implementation + golden snapshot + mock fetch boundary).`);
+  else issues.push(`FAIL  totalChecks must be 20 or include all extended checks (got ${g.checks.length}).`);
   if (phase2Check) {
     if (phase2Check.critical === true) details.push("PASS  Phase 2 check critical === true.");
     else issues.push("FAIL  Phase 2 check must be critical.");
@@ -487,6 +492,49 @@ function checkGuard(): { result: CheckResult; decision: string; total: number; p
     expectEq(`golden.${f}`, gd[f], false);
   }
 
+  // Mock Fetch Boundary check present + critical/passed.
+  if (mockBoundaryCheck) {
+    if (mockBoundaryCheck.critical === true) details.push("PASS  Mock fetch boundary check critical === true.");
+    else issues.push("FAIL  Mock fetch boundary check must be critical.");
+    if (mockBoundaryCheck.passed === true) details.push("PASS  Mock fetch boundary check passed === true.");
+    else issues.push(`FAIL  Mock fetch boundary check must pass (${mockBoundaryCheck.failureReason}).`);
+    if (mockBoundaryCheck.expectedDecision === "OFFLINE_DETERMINISTIC_BOUNDARY_OK") details.push("PASS  Mock fetch boundary expectedDecision OFFLINE_DETERMINISTIC_BOUNDARY_OK.");
+    else issues.push("FAIL  Mock fetch boundary expectedDecision must be OFFLINE_DETERMINISTIC_BOUNDARY_OK.");
+    if (mockBoundaryCheck.expectedMode === "OFFLINE_DETERMINISTIC_REQUEST_BOUNDARY") details.push("PASS  Mock fetch boundary mode OFFLINE_DETERMINISTIC_REQUEST_BOUNDARY.");
+    else issues.push("FAIL  Mock fetch boundary mode must be OFFLINE_DETERMINISTIC_REQUEST_BOUNDARY.");
+  } else {
+    issues.push("FAIL  guard must include a Mock Fetch Boundary Validator for Limited Live Fetch check.");
+  }
+
+  // Mock Fetch Boundary contract itself: offline / deterministic / mock-only / safe.
+  const mock = buildMockFetchBoundaryContract({ generatedAt: FIXED_TS });
+  const mk = mock as unknown as Record<string, unknown>;
+  expectEq("mock.decision", mock.decision, "OFFLINE_DETERMINISTIC_BOUNDARY_OK");
+  expectEq("mock.mode", mock.mode, "OFFLINE_DETERMINISTIC_REQUEST_BOUNDARY");
+  expectEq("mock.offline", mk.offline, true);
+  expectEq("mock.deterministic", mk.deterministic, true);
+  expectEq("mock.mockFetchOnly", mk.mockFetchOnly, true);
+  expectEq("mock.realNetworkUsed", mk.realNetworkUsed, false);
+  expectEq("mock.fetchMockRestored", mk.fetchMockRestored, true);
+  expectEq("mock.liveFetchPerformed", mk.liveFetchPerformed, false);
+  expectEq("mock.smokeInvoked", mk.smokeInvoked, false);
+  expectEq("mock.smokeManualOnly", mk.smokeManualOnly, true);
+  expectEq("mock.approvedSymbol", mk.approvedSymbol, "3019");
+  expectEq("mock.approvedChannel", mk.approvedChannel, "tse_3019.tw");
+  expectEq("mock.timeoutMs", mk.timeoutMs, 3000);
+  expectEq("mock.maxRetries", mk.maxRetries, 0);
+  expectEq("mock.fetchCalledOnceForSuccessCase", mk.fetchCalledOnceForSuccessCase, true);
+  expectEq("mock.unsupportedSymbolSafeFallback", mk.unsupportedSymbolSafeFallback, true);
+  expectEq("mock.fetchErrorSafeFallback", mk.fetchErrorSafeFallback, true);
+  expectEq("mock.malformedResponseSafeFallback", mk.malformedResponseSafeFallback, true);
+  for (const f of [
+    "productionDataSwitchAllowed", "operationalUseAllowed", "productionReady", "productionSwitchAllowed",
+    "brokerApiAllowed", "buySellCommandGenerated", "autoOrderRequested", "realDataConnected",
+    "supabaseConnected", "envReadPerformed", "apiRouteCreated", "portfolioApiSwitched", "databaseWritePerformed",
+  ]) {
+    expectEq(`mock.${f}`, mk[f], false);
+  }
+
   return {
     result: { name: "guard_checks", status: issues.length > 0 ? "FAIL" : "PASS", details: [...details, ...issues] },
     decision: g.decision,
@@ -595,10 +643,15 @@ function checkSafetyChainComposition(): CheckResult {
     details.push("PASS  test:safety-chain includes test:limited-live-fetch-dry-run-implementation.");
   else issues.push("FAIL  test:safety-chain must include test:limited-live-fetch-dry-run-implementation.");
 
-  // Golden snapshot validator IS part of the chain this PR.
+  // Golden snapshot validator IS part of the chain.
   if (safetyChain.includes(GOLDEN_SCRIPT_NAME))
     details.push(`PASS  test:safety-chain includes ${GOLDEN_SCRIPT_NAME}.`);
   else issues.push(`FAIL  test:safety-chain must include ${GOLDEN_SCRIPT_NAME}.`);
+
+  // Mock fetch boundary validator IS part of the chain this PR.
+  if (safetyChain.includes(MOCK_FETCH_BOUNDARY_SCRIPT_NAME))
+    details.push(`PASS  test:safety-chain includes ${MOCK_FETCH_BOUNDARY_SCRIPT_NAME}.`);
+  else issues.push(`FAIL  test:safety-chain must include ${MOCK_FETCH_BOUNDARY_SCRIPT_NAME}.`);
 
   if (!safetyChain.includes(SMOKE_SCRIPT_NAME))
     details.push(`PASS  test:safety-chain does NOT include ${SMOKE_SCRIPT_NAME} (manual only).`);
@@ -622,9 +675,12 @@ function checkSafetyChainComposition(): CheckResult {
   if (guard.checks.some((c) => c.sourceScript === GOLDEN_SCRIPT_NAME))
     details.push(`PASS  CHAIN_SPECS includes ${GOLDEN_SCRIPT_NAME}.`);
   else issues.push(`FAIL  CHAIN_SPECS must include ${GOLDEN_SCRIPT_NAME}.`);
-  if (guard.result.totalChecks === 19)
-    details.push("PASS  guard totalChecks === 19.");
-  else issues.push(`FAIL  guard totalChecks must be 19 (got ${guard.result.totalChecks}).`);
+  if (guard.checks.some((c) => c.sourceScript === MOCK_FETCH_BOUNDARY_SCRIPT_NAME))
+    details.push(`PASS  CHAIN_SPECS includes ${MOCK_FETCH_BOUNDARY_SCRIPT_NAME}.`);
+  else issues.push(`FAIL  CHAIN_SPECS must include ${MOCK_FETCH_BOUNDARY_SCRIPT_NAME}.`);
+  if (guard.result.totalChecks === 20)
+    details.push("PASS  guard totalChecks === 20.");
+  else issues.push(`FAIL  guard totalChecks must be 20 (got ${guard.result.totalChecks}).`);
 
   return { name: "safety_chain_composition", status: issues.length > 0 ? "FAIL" : "PASS", details: [...details, ...issues] };
 }
