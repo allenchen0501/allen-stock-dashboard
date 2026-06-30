@@ -18,6 +18,7 @@ import { buildSafetyChainCiGuardContract } from "@/use-cases/war-room/build-safe
 import { buildPhase2LockedImplementationContract } from "@/use-cases/war-room/build-phase-2-locked-implementation-contract";
 import { buildShadowQuoteComparisonViewModel } from "@/use-cases/war-room/build-shadow-quote-comparison-view-model";
 import { ShadowQuoteComparisonCard } from "@/components/war-room/shadow-quote-comparison-card";
+import { buildStagingShadowRuntimeContract } from "@/use-cases/war-room/build-shadow-runtime-comparison";
 
 // V60: dedicated engineering / safety monitoring page. The fixture-only spec /
 // runtime / shadow-runner monitoring panels live here, moved away from the primary
@@ -62,6 +63,7 @@ export default function SystemSafetyPage() {
   const ciGuard = buildSafetyChainCiGuardContract({ generatedAt: "2026-06-23T00:00:00.000Z" });
   const phase2 = buildPhase2LockedImplementationContract({ generatedAt: "2026-06-23T00:00:00.000Z" });
   const shadowVm = buildShadowQuoteComparisonViewModel({ generatedAt: "2026-06-23T00:00:00.000Z" });
+  const shadowRuntime = buildStagingShadowRuntimeContract({ generatedAt: "2026-06-23T00:00:00.000Z" });
 
   return (
     <div className="page-wrap">
@@ -617,6 +619,52 @@ export default function SystemSafetyPage() {
       </div>
       <div className="mt-5">
         <ShadowQuoteComparisonCard vm={shadowVm} />
+      </div>
+      <div className="mt-5">
+        <section className="panel-shell overflow-hidden">
+          <div className="border-b border-line/80 px-5 py-4 sm:px-6">
+            <h2 className="text-[15px] font-semibold tracking-wide text-slate-100">
+              Staging Shadow Runtime Scaffold（scaffold-only）
+            </h2>
+            <p className="mt-1 text-[10px] text-slate-500">
+              {shadowRuntime.contractVersion} · mode = SCAFFOLD_ONLY_NOT_CONNECTED · decision ={" "}
+              <span className="font-semibold text-negative">NO_GO</span>。Yahoo / TWSE / TPEx provider 皆 scaffold-only / NOT_CONNECTED：
+              no live fetch、no env read、no Supabase connection、no API route、no order、no broker。
+            </p>
+          </div>
+          <div className="grid grid-cols-2 gap-3 px-5 py-4 sm:px-6 lg:grid-cols-4">
+            <div className="rounded-xl border border-line bg-white/[0.012] px-4 py-3">
+              <p className="text-[9px] uppercase tracking-[0.15em] text-slate-500">default mode</p>
+              <p className="mt-1 text-[14px] font-semibold text-slate-100">{shadowRuntime.defaultRealDataMode}</p>
+              <p className="mt-1 text-[9px] text-slate-600">shadowRuntimeAllowed={String(shadowRuntime.shadowRuntimeAllowed)}</p>
+            </div>
+            <div className="rounded-xl border border-line bg-white/[0.012] px-4 py-3">
+              <p className="text-[9px] uppercase tracking-[0.15em] text-slate-500">runtime gates</p>
+              <p className="mt-1 text-[11px] font-semibold text-slate-200">
+                liveFetchAllowed={String(shadowRuntime.liveFetchAllowed)} · envReadAllowed={String(shadowRuntime.envReadAllowed)}
+              </p>
+            </div>
+            <div className="rounded-xl border border-line bg-white/[0.012] px-4 py-3">
+              <p className="text-[9px] uppercase tracking-[0.15em] text-slate-500">connection gates</p>
+              <p className="mt-1 text-[11px] font-semibold text-slate-200">
+                supabaseConnectionAllowed={String(shadowRuntime.supabaseConnectionAllowed)} · portfolioApiSwitchAllowed=
+                {String(shadowRuntime.portfolioApiSwitchAllowed)}
+              </p>
+            </div>
+            <div className="rounded-xl border border-line bg-white/[0.012] px-4 py-3">
+              <p className="text-[9px] uppercase tracking-[0.15em] text-slate-500">production</p>
+              <p className="mt-1 text-[11px] font-semibold text-slate-200">
+                productionReady={String(shadowRuntime.productionReady)} · serviceRoleForbidden=
+                {String(shadowRuntime.serviceRoleForbidden)}
+              </p>
+            </div>
+          </div>
+          <div className="border-t border-line/60 px-5 py-3 sm:px-6">
+            <p className="text-[9px] text-slate-600">
+              scaffold only：providers 不 fetch / 不讀 env / 不連線；下一階段需再次 owner approval 才能 limited live fetch dry-run。
+            </p>
+          </div>
+        </section>
       </div>
       <div className="mt-5">
         <RuntimePilotReadiness />
