@@ -44,10 +44,13 @@ CI guard 覆蓋的 scripts（V60–V72）：
 - test:staging-shadow-runtime-scaffold（Staging Shadow Runtime Scaffold；expectedDecision NO_GO、mode SCAFFOLD_ONLY_NOT_CONNECTED、liveFetchAllowed/envReadAllowed/supabaseConnectionAllowed/portfolioApiSwitchAllowed/productionReady false、serviceRoleForbidden true）
 - test:limited-live-fetch-dry-run-pr-scope（Limited Live Fetch Dry-run PR Scope；expectedDecision NO_GO、mode SCOPE_ONLY_NO_NETWORK_CODE、networkCodeAdded/liveFetchAllowed/envReadPerformed/supabaseConnected/apiRouteCreated/portfolioApiSwitched/productionReady false、ownerApprovalReceived false）
 - test:limited-live-fetch-dry-run-implementation（Limited Live Fetch Dry-run Implementation；expectedDecision LIVE_FETCH_DRY_RUN_NON_OPERATIONAL、mode LIMITED_LIVE_FETCH_DRY_RUN_SHADOW_ONLY、approvedProviderOnly true、approvedProvider TWSE_TPEX、symbol 3019、channel tse_3019.tw、timeoutMs 3000、maxRetries 0、httpMethod GET、fallbackDisabledScaffoldCandidate true、defaultRealDataMode fixture、shadowOnly true、operationalUseAllowed/portfolioApiSwitchAllowed/productionReady/brokerApiAllowed/buySellCommandGenerated/autoOrderRequested false）
+- test:limited-live-fetch-golden-snapshot（Golden Snapshot Validator for Limited Live Fetch；expectedDecision OFFLINE_DETERMINISTIC_SNAPSHOT_OK、mode OFFLINE_DETERMINISTIC_PARSER_SNAPSHOT；**offline deterministic parser validation** — 包含 success snapshot / baseline fallback snapshot / 12-case offline fallback matrix + 2 optional-field safety cases；fixed now 2026-06-30T00:00:00.000Z；offline=true、deterministic=true、parserSnapshot=true、liveFetchPerformed=false、smokeInvoked=false、smokeManualOnly=true、productionDataSwitchAllowed=false、operationalUseAllowed/productionReady false；symbol 3019、channel tse_3019.tw、timeoutMs 3000、maxRetries 0）
 
-> 自 Limited Live Fetch Implementation Safety Chain Integration 起，guard 共覆蓋 **18** 支 check（V60–V72 + Phase 2 locked implementation + Phase 2b shadow comparison UI shell + Staging Shadow Runtime Scaffold + Limited Live Fetch Dry-run PR Scope + Limited Live Fetch Dry-run Implementation）。
+> 自 Golden Snapshot Safety Chain Integration 起，guard 共覆蓋 **19** 支 check（V60–V72 + Phase 2 locked implementation + Phase 2b shadow comparison UI shell + Staging Shadow Runtime Scaffold + Limited Live Fetch Dry-run PR Scope + Limited Live Fetch Dry-run Implementation + Golden Snapshot Validator for Limited Live Fetch）。
 >
-> **manual smoke script `smoke:limited-live-fetch:3019` 永遠不納入 CI guard / safety chain。** 它只能手動執行；失敗只顯示 fallback disabled scaffold candidate，不得作為 CI 條件，guard validator 會明確檢查 `test:safety-chain` 與 CHAIN_SPECS 都不含此 smoke script。
+> Golden snapshot 是 **offline deterministic parser validation**：只驅動已 export 的 pure parser，包含 success snapshot / fallback snapshot / fallback matrix；**不打 live fetch、不跑 smoke、no production data switch**。
+>
+> **manual smoke script `smoke:limited-live-fetch:3019` 永遠不納入 CI guard / safety chain。** 它只能手動執行；失敗只顯示 fallback disabled scaffold candidate，不得作為 CI 條件，guard validator 會明確檢查 `test:safety-chain` 與 CHAIN_SPECS 都不含此 smoke script。observation validators 與 deterministic clock validator 維持 standalone，本版不新增進 safety-chain。
 
 ---
 

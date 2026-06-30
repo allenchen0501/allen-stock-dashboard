@@ -33,6 +33,7 @@ import { buildShadowQuoteComparisonViewModel } from "./build-shadow-quote-compar
 import { buildStagingShadowRuntimeContract } from "./build-shadow-runtime-comparison";
 import { buildLimitedLiveFetchScopeContract } from "./build-limited-live-fetch-scope-contract";
 import { buildLimitedLiveFetchImplementationContract } from "./build-limited-live-fetch-implementation-contract";
+import { buildGoldenSnapshotContract } from "./build-golden-snapshot-contract";
 import {
   SAFETY_CHAIN_CI_GUARD_FORBIDDEN_TRUE_FLAGS,
   SAFETY_CHAIN_CI_GUARD_SAFETY_LABELS,
@@ -102,6 +103,7 @@ const CHAIN_SPECS: ChainSpec[] = [
   spec("SHADOW_RUNTIME_SCAFFOLD", "test:staging-shadow-runtime-scaffold", "build-shadow-runtime-comparison.ts", "NO_GO", "SCAFFOLD_ONLY_NOT_CONNECTED", "MARKET_DATA_SCAFFOLD", buildStagingShadowRuntimeContract),
   spec("LIMITED_LIVE_FETCH_SCOPE", "test:limited-live-fetch-dry-run-pr-scope", "build-limited-live-fetch-scope-contract.ts", "NO_GO", "SCOPE_ONLY_NO_NETWORK_CODE", "LIVE_FETCH_SCOPE", buildLimitedLiveFetchScopeContract),
   spec("LIMITED_LIVE_FETCH_IMPLEMENTATION", "test:limited-live-fetch-dry-run-implementation", "build-limited-live-fetch-implementation-contract.ts", "LIVE_FETCH_DRY_RUN_NON_OPERATIONAL", "LIMITED_LIVE_FETCH_DRY_RUN_SHADOW_ONLY", "LIVE_FETCH_IMPLEMENTATION", buildLimitedLiveFetchImplementationContract),
+  spec("GOLDEN_SNAPSHOT", "test:limited-live-fetch-golden-snapshot", "build-golden-snapshot-contract.ts", "OFFLINE_DETERMINISTIC_SNAPSHOT_OK", "OFFLINE_DETERMINISTIC_PARSER_SNAPSHOT", "PARSER_SNAPSHOT", buildGoldenSnapshotContract),
 ];
 
 function decisionOf(bundle: unknown): string {

@@ -26,12 +26,14 @@ const phase2bModule = require("../use-cases/war-room/build-shadow-quote-comparis
 const scaffoldModule = require("../use-cases/war-room/build-shadow-runtime-comparison") as typeof import("../use-cases/war-room/build-shadow-runtime-comparison");
 const scopeModule = require("../use-cases/war-room/build-limited-live-fetch-scope-contract") as typeof import("../use-cases/war-room/build-limited-live-fetch-scope-contract");
 const implModule = require("../use-cases/war-room/build-limited-live-fetch-implementation-contract") as typeof import("../use-cases/war-room/build-limited-live-fetch-implementation-contract");
+const goldenModule = require("../use-cases/war-room/build-golden-snapshot-contract") as typeof import("../use-cases/war-room/build-golden-snapshot-contract");
 const { buildSafetyChainCiGuardContract } = builderModule;
 const { buildPhase2LockedImplementationContract } = phase2Module;
 const { buildShadowQuoteComparisonViewModel } = phase2bModule;
 const { buildStagingShadowRuntimeContract } = scaffoldModule;
 const { buildLimitedLiveFetchScopeContract } = scopeModule;
 const { buildLimitedLiveFetchImplementationContract } = implModule;
+const { buildGoldenSnapshotContract } = goldenModule;
 
 // ---------------------------------------------------------------------------
 // Types
@@ -143,10 +145,19 @@ const REQUIRED_SCRIPTS = [
   "test:staging-shadow-runtime-scaffold",
   "test:limited-live-fetch-dry-run-pr-scope",
   "test:limited-live-fetch-dry-run-implementation",
+  "test:limited-live-fetch-golden-snapshot",
 ];
 
 // The manual smoke script must NEVER be part of the safety chain.
 const SMOKE_SCRIPT_NAME = "smoke:limited-live-fetch:3019";
+// These validators are standalone (manual) and must NOT be newly added to the chain by
+// this PR. (The golden snapshot validator IS being added this PR and is asserted above.)
+const OBSERVATION_SCRIPTS = [
+  "test:limited-live-fetch-3019-observation-round-1",
+  "test:limited-live-fetch-3019-observation-round-2",
+];
+const DETERMINISTIC_SCRIPT_NAME = "test:limited-live-fetch-deterministic-clock";
+const GOLDEN_SCRIPT_NAME = "test:limited-live-fetch-golden-snapshot";
 
 // ---------------------------------------------------------------------------
 // Gate 1: Required files
@@ -292,8 +303,9 @@ function checkGuard(): { result: CheckResult; decision: string; total: number; p
   const scaffoldCheck = g.checks.find((c) => c.sourceScript === "test:staging-shadow-runtime-scaffold");
   const scopeCheck = g.checks.find((c) => c.sourceScript === "test:limited-live-fetch-dry-run-pr-scope");
   const implCheck = g.checks.find((c) => c.sourceScript === "test:limited-live-fetch-dry-run-implementation");
-  if (g.checks.length >= 18 || (phase2Check && phase2bCheck && scaffoldCheck && scopeCheck && implCheck)) details.push(`PASS  totalChecks = ${g.checks.length} (>= 18 / includes Phase 2 + Phase 2b + scaffold + live fetch scope + live fetch implementation).`);
-  else issues.push(`FAIL  totalChecks must be 18 or include all extended checks (got ${g.checks.length}).`);
+  const goldenCheck = g.checks.find((c) => c.sourceScript === "test:limited-live-fetch-golden-snapshot");
+  if (g.checks.length >= 19 || (phase2Check && phase2bCheck && scaffoldCheck && scopeCheck && implCheck && goldenCheck)) details.push(`PASS  totalChecks = ${g.checks.length} (>= 19 / includes Phase 2 + Phase 2b + scaffold + live fetch scope + implementation + golden snapshot).`);
+  else issues.push(`FAIL  totalChecks must be 19 or include all extended checks (got ${g.checks.length}).`);
   if (phase2Check) {
     if (phase2Check.critical === true) details.push("PASS  Phase 2 check critical === true.");
     else issues.push("FAIL  Phase 2 check must be critical.");
@@ -429,6 +441,52 @@ function checkGuard(): { result: CheckResult; decision: string; total: number; p
     expectEq(`impl.${f}`, im[f], false);
   }
 
+  // Golden Snapshot check present + critical/passed.
+  if (goldenCheck) {
+    if (goldenCheck.critical === true) details.push("PASS  Golden snapshot check critical === true.");
+    else issues.push("FAIL  Golden snapshot check must be critical.");
+    if (goldenCheck.passed === true) details.push("PASS  Golden snapshot check passed === true.");
+    else issues.push(`FAIL  Golden snapshot check must pass (${goldenCheck.failureReason}).`);
+    if (goldenCheck.expectedDecision === "OFFLINE_DETERMINISTIC_SNAPSHOT_OK") details.push("PASS  Golden snapshot expectedDecision OFFLINE_DETERMINISTIC_SNAPSHOT_OK.");
+    else issues.push("FAIL  Golden snapshot expectedDecision must be OFFLINE_DETERMINISTIC_SNAPSHOT_OK.");
+    if (goldenCheck.expectedMode === "OFFLINE_DETERMINISTIC_PARSER_SNAPSHOT") details.push("PASS  Golden snapshot mode OFFLINE_DETERMINISTIC_PARSER_SNAPSHOT.");
+    else issues.push("FAIL  Golden snapshot mode must be OFFLINE_DETERMINISTIC_PARSER_SNAPSHOT.");
+  } else {
+    issues.push("FAIL  guard must include a Golden Snapshot Validator for Limited Live Fetch check.");
+  }
+
+  // Golden Snapshot contract itself: offline / deterministic / parser snapshot /
+  // includes success + fallback + matrix / no live fetch / no smoke / non-operational.
+  const golden = buildGoldenSnapshotContract({ generatedAt: FIXED_TS });
+  const gd = golden as unknown as Record<string, unknown>;
+  expectEq("golden.decision", golden.decision, "OFFLINE_DETERMINISTIC_SNAPSHOT_OK");
+  expectEq("golden.mode", golden.mode, "OFFLINE_DETERMINISTIC_PARSER_SNAPSHOT");
+  expectEq("golden.offline", gd.offline, true);
+  expectEq("golden.deterministic", gd.deterministic, true);
+  expectEq("golden.parserSnapshot", gd.parserSnapshot, true);
+  expectEq("golden.includesSuccessSnapshot", gd.includesSuccessSnapshot, true);
+  expectEq("golden.includesFallbackSnapshot", gd.includesFallbackSnapshot, true);
+  expectEq("golden.includesFallbackMatrix", gd.includesFallbackMatrix, true);
+  if (typeof gd.fallbackMatrixCaseCount === "number" && (gd.fallbackMatrixCaseCount as number) >= 10)
+    details.push(`PASS  golden.fallbackMatrixCaseCount = ${gd.fallbackMatrixCaseCount} (>= 10).`);
+  else issues.push(`FAIL  golden.fallbackMatrixCaseCount must be >= 10 (got ${gd.fallbackMatrixCaseCount}).`);
+  expectEq("golden.smokeManualOnly", gd.smokeManualOnly, true);
+  expectEq("golden.smokeInvoked", gd.smokeInvoked, false);
+  expectEq("golden.liveFetchPerformed", gd.liveFetchPerformed, false);
+  expectEq("golden.productionDataSwitchAllowed", gd.productionDataSwitchAllowed, false);
+  expectEq("golden.symbol", gd.symbol, "3019");
+  expectEq("golden.channel", gd.channel, "tse_3019.tw");
+  expectEq("golden.timeoutMs", gd.timeoutMs, 3000);
+  expectEq("golden.maxRetries", gd.maxRetries, 0);
+  for (const f of [
+    "operationalUseAllowed", "productionReady", "productionSwitchAllowed", "brokerApiAllowed",
+    "buySellCommandGenerated", "autoOrderRequested", "realDataConnected", "supabaseConnected",
+    "envReadPerformed", "fetchPerformed", "apiRouteCreated", "portfolioApiSwitched",
+    "databaseWritePerformed",
+  ]) {
+    expectEq(`golden.${f}`, gd[f], false);
+  }
+
   return {
     result: { name: "guard_checks", status: issues.length > 0 ? "FAIL" : "PASS", details: [...details, ...issues] },
     decision: g.decision,
@@ -537,15 +595,36 @@ function checkSafetyChainComposition(): CheckResult {
     details.push("PASS  test:safety-chain includes test:limited-live-fetch-dry-run-implementation.");
   else issues.push("FAIL  test:safety-chain must include test:limited-live-fetch-dry-run-implementation.");
 
+  // Golden snapshot validator IS part of the chain this PR.
+  if (safetyChain.includes(GOLDEN_SCRIPT_NAME))
+    details.push(`PASS  test:safety-chain includes ${GOLDEN_SCRIPT_NAME}.`);
+  else issues.push(`FAIL  test:safety-chain must include ${GOLDEN_SCRIPT_NAME}.`);
+
   if (!safetyChain.includes(SMOKE_SCRIPT_NAME))
     details.push(`PASS  test:safety-chain does NOT include ${SMOKE_SCRIPT_NAME} (manual only).`);
   else issues.push(`FAIL  test:safety-chain must NOT include ${SMOKE_SCRIPT_NAME}.`);
 
-  // The guard's own check set must not reference the smoke script.
+  // Observation validators must NOT be newly added to the chain.
+  for (const s of OBSERVATION_SCRIPTS) {
+    if (!safetyChain.includes(s)) details.push(`PASS  test:safety-chain does NOT include ${s} (manual only).`);
+    else issues.push(`FAIL  test:safety-chain must NOT include ${s}.`);
+  }
+  // Deterministic validator must NOT be newly added to the chain.
+  if (!safetyChain.includes(DETERMINISTIC_SCRIPT_NAME))
+    details.push(`PASS  test:safety-chain does NOT include ${DETERMINISTIC_SCRIPT_NAME} (standalone).`);
+  else issues.push(`FAIL  test:safety-chain must NOT include ${DETERMINISTIC_SCRIPT_NAME} (not in scope this PR).`);
+
+  // The guard's own check set must not reference the smoke script, and must include golden.
   const guard = buildSafetyChainCiGuardContract({ generatedAt: FIXED_TS });
   if (!guard.checks.some((c) => c.sourceScript === SMOKE_SCRIPT_NAME))
     details.push(`PASS  CHAIN_SPECS does NOT include ${SMOKE_SCRIPT_NAME}.`);
   else issues.push(`FAIL  CHAIN_SPECS must NOT include ${SMOKE_SCRIPT_NAME}.`);
+  if (guard.checks.some((c) => c.sourceScript === GOLDEN_SCRIPT_NAME))
+    details.push(`PASS  CHAIN_SPECS includes ${GOLDEN_SCRIPT_NAME}.`);
+  else issues.push(`FAIL  CHAIN_SPECS must include ${GOLDEN_SCRIPT_NAME}.`);
+  if (guard.result.totalChecks === 19)
+    details.push("PASS  guard totalChecks === 19.");
+  else issues.push(`FAIL  guard totalChecks must be 19 (got ${guard.result.totalChecks}).`);
 
   return { name: "safety_chain_composition", status: issues.length > 0 ? "FAIL" : "PASS", details: [...details, ...issues] };
 }

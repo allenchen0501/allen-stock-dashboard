@@ -19,6 +19,7 @@ import { buildPhase2LockedImplementationContract } from "@/use-cases/war-room/bu
 import { buildShadowQuoteComparisonViewModel } from "@/use-cases/war-room/build-shadow-quote-comparison-view-model";
 import { ShadowQuoteComparisonCard } from "@/components/war-room/shadow-quote-comparison-card";
 import { buildStagingShadowRuntimeContract } from "@/use-cases/war-room/build-shadow-runtime-comparison";
+import { buildGoldenSnapshotContract } from "@/use-cases/war-room/build-golden-snapshot-contract";
 
 // V60: dedicated engineering / safety monitoring page. The fixture-only spec /
 // runtime / shadow-runner monitoring panels live here, moved away from the primary
@@ -64,6 +65,7 @@ export default function SystemSafetyPage() {
   const phase2 = buildPhase2LockedImplementationContract({ generatedAt: "2026-06-23T00:00:00.000Z" });
   const shadowVm = buildShadowQuoteComparisonViewModel({ generatedAt: "2026-06-23T00:00:00.000Z" });
   const shadowRuntime = buildStagingShadowRuntimeContract({ generatedAt: "2026-06-23T00:00:00.000Z" });
+  const golden = buildGoldenSnapshotContract({ generatedAt: "2026-06-23T00:00:00.000Z" });
 
   return (
     <div className="page-wrap">
@@ -532,7 +534,7 @@ export default function SystemSafetyPage() {
               <span className={ciGuard.result.allCriticalPassed ? "font-semibold text-positive" : "font-semibold text-negative"}>
                 {ciGuard.decision}
               </span>
-              。READY_FOR_UI_REVIEW is not production ready。Phase 2 + Phase 2b + Staging Shadow Runtime Scaffold + Limited Live Fetch Scope + Limited Live Fetch Implementation included（{ciGuard.result.totalChecks} checks）。manual smoke script is NOT part of the safety chain。
+              。READY_FOR_UI_REVIEW is not production ready。Phase 2 + Phase 2b + Staging Shadow Runtime Scaffold + Limited Live Fetch Scope + Limited Live Fetch Implementation + Golden Snapshot included（{ciGuard.result.totalChecks} checks）。manual smoke script is NOT part of the safety chain。
             </p>
           </div>
           <div className="grid grid-cols-2 gap-3 px-5 py-4 sm:px-6 lg:grid-cols-4">
@@ -705,6 +707,51 @@ export default function SystemSafetyPage() {
             <p className="text-[9px] text-slate-600">
               isConnected 只代表 source fetch 成功，不代表 operational；no Supabase、no env read、no DB write、no API route、
               no broker API、no buy/sell command、no auto order；not production ready。
+            </p>
+          </div>
+        </section>
+      </div>
+      <div className="mt-5">
+        <section className="panel-shell overflow-hidden">
+          <div className="border-b border-line/80 px-5 py-4 sm:px-6">
+            <h2 className="text-[15px] font-semibold tracking-wide text-slate-100">
+              Golden Snapshot Validator for Limited Live Fetch（offline / deterministic）
+            </h2>
+            <p className="mt-1 text-[10px] text-slate-500">
+              {golden.contractVersion} · mode = OFFLINE_DETERMINISTIC_PARSER_SNAPSHOT · 已納入 safety chain（共 {ciGuard.result.totalChecks} checks）。
+              offline deterministic parser validation：success snapshot + baseline fallback + {golden.fallbackMatrixCaseCount}-case fallback matrix。
+              此卡為靜態說明，**不會執行 live fetch、不跑 smoke、no production switch**。
+            </p>
+          </div>
+          <div className="grid grid-cols-2 gap-3 px-5 py-4 sm:px-6 lg:grid-cols-4">
+            <div className="rounded-xl border border-line bg-white/[0.012] px-4 py-3">
+              <p className="text-[9px] uppercase tracking-[0.15em] text-slate-500">offline / deterministic</p>
+              <p className="mt-1 text-[12px] font-semibold text-slate-200">
+                offline={String(golden.offline)} · deterministic={String(golden.deterministic)} · parserSnapshot={String(golden.parserSnapshot)}
+              </p>
+            </div>
+            <div className="rounded-xl border border-line bg-white/[0.012] px-4 py-3">
+              <p className="text-[9px] uppercase tracking-[0.15em] text-slate-500">live / smoke</p>
+              <p className="mt-1 text-[12px] font-semibold text-slate-200">
+                liveFetchPerformed={String(golden.liveFetchPerformed)} · smokeManualOnly={String(golden.smokeManualOnly)} · smokeInvoked={String(golden.smokeInvoked)}
+              </p>
+            </div>
+            <div className="rounded-xl border border-line bg-white/[0.012] px-4 py-3">
+              <p className="text-[9px] uppercase tracking-[0.15em] text-slate-500">matrix / scope</p>
+              <p className="mt-1 text-[12px] font-semibold text-slate-200">
+                fallbackMatrix={golden.fallbackMatrixCaseCount} · symbol={golden.symbol} · channel={golden.channel}
+              </p>
+            </div>
+            <div className="rounded-xl border border-line bg-white/[0.012] px-4 py-3">
+              <p className="text-[9px] uppercase tracking-[0.15em] text-slate-500">production</p>
+              <p className="mt-1 text-[12px] font-semibold text-slate-200">
+                productionDataSwitchAllowed={String(golden.productionDataSwitchAllowed)} · operationalUseAllowed={String(golden.operationalUseAllowed)} · productionReady={String(golden.productionReady)}
+              </p>
+            </div>
+          </div>
+          <div className="border-t border-line/60 px-5 py-3 sm:px-6">
+            <p className="text-[9px] text-slate-600">
+              parser success / fallback / fallback matrix 以固定 mock + 注入 clock 驗證，純離線；smoke 永遠 manual only、不在 safety chain。
             </p>
           </div>
         </section>

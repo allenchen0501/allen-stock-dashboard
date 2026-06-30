@@ -306,10 +306,11 @@ try {
 } catch {
   safetyChain = "";
 }
-pushCheck("07_smoke_and_golden_not_in_chain", [
+pushCheck("07_chain_membership", [
   { ok: safetyChain.length > 0, pass: "test:safety-chain present.", fail: "test:safety-chain must exist." },
-  { ok: !safetyChain.includes("smoke:limited-live-fetch:3019"), pass: "Smoke script NOT in safety chain.", fail: "Smoke script must NOT be in safety chain." },
-  { ok: !safetyChain.includes("test:limited-live-fetch-golden-snapshot"), pass: "Golden validator NOT in safety chain.", fail: "Golden validator must NOT be in safety chain." },
+  { ok: !safetyChain.includes("smoke:limited-live-fetch:3019"), pass: "Smoke script NOT in safety chain (manual only).", fail: "Smoke script must NOT be in safety chain." },
+  // This validator is now part of the safety chain (Golden Snapshot Safety Chain Integration).
+  { ok: safetyChain.includes("test:limited-live-fetch-golden-snapshot"), pass: "Golden validator IS in safety chain.", fail: "Golden validator must be in safety chain." },
 ]);
 
 let totalChecks = -1;
@@ -318,8 +319,8 @@ try {
 } catch {
   totalChecks = -1;
 }
-pushCheck("08_safety_chain_18", [
-  { ok: totalChecks === 18, pass: `Safety chain CI guard remains 18 checks (got ${totalChecks}).`, fail: `Safety chain CI guard must remain 18 checks (got ${totalChecks}).` },
+pushCheck("08_safety_chain_19", [
+  { ok: totalChecks === 19, pass: `Safety chain CI guard has 19 checks (got ${totalChecks}).`, fail: `Safety chain CI guard must have 19 checks (got ${totalChecks}).` },
 ]);
 
 pushCheck("09_doc_exists", [

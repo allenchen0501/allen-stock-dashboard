@@ -249,8 +249,8 @@ try {
 } catch {
   totalChecks = -1;
 }
-pushCheck("26_safety_chain_18_checks", [
-  { ok: totalChecks === 18, pass: `Safety chain CI guard still has 18 checks (got ${totalChecks}).`, fail: `Safety chain CI guard must have 18 checks (got ${totalChecks}).` },
+pushCheck("26_safety_chain_checks", [
+  { ok: totalChecks === 19, pass: `Safety chain CI guard has 19 checks (got ${totalChecks}).`, fail: `Safety chain CI guard must have 19 checks (got ${totalChecks}).` },
 ]);
 
 // 27. Deterministic validator not in safety chain.
