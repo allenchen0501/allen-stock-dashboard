@@ -36,6 +36,7 @@ import { buildLimitedLiveFetchImplementationContract } from "./build-limited-liv
 import { buildGoldenSnapshotContract } from "./build-golden-snapshot-contract";
 import { buildMockFetchBoundaryContract } from "./build-mock-fetch-boundary-contract";
 import { buildDefaultNoFetchBoundaryContract } from "./build-default-no-fetch-boundary-contract";
+import { buildTimeoutBoundaryContract } from "./build-timeout-boundary-contract";
 import {
   SAFETY_CHAIN_CI_GUARD_FORBIDDEN_TRUE_FLAGS,
   SAFETY_CHAIN_CI_GUARD_SAFETY_LABELS,
@@ -108,6 +109,7 @@ const CHAIN_SPECS: ChainSpec[] = [
   spec("GOLDEN_SNAPSHOT", "test:limited-live-fetch-golden-snapshot", "build-golden-snapshot-contract.ts", "OFFLINE_DETERMINISTIC_SNAPSHOT_OK", "OFFLINE_DETERMINISTIC_PARSER_SNAPSHOT", "PARSER_SNAPSHOT", buildGoldenSnapshotContract),
   spec("MOCK_FETCH_BOUNDARY", "test:limited-live-fetch-mock-fetch-boundary", "build-mock-fetch-boundary-contract.ts", "OFFLINE_DETERMINISTIC_BOUNDARY_OK", "OFFLINE_DETERMINISTIC_REQUEST_BOUNDARY", "REQUEST_BOUNDARY", buildMockFetchBoundaryContract),
   spec("DEFAULT_NO_FETCH_BOUNDARY", "test:limited-live-fetch-default-no-fetch-boundary", "build-default-no-fetch-boundary-contract.ts", "OFFLINE_DETERMINISTIC_DEFAULT_NO_FETCH_OK", "OFFLINE_DETERMINISTIC_DEFAULT_RUNTIME_PATH", "DEFAULT_NO_FETCH_BOUNDARY", buildDefaultNoFetchBoundaryContract),
+  spec("TIMEOUT_BOUNDARY", "test:limited-live-fetch-timeout-boundary", "build-timeout-boundary-contract.ts", "OFFLINE_DETERMINISTIC_TIMEOUT_OK", "OFFLINE_DETERMINISTIC_TIMEOUT_BOUNDARY", "TIMEOUT_BOUNDARY", buildTimeoutBoundaryContract),
 ];
 
 function decisionOf(bundle: unknown): string {

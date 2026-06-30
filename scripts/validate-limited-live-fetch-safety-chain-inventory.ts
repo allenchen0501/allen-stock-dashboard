@@ -111,6 +111,7 @@ const EXPECTED_CHAIN_SCRIPTS = [
   "test:limited-live-fetch-golden-snapshot",
   "test:limited-live-fetch-mock-fetch-boundary",
   "test:limited-live-fetch-default-no-fetch-boundary",
+  "test:limited-live-fetch-timeout-boundary",
 ];
 
 const GUARD_SCRIPT = "test:safety-chain-ci-guard";
@@ -133,6 +134,7 @@ const IN_CHAIN_LLF = [
   "test:limited-live-fetch-golden-snapshot",
   "test:limited-live-fetch-mock-fetch-boundary",
   "test:limited-live-fetch-default-no-fetch-boundary",
+  "test:limited-live-fetch-timeout-boundary",
 ];
 
 // ---------------------------------------------------------------------------
@@ -166,14 +168,14 @@ const chainSpecScripts = guard.checks.map((c) => c.sourceScript);
 // Checks
 // ---------------------------------------------------------------------------
 
-// 1. safety-chain total checks exactly 21.
-pushCheck("01_total_checks_21", [
-  { ok: guard.result.totalChecks === 21, pass: `guard totalChecks === 21 (got ${guard.result.totalChecks}).`, fail: `guard totalChecks must be exactly 21 (got ${guard.result.totalChecks}).` },
+// 1. safety-chain total checks exactly 22.
+pushCheck("01_total_checks_22", [
+  { ok: guard.result.totalChecks === 22, pass: `guard totalChecks === 22 (got ${guard.result.totalChecks}).`, fail: `guard totalChecks must be exactly 22 (got ${guard.result.totalChecks}).` },
 ]);
 
-// 2. CHAIN_SPECS length exactly 21.
-pushCheck("02_chain_specs_length_21", [
-  { ok: guard.checks.length === 21, pass: `CHAIN_SPECS length === 21 (got ${guard.checks.length}).`, fail: `CHAIN_SPECS length must be exactly 21 (got ${guard.checks.length}).` },
+// 2. CHAIN_SPECS length exactly 22.
+pushCheck("02_chain_specs_length_22", [
+  { ok: guard.checks.length === 22, pass: `CHAIN_SPECS length === 22 (got ${guard.checks.length}).`, fail: `CHAIN_SPECS length must be exactly 22 (got ${guard.checks.length}).` },
 ]);
 
 // 3. package.json test:safety-chain includes the 21 chain scripts.
@@ -307,7 +309,7 @@ const issues = checks.flatMap((c) => c.details.filter((d) => d.startsWith("FAIL"
 const summary = {
   status: overallStatus,
   spec: "LIMITED_LIVE_FETCH_SAFETY_CHAIN_INVENTORY",
-  frozen_total_checks: 21,
+  frozen_total_checks: 22,
   guard_total_checks: guard.result.totalChecks,
   chain_specs_length: guard.checks.length,
   safety_chain_order: safetyChainOrder,

@@ -22,6 +22,7 @@ import { buildStagingShadowRuntimeContract } from "@/use-cases/war-room/build-sh
 import { buildGoldenSnapshotContract } from "@/use-cases/war-room/build-golden-snapshot-contract";
 import { buildMockFetchBoundaryContract } from "@/use-cases/war-room/build-mock-fetch-boundary-contract";
 import { buildDefaultNoFetchBoundaryContract } from "@/use-cases/war-room/build-default-no-fetch-boundary-contract";
+import { buildTimeoutBoundaryContract } from "@/use-cases/war-room/build-timeout-boundary-contract";
 
 // V60: dedicated engineering / safety monitoring page. The fixture-only spec /
 // runtime / shadow-runner monitoring panels live here, moved away from the primary
@@ -70,6 +71,7 @@ export default function SystemSafetyPage() {
   const golden = buildGoldenSnapshotContract({ generatedAt: "2026-06-23T00:00:00.000Z" });
   const mockBoundary = buildMockFetchBoundaryContract({ generatedAt: "2026-06-23T00:00:00.000Z" });
   const defaultNoFetch = buildDefaultNoFetchBoundaryContract({ generatedAt: "2026-06-23T00:00:00.000Z" });
+  const timeoutBoundary = buildTimeoutBoundaryContract({ generatedAt: "2026-06-23T00:00:00.000Z" });
 
   return (
     <div className="page-wrap">
@@ -538,7 +540,7 @@ export default function SystemSafetyPage() {
               <span className={ciGuard.result.allCriticalPassed ? "font-semibold text-positive" : "font-semibold text-negative"}>
                 {ciGuard.decision}
               </span>
-              。READY_FOR_UI_REVIEW is not production ready。Phase 2 + Phase 2b + Staging Shadow Runtime Scaffold + Limited Live Fetch Scope + Limited Live Fetch Implementation + Golden Snapshot + Mock Fetch Boundary + Default No-Fetch included（{ciGuard.result.totalChecks} checks）。manual smoke script is NOT part of the safety chain。
+              。READY_FOR_UI_REVIEW is not production ready。Phase 2 + Phase 2b + Staging Shadow Runtime Scaffold + Limited Live Fetch Scope + Limited Live Fetch Implementation + Golden Snapshot + Mock Fetch Boundary + Default No-Fetch + Timeout Boundary included（{ciGuard.result.totalChecks} checks）。manual smoke script is NOT part of the safety chain。
             </p>
           </div>
           <div className="grid grid-cols-2 gap-3 px-5 py-4 sm:px-6 lg:grid-cols-4">
@@ -846,6 +848,51 @@ export default function SystemSafetyPage() {
           <div className="border-t border-line/60 px-5 py-3 sm:px-6">
             <p className="text-[9px] text-slate-600">
               default runtime path 以 spy fetch 驗證 0 次 fetch；只有明確 dryRunLiveFetch=true 才會 live fetch（manual smoke only，不在 safety chain）。
+            </p>
+          </div>
+        </section>
+      </div>
+      <div className="mt-5">
+        <section className="panel-shell overflow-hidden">
+          <div className="border-b border-line/80 px-5 py-4 sm:px-6">
+            <h2 className="text-[15px] font-semibold tracking-wide text-slate-100">
+              Timeout Boundary Validator for Limited Live Fetch（offline / timeout abort fallback）
+            </h2>
+            <p className="mt-1 text-[10px] text-slate-500">
+              {timeoutBoundary.contractVersion} · mode = OFFLINE_DETERMINISTIC_TIMEOUT_BOUNDARY · 已納入 safety chain（共 {ciGuard.result.totalChecks} checks）。
+              mock globalThis.fetch + 假化 3000ms abort timer，驗證 timeout / abort 後安全 fallback、不產生 operational quote。
+              此卡為靜態說明，**no real network、no live fetch、no smoke、no production switch**。
+            </p>
+          </div>
+          <div className="grid grid-cols-2 gap-3 px-5 py-4 sm:px-6 lg:grid-cols-4">
+            <div className="rounded-xl border border-line bg-white/[0.012] px-4 py-3">
+              <p className="text-[9px] uppercase tracking-[0.15em] text-slate-500">offline / timeout</p>
+              <p className="mt-1 text-[12px] font-semibold text-slate-200">
+                offline={String(timeoutBoundary.offline)} · timeoutBoundary={String(timeoutBoundary.timeoutBoundary)} · timeoutMs={timeoutBoundary.timeoutMs} · maxRetries={timeoutBoundary.maxRetries}
+              </p>
+            </div>
+            <div className="rounded-xl border border-line bg-white/[0.012] px-4 py-3">
+              <p className="text-[9px] uppercase tracking-[0.15em] text-slate-500">abort fallback</p>
+              <p className="mt-1 text-[12px] font-semibold text-slate-200">
+                timeoutAbortSafeFallback={String(timeoutBoundary.timeoutAbortSafeFallback)} · receivedAtDeterministic={String(timeoutBoundary.receivedAtDeterministic)}
+              </p>
+            </div>
+            <div className="rounded-xl border border-line bg-white/[0.012] px-4 py-3">
+              <p className="text-[9px] uppercase tracking-[0.15em] text-slate-500">network / restore</p>
+              <p className="mt-1 text-[12px] font-semibold text-slate-200">
+                realNetworkUsed={String(timeoutBoundary.realNetworkUsed)} · fetchMockRestored={String(timeoutBoundary.fetchMockRestored)} · setTimeoutRestored={String(timeoutBoundary.setTimeoutRestored)}
+              </p>
+            </div>
+            <div className="rounded-xl border border-line bg-white/[0.012] px-4 py-3">
+              <p className="text-[9px] uppercase tracking-[0.15em] text-slate-500">production</p>
+              <p className="mt-1 text-[12px] font-semibold text-slate-200">
+                productionDataSwitchAllowed={String(timeoutBoundary.productionDataSwitchAllowed)} · operationalUseAllowed={String(timeoutBoundary.operationalUseAllowed)} · productionReady={String(timeoutBoundary.productionReady)}
+              </p>
+            </div>
+          </div>
+          <div className="border-t border-line/60 px-5 py-3 sm:px-6">
+            <p className="text-[9px] text-slate-600">
+              timeout / abort 以 mock fetch + 假化 abort timer 驗證（不等真 3000ms、不打真網路）；測後還原 fetch 與 setTimeout；smoke 永遠 manual only、不在 safety chain。
             </p>
           </div>
         </section>

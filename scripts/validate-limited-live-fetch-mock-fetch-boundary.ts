@@ -214,8 +214,8 @@ function runStaticChecks(): void {
   } catch {
     totalChecks = -1;
   }
-  pushCheck("14_safety_chain_21", [
-    { ok: totalChecks === 21, pass: `Safety chain CI guard has 21 checks (got ${totalChecks}).`, fail: `Safety chain CI guard must have 21 checks (got ${totalChecks}).` },
+  pushCheck("14_safety_chain_22", [
+    { ok: totalChecks === 22, pass: `Safety chain CI guard has 22 checks (got ${totalChecks}).`, fail: `Safety chain CI guard must have 22 checks (got ${totalChecks}).` },
   ]);
 
   pushCheck("15_doc_and_script", [

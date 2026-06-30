@@ -7,10 +7,10 @@
   so any future change that adds, removes, reorders, or pulls a manual-only script into the
   chain is caught immediately.
 
-## Current total checks: 21
+## Current total checks: 22
 
-The V73 Safety Chain CI Guard covers exactly **21** CHAIN_SPECS checks; `test:safety-chain`
-runs those 21 validators in order, then the CI guard last.
+The V73 Safety Chain CI Guard covers exactly **22** CHAIN_SPECS checks; `test:safety-chain`
+runs those 22 validators in order, then the CI guard last.
 
 ## Chain scripts list (`test:safety-chain`, in order)
 
@@ -35,18 +35,20 @@ runs those 21 validators in order, then the CI guard last.
 19. test:limited-live-fetch-golden-snapshot
 20. test:limited-live-fetch-mock-fetch-boundary
 21. test:limited-live-fetch-default-no-fetch-boundary
+22. test:limited-live-fetch-timeout-boundary
 
 …then **test:safety-chain-ci-guard** runs last (the guard, not a CHAIN_SPECS entry).
 
 ## Chain specs list (CHAIN_SPECS sourceScripts)
 
-Identical to the 21 chain scripts above, in the same order.
+Identical to the 22 chain scripts above, in the same order.
 
 ## In-chain validators (limited live fetch)
 
 - **golden snapshot** — `test:limited-live-fetch-golden-snapshot`
 - **mock fetch boundary** — `test:limited-live-fetch-mock-fetch-boundary`
 - **default no-fetch boundary** — `test:limited-live-fetch-default-no-fetch-boundary`
+- **timeout boundary** — `test:limited-live-fetch-timeout-boundary`
 
 (plus `test:limited-live-fetch-dry-run-pr-scope` and `test:limited-live-fetch-dry-run-implementation`.)
 

@@ -233,7 +233,8 @@ function runStaticChecks(): void {
     { ok: safetyChain.includes("test:limited-live-fetch-mock-fetch-boundary"), pass: "Mock fetch boundary validator IS in safety chain.", fail: "Mock fetch boundary validator must remain in safety chain." },
     { ok: safetyChain.includes("test:limited-live-fetch-default-no-fetch-boundary"), pass: "Default no-fetch boundary validator IS in safety chain.", fail: "Default no-fetch boundary validator must remain in safety chain." },
     { ok: !safetyChain.includes("test:limited-live-fetch-safety-chain-inventory"), pass: "Inventory validator NOT in safety chain.", fail: "Inventory validator must NOT be in safety chain." },
-    { ok: !safetyChain.includes("test:limited-live-fetch-timeout-boundary"), pass: "Timeout validator NOT in safety chain (standalone).", fail: "Timeout validator must NOT be in safety chain." },
+    // This validator is now part of the safety chain (Timeout Boundary Safety Chain Integration).
+    { ok: safetyChain.includes("test:limited-live-fetch-timeout-boundary"), pass: "Timeout validator IS in safety chain.", fail: "Timeout validator must be in safety chain." },
   ]);
 
   let totalChecks = -1;
@@ -242,8 +243,8 @@ function runStaticChecks(): void {
   } catch {
     totalChecks = -1;
   }
-  pushCheck("14_safety_chain_21", [
-    { ok: totalChecks === 21, pass: `Safety chain CI guard remains 21 checks (got ${totalChecks}).`, fail: `Safety chain CI guard must remain 21 checks (got ${totalChecks}).` },
+  pushCheck("14_safety_chain_22", [
+    { ok: totalChecks === 22, pass: `Safety chain CI guard has 22 checks (got ${totalChecks}).`, fail: `Safety chain CI guard must have 22 checks (got ${totalChecks}).` },
   ]);
 
   pushCheck("15_doc_and_script", [

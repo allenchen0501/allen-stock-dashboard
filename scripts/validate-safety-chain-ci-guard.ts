@@ -29,6 +29,7 @@ const implModule = require("../use-cases/war-room/build-limited-live-fetch-imple
 const goldenModule = require("../use-cases/war-room/build-golden-snapshot-contract") as typeof import("../use-cases/war-room/build-golden-snapshot-contract");
 const mockBoundaryModule = require("../use-cases/war-room/build-mock-fetch-boundary-contract") as typeof import("../use-cases/war-room/build-mock-fetch-boundary-contract");
 const defaultNoFetchModule = require("../use-cases/war-room/build-default-no-fetch-boundary-contract") as typeof import("../use-cases/war-room/build-default-no-fetch-boundary-contract");
+const timeoutModule = require("../use-cases/war-room/build-timeout-boundary-contract") as typeof import("../use-cases/war-room/build-timeout-boundary-contract");
 const { buildSafetyChainCiGuardContract } = builderModule;
 const { buildPhase2LockedImplementationContract } = phase2Module;
 const { buildShadowQuoteComparisonViewModel } = phase2bModule;
@@ -38,6 +39,7 @@ const { buildLimitedLiveFetchImplementationContract } = implModule;
 const { buildGoldenSnapshotContract } = goldenModule;
 const { buildMockFetchBoundaryContract } = mockBoundaryModule;
 const { buildDefaultNoFetchBoundaryContract } = defaultNoFetchModule;
+const { buildTimeoutBoundaryContract } = timeoutModule;
 
 // ---------------------------------------------------------------------------
 // Types
@@ -152,12 +154,15 @@ const REQUIRED_SCRIPTS = [
   "test:limited-live-fetch-golden-snapshot",
   "test:limited-live-fetch-mock-fetch-boundary",
   "test:limited-live-fetch-default-no-fetch-boundary",
+  "test:limited-live-fetch-timeout-boundary",
 ];
 
 // The manual smoke script must NEVER be part of the safety chain.
 const SMOKE_SCRIPT_NAME = "smoke:limited-live-fetch:3019";
 const MOCK_FETCH_BOUNDARY_SCRIPT_NAME = "test:limited-live-fetch-mock-fetch-boundary";
 const DEFAULT_NO_FETCH_SCRIPT_NAME = "test:limited-live-fetch-default-no-fetch-boundary";
+const TIMEOUT_BOUNDARY_SCRIPT_NAME = "test:limited-live-fetch-timeout-boundary";
+const INVENTORY_SCRIPT_NAME = "test:limited-live-fetch-safety-chain-inventory";
 // These validators are standalone (manual) and must NOT be newly added to the chain by
 // this PR. (The golden snapshot validator IS being added this PR and is asserted above.)
 const OBSERVATION_SCRIPTS = [
@@ -314,8 +319,9 @@ function checkGuard(): { result: CheckResult; decision: string; total: number; p
   const goldenCheck = g.checks.find((c) => c.sourceScript === "test:limited-live-fetch-golden-snapshot");
   const mockBoundaryCheck = g.checks.find((c) => c.sourceScript === MOCK_FETCH_BOUNDARY_SCRIPT_NAME);
   const defaultNoFetchCheck = g.checks.find((c) => c.sourceScript === DEFAULT_NO_FETCH_SCRIPT_NAME);
-  if (g.checks.length >= 21 || (phase2Check && phase2bCheck && scaffoldCheck && scopeCheck && implCheck && goldenCheck && mockBoundaryCheck && defaultNoFetchCheck)) details.push(`PASS  totalChecks = ${g.checks.length} (>= 21 / includes Phase 2 + Phase 2b + scaffold + live fetch scope + implementation + golden snapshot + mock fetch boundary + default no-fetch boundary).`);
-  else issues.push(`FAIL  totalChecks must be 21 or include all extended checks (got ${g.checks.length}).`);
+  const timeoutCheck = g.checks.find((c) => c.sourceScript === TIMEOUT_BOUNDARY_SCRIPT_NAME);
+  if (g.checks.length >= 22 || (phase2Check && phase2bCheck && scaffoldCheck && scopeCheck && implCheck && goldenCheck && mockBoundaryCheck && defaultNoFetchCheck && timeoutCheck)) details.push(`PASS  totalChecks = ${g.checks.length} (>= 22 / includes Phase 2 + Phase 2b + scaffold + live fetch scope + implementation + golden snapshot + mock fetch boundary + default no-fetch boundary + timeout boundary).`);
+  else issues.push(`FAIL  totalChecks must be 22 or include all extended checks (got ${g.checks.length}).`);
   if (phase2Check) {
     if (phase2Check.critical === true) details.push("PASS  Phase 2 check critical === true.");
     else issues.push("FAIL  Phase 2 check must be critical.");
@@ -584,6 +590,47 @@ function checkGuard(): { result: CheckResult; decision: string; total: number; p
     expectEq(`noFetch.${f}`, nf[f], false);
   }
 
+  // Timeout Boundary check present + critical/passed.
+  if (timeoutCheck) {
+    if (timeoutCheck.critical === true) details.push("PASS  Timeout boundary check critical === true.");
+    else issues.push("FAIL  Timeout boundary check must be critical.");
+    if (timeoutCheck.passed === true) details.push("PASS  Timeout boundary check passed === true.");
+    else issues.push(`FAIL  Timeout boundary check must pass (${timeoutCheck.failureReason}).`);
+    if (timeoutCheck.expectedDecision === "OFFLINE_DETERMINISTIC_TIMEOUT_OK") details.push("PASS  Timeout boundary expectedDecision OFFLINE_DETERMINISTIC_TIMEOUT_OK.");
+    else issues.push("FAIL  Timeout boundary expectedDecision must be OFFLINE_DETERMINISTIC_TIMEOUT_OK.");
+    if (timeoutCheck.expectedMode === "OFFLINE_DETERMINISTIC_TIMEOUT_BOUNDARY") details.push("PASS  Timeout boundary mode OFFLINE_DETERMINISTIC_TIMEOUT_BOUNDARY.");
+    else issues.push("FAIL  Timeout boundary mode must be OFFLINE_DETERMINISTIC_TIMEOUT_BOUNDARY.");
+  } else {
+    issues.push("FAIL  guard must include a Timeout Boundary Validator for Limited Live Fetch check.");
+  }
+
+  // Timeout Boundary contract itself: offline / deterministic / timeout fallback / safe.
+  const timeout = buildTimeoutBoundaryContract({ generatedAt: FIXED_TS });
+  const tm = timeout as unknown as Record<string, unknown>;
+  expectEq("timeout.decision", timeout.decision, "OFFLINE_DETERMINISTIC_TIMEOUT_OK");
+  expectEq("timeout.mode", timeout.mode, "OFFLINE_DETERMINISTIC_TIMEOUT_BOUNDARY");
+  expectEq("timeout.offline", tm.offline, true);
+  expectEq("timeout.deterministic", tm.deterministic, true);
+  expectEq("timeout.timeoutBoundary", tm.timeoutBoundary, true);
+  expectEq("timeout.timeoutMs", tm.timeoutMs, 3000);
+  expectEq("timeout.maxRetries", tm.maxRetries, 0);
+  expectEq("timeout.realNetworkUsed", tm.realNetworkUsed, false);
+  expectEq("timeout.fetchMockRestored", tm.fetchMockRestored, true);
+  expectEq("timeout.setTimeoutRestored", tm.setTimeoutRestored, true);
+  expectEq("timeout.timeoutAbortSafeFallback", tm.timeoutAbortSafeFallback, true);
+  expectEq("timeout.receivedAtDeterministic", tm.receivedAtDeterministic, true);
+  expectEq("timeout.liveFetchPerformed", tm.liveFetchPerformed, false);
+  expectEq("timeout.smokeInvoked", tm.smokeInvoked, false);
+  expectEq("timeout.approvedSymbol", tm.approvedSymbol, "3019");
+  expectEq("timeout.approvedChannel", tm.approvedChannel, "tse_3019.tw");
+  for (const f of [
+    "productionDataSwitchAllowed", "operationalUseAllowed", "productionReady", "productionSwitchAllowed",
+    "brokerApiAllowed", "buySellCommandGenerated", "autoOrderRequested", "realDataConnected",
+    "supabaseConnected", "envReadPerformed", "apiRouteCreated", "portfolioApiSwitched", "databaseWritePerformed",
+  ]) {
+    expectEq(`timeout.${f}`, tm[f], false);
+  }
+
   return {
     result: { name: "guard_checks", status: issues.length > 0 ? "FAIL" : "PASS", details: [...details, ...issues] },
     decision: g.decision,
@@ -702,10 +749,20 @@ function checkSafetyChainComposition(): CheckResult {
     details.push(`PASS  test:safety-chain includes ${MOCK_FETCH_BOUNDARY_SCRIPT_NAME}.`);
   else issues.push(`FAIL  test:safety-chain must include ${MOCK_FETCH_BOUNDARY_SCRIPT_NAME}.`);
 
-  // Default no-fetch boundary validator IS part of the chain this PR.
+  // Default no-fetch boundary validator IS part of the chain.
   if (safetyChain.includes(DEFAULT_NO_FETCH_SCRIPT_NAME))
     details.push(`PASS  test:safety-chain includes ${DEFAULT_NO_FETCH_SCRIPT_NAME}.`);
   else issues.push(`FAIL  test:safety-chain must include ${DEFAULT_NO_FETCH_SCRIPT_NAME}.`);
+
+  // Timeout boundary validator IS part of the chain this PR.
+  if (safetyChain.includes(TIMEOUT_BOUNDARY_SCRIPT_NAME))
+    details.push(`PASS  test:safety-chain includes ${TIMEOUT_BOUNDARY_SCRIPT_NAME}.`);
+  else issues.push(`FAIL  test:safety-chain must include ${TIMEOUT_BOUNDARY_SCRIPT_NAME}.`);
+
+  // Inventory validator must NOT be in the chain (still standalone).
+  if (!safetyChain.includes(INVENTORY_SCRIPT_NAME))
+    details.push(`PASS  test:safety-chain does NOT include ${INVENTORY_SCRIPT_NAME} (standalone).`);
+  else issues.push(`FAIL  test:safety-chain must NOT include ${INVENTORY_SCRIPT_NAME}.`);
 
   if (!safetyChain.includes(SMOKE_SCRIPT_NAME))
     details.push(`PASS  test:safety-chain does NOT include ${SMOKE_SCRIPT_NAME} (manual only).`);
@@ -735,9 +792,12 @@ function checkSafetyChainComposition(): CheckResult {
   if (guard.checks.some((c) => c.sourceScript === DEFAULT_NO_FETCH_SCRIPT_NAME))
     details.push(`PASS  CHAIN_SPECS includes ${DEFAULT_NO_FETCH_SCRIPT_NAME}.`);
   else issues.push(`FAIL  CHAIN_SPECS must include ${DEFAULT_NO_FETCH_SCRIPT_NAME}.`);
-  if (guard.result.totalChecks === 21)
-    details.push("PASS  guard totalChecks === 21.");
-  else issues.push(`FAIL  guard totalChecks must be 21 (got ${guard.result.totalChecks}).`);
+  if (guard.checks.some((c) => c.sourceScript === TIMEOUT_BOUNDARY_SCRIPT_NAME))
+    details.push(`PASS  CHAIN_SPECS includes ${TIMEOUT_BOUNDARY_SCRIPT_NAME}.`);
+  else issues.push(`FAIL  CHAIN_SPECS must include ${TIMEOUT_BOUNDARY_SCRIPT_NAME}.`);
+  if (guard.result.totalChecks === 22)
+    details.push("PASS  guard totalChecks === 22.");
+  else issues.push(`FAIL  guard totalChecks must be 22 (got ${guard.result.totalChecks}).`);
 
   return { name: "safety_chain_composition", status: issues.length > 0 ? "FAIL" : "PASS", details: [...details, ...issues] };
 }
