@@ -1,5 +1,17 @@
 # Project Handoff Summary
 
+## Watchlist 17 Horsepower Candidate Matrix Handoff Addendum
+
+- Production snapshot provided by owner：production commit `33aabaf`，production deployment `dpl_EkLsiNE6ChJ92ECc8kuWxEKcXfgv`，production state READY。
+- Safety-chain status：22 checks；本階段不得把 candidate matrix validator 加入 safety-chain。
+- Completed scope：Watchlist 17 Horsepower Candidate Matrix、fixture-only contract、standalone validator、observation-only candidate ranking。
+- Source universe：core + extended universe，共 17 檔；approved live-fetch symbols remain exactly `["3019"]`。
+- Candidate tags：主升段、逢低候選、觀察、排除；ranking is observation-only and not a buy/sell instruction。
+- Standalone validators：`npm run test:watchlist-17-horsepower-candidate-matrix`、`npm run test:watchlist-universe-tier`、`npm run test:17-horsepower-scanner`、`npm run test:project-handoff-summary`。
+- Current live-fetch state：approved provider remains `TWSE_TPEX`；approved channel remains `tse_3019.tw`；no new approved live-fetch symbol。
+- Current phase restrictions：no provider runtime change、no live fetch、no Yahoo、no new TPEx channel、no API route、no `/api/portfolio` switch、no Supabase runtime、no env key read、no DB write、no broker API、no buy/sell command、no order command、no auto order、no production trading ready。
+- Future allowed direction：future integration with 柯三弟、走多回檔甜蜜點、risk/reward model, scanner UI, and manual user decision after owner approval, staged validation, and manual sign-off。
+
 ## Watchlist Universe Tier Spec Handoff Addendum
 
 - Production snapshot provided by owner：production commit `e93813a`，production deployment `dpl_ChJGNAyEx7jQ8QDuVMhBRX7WLS8k`，production state READY。

@@ -1,5 +1,19 @@
 # Allen Stock Dashboard
 
+## Watchlist 17 Horsepower Candidate Matrix
+
+Watchlist 17 Horsepower Candidate Matrix is a fixture-only integration between watchlist universe metadata and the 17 Horsepower scanner. It ranks candidates for observation only, does not fetch real data, does not switch production data, and does not generate buy/sell commands.
+
+- 文件：[docs/watchlist-17-horsepower-candidate-matrix.md](docs/watchlist-17-horsepower-candidate-matrix.md)
+- Contract：[use-cases/war-room/build-watchlist-17-horsepower-candidate-matrix-contract.ts](use-cases/war-room/build-watchlist-17-horsepower-candidate-matrix-contract.ts)
+- Standalone validator：`npm run test:watchlist-17-horsepower-candidate-matrix`
+- Candidates cover core + extended universe：17 檔。
+- Approved live-fetch symbols remain exactly `["3019"]`; approved channel remains `tse_3019.tw`.
+- Candidate tags：主升段、逢低候選、觀察、排除。
+- Ranking is observation-only and is not a buy/sell instruction.
+- Future integration may include 柯三弟、走多回檔甜蜜點、risk/reward model, scanner UI, and manual user decision.
+- The validator remains standalone and is not part of `test:safety-chain`; safety-chain remains 22 checks.
+
 ## Watchlist Universe Tier Spec
 
 Watchlist Universe Tier defines fixture-only stock metadata for core and extended research universes. It does not approve additional live-fetch symbols, does not fetch real data, does not switch production data, and does not generate buy/sell commands.
