@@ -1,5 +1,32 @@
 # Project Handoff Summary
 
+## 3019 Approved Live Quote Manual-Refresh MVP Handoff Addendum
+
+- 3019 Approved Live Quote Manual-Refresh MVP：新增唯讀真實報價路徑
+  `app/api/war-room/approved-live-quote/route.ts`（`GET ?symbol=3019&mode=manual`），沿用既有
+  approved provider `twse-tpex-verification-provider`（GET only、timeout 3000ms、maxRetries 0、
+  approved channel `tse_3019.tw`、field allowlist、任何失敗 fallback）。
+- **read-only、manual-refresh only**：預設 War Room page load 不打真實行情；只有使用者按下
+  「手動刷新 3019」才取得一次唯讀報價；無自動 / 定時 / 背景 fetch。
+- **default page load no fetch**：dashboard 只有 `onClick={refreshApprovedLiveQuote}` 手動觸發，
+  頁面載入僅讀取 fixture-only `/api/war-room`。
+- 回應 shape：`mvpVersion/symbol/nameZh/sourceProvider/approvedChannel/fetchMode/dryRunLiveFetch/`
+  `quote{price,previousClose,open,high,low,volume,change,changePercent,sourceTimestamp,fetchedAt}/`
+  `dataStatus/uiStatusZh/sourceNoteZh/safetyNoteZh/requestPerformed/...`；`price`／`sourceTimestamp`
+  不可取得時為 `null`，**不假造價格**；`dataStatus`（live_verified／fallback／timeout／source_error／
+  not_available）皆有繁中顯示；非 3019／非 manual 一律 reject（`requestPerformed=false`）。
+- approved live-fetch symbols remain **3019 only**；no /api/portfolio switch；no Supabase；
+  no DB write；no broker；no buy/sell command；no auto order；no production data switch；
+  no process.env；no Yahoo；no new provider；no new TPEx channel。
+- War Room UI：新增繁中「3019 核准真實報價」區塊（手動刷新按鈕、loading／success／fallback／error、
+  股票代號／名稱／價格／前收／開高低／量／漲跌／漲跌幅／資料來源／sourceTimestamp／fetchedAt／
+  dataStatus 繁中／非買賣建議 / 非進場訊號 / 非自動下單）。fetch 失敗 / timeout 不讓 UI 崩潰。
+- Standalone validator：`npm run test:approved-live-quote-3019-mvp`（不納入 safety-chain）；
+  safety-chain remains 22 checks。可選擇性 `npm run smoke:limited-live-fetch:3019`（manual smoke，
+  不納入 safety-chain；失敗只回報 fallback / timeout / source_error，不假造價格）。
+- future core 5 read-only expansion（4966／5347／4979／2455）require separate owner approval；
+  historical K-line / backtest / portfolio switch remain separate。
+
 ## Cross-Module Consistency & Candidate Ranking Governance Handoff Addendum
 
 - Cross-Module Consistency Guard：fixture-only 治理層，偵測 Allen Score 100、Allen 17-Line Power Score、

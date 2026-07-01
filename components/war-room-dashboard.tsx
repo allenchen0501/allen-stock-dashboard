@@ -281,6 +281,34 @@ interface UiCrossModuleItem {
   safetyNoteZh: string;
 }
 
+// 3019 Approved Live Quote Manual-Refresh MVP — read-only response shape.
+interface UiApproved3019Quote {
+  price: number | null;
+  previousClose: number | null;
+  open: number | null;
+  high: number | null;
+  low: number | null;
+  volume: number | null;
+  change: number | null;
+  changePercent: number | null;
+  sourceTimestamp: string | null;
+  fetchedAt: string;
+}
+
+interface UiApproved3019Response {
+  symbol: string;
+  nameZh: string;
+  sourceProvider: string;
+  approvedChannel: string;
+  fetchMode: string;
+  quote: UiApproved3019Quote;
+  dataStatus: string;
+  uiStatusZh: string;
+  sourceNoteZh: string;
+  safetyNoteZh: string;
+  requestPerformed: boolean;
+}
+
 interface UiSnapshot {
   snapshotId: string;
   generatedAt: string;
@@ -346,6 +374,19 @@ function dataStatusZh(status: string): string {
   if (status === "confirmed_close") return "已確認收盤";
   if (status === "intraday_estimated") return "盤中估算";
   return status;
+}
+
+/** Approved live quote dataStatus → tone class. */
+function liveQuoteTone(status: string): string {
+  if (status === "live_verified") return "text-positive bg-positive/10 border-positive/20";
+  if (status === "not_available" || status === "fallback")
+    return "text-slate-400 bg-slate-700/30 border-slate-600";
+  return "text-amber bg-amber/10 border-amber/20"; // timeout / source_error
+}
+
+/** number | null → 繁中「資料不足」placeholder（不假造數值）。 */
+function nzShow(value: number | null): string {
+  return value === null ? "資料不足" : String(value);
 }
 
 // ---------------------------------------------------------------------------
@@ -916,6 +957,32 @@ export function WarRoomDashboard() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  // 3019 Approved Live Quote — manual refresh only. NEVER fetched on page load; only when
+  // the user presses 手動刷新 3019. Read-only; no auto/interval/background fetch.
+  const [liveQuote, setLiveQuote] = useState<UiApproved3019Response | null>(null);
+  const [liveQuoteLoading, setLiveQuoteLoading] = useState(false);
+  const [liveQuoteError, setLiveQuoteError] = useState<string | null>(null);
+
+  const refreshApprovedLiveQuote = () => {
+    setLiveQuoteLoading(true);
+    setLiveQuoteError(null);
+    // Read-only approved endpoint; only symbol 3019 / mode manual is honored server-side.
+    fetch(`/api/war-room/approved-live-quote?symbol=3019&mode=manual`)
+      .then((res) => {
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        return res.json();
+      })
+      .then((json) => {
+        setLiveQuote(json as UiApproved3019Response);
+        setLiveQuoteLoading(false);
+      })
+      .catch((err: unknown) => {
+        // Fetch failure / timeout must not crash the UI — show safe fallback text.
+        setLiveQuoteError(String(err));
+        setLiveQuoteLoading(false);
+      });
+  };
+
   useEffect(() => {
     let cancelled = false;
     setLoading(true);
@@ -1332,6 +1399,104 @@ export function WarRoomDashboard() {
                 </div>
               </div>
             ) : null}
+
+            {/* ============================================================ */}
+            {/* 3019 核准真實報價（Approved Live Quote · 手動刷新 MVP）        */}
+            {/* ============================================================ */}
+            <div>
+              <SectionLabel label="3019 核准真實報價（Approved Live Quote · 手動刷新）" />
+              <div className="mb-2 rounded-lg border border-sky-400/15 bg-sky-400/[0.03] px-3 py-2 text-[9px] leading-5 text-sky-300">
+                唯讀真實報價 MVP，只限 3019（亞光）、只限核准頻道 tse_3019.tw；預設頁面載入不抓真實行情，
+                僅在按下「手動刷新 3019」時取得一次；非買賣建議、非進場訊號、非自動下單；手動刷新不等於交易。
+              </div>
+
+              <button
+                type="button"
+                onClick={refreshApprovedLiveQuote}
+                disabled={liveQuoteLoading}
+                className={`rounded-lg border px-3 py-1.5 text-[10px] font-semibold transition-colors ${
+                  liveQuoteLoading
+                    ? "cursor-not-allowed border-line bg-white/[0.02] text-slate-500"
+                    : "border-sky-400/30 bg-sky-400/10 text-sky-300 hover:border-sky-400/50"
+                }`}
+              >
+                {liveQuoteLoading ? "刷新中…（讀取真實報價）" : "手動刷新 3019"}
+              </button>
+
+              {/* Fetch failure / timeout — safe fallback, no fake data, no crash. */}
+              {liveQuoteError && (
+                <div className="mt-2 rounded-lg border border-amber/20 bg-amber/[0.05] p-3">
+                  <p className="text-[10px] font-semibold text-amber">無法取得 3019 真實報價</p>
+                  <p className="mt-1 text-[9px] text-slate-500">
+                    已套用安全 fallback，顯示資料不足，不顯示任何假資料。錯誤：{liveQuoteError}
+                  </p>
+                </div>
+              )}
+
+              {liveQuote && (
+                <div className="mt-2 rounded-xl border border-line bg-white/[0.012] p-4">
+                  <div className="flex flex-wrap items-center justify-between gap-2">
+                    <span className="text-[13px] font-semibold text-slate-100">
+                      {liveQuote.symbol}｜{liveQuote.nameZh}
+                    </span>
+                    <Badge value={liveQuote.uiStatusZh} tone={liveQuoteTone(liveQuote.dataStatus)} />
+                  </div>
+
+                  <div className="mt-2 grid grid-cols-2 gap-x-4 gap-y-1 font-mono text-[10px] text-slate-300 sm:grid-cols-3">
+                    <span>價格：{nzShow(liveQuote.quote.price)}</span>
+                    <span>前收：{nzShow(liveQuote.quote.previousClose)}</span>
+                    <span
+                      className={
+                        liveQuote.quote.change === null
+                          ? "text-slate-400"
+                          : liveQuote.quote.change >= 0
+                            ? "text-positive"
+                            : "text-negative"
+                      }
+                    >
+                      漲跌：{nzShow(liveQuote.quote.change)}
+                    </span>
+                    <span>開盤：{nzShow(liveQuote.quote.open)}</span>
+                    <span>最高：{nzShow(liveQuote.quote.high)}</span>
+                    <span>最低：{nzShow(liveQuote.quote.low)}</span>
+                    <span>成交量：{nzShow(liveQuote.quote.volume)}</span>
+                    <span
+                      className={
+                        liveQuote.quote.changePercent === null
+                          ? "text-slate-400"
+                          : liveQuote.quote.changePercent >= 0
+                            ? "text-positive"
+                            : "text-negative"
+                      }
+                    >
+                      漲跌幅：
+                      {liveQuote.quote.changePercent === null
+                        ? "資料不足"
+                        : `${liveQuote.quote.changePercent}%`}
+                    </span>
+                    <span>資料狀態：{liveQuote.uiStatusZh}</span>
+                  </div>
+
+                  <div className="mt-2 grid grid-cols-1 gap-y-0.5 text-[9px] text-slate-500 sm:grid-cols-2">
+                    <span>資料來源：{liveQuote.sourceProvider}（{liveQuote.approvedChannel}）</span>
+                    <span>刷新模式：{liveQuote.fetchMode}</span>
+                    <span>來源時間 sourceTimestamp：{liveQuote.quote.sourceTimestamp ?? "資料不足"}</span>
+                    <span>抓取時間 fetchedAt：{liveQuote.quote.fetchedAt}</span>
+                  </div>
+
+                  <p className="mt-2 text-[9px] text-slate-500">{liveQuote.sourceNoteZh}</p>
+                  <p className="mt-0.5 text-[9px] text-amber">
+                    安全標籤：非買賣建議 / 非進場訊號 / 非自動下單（{liveQuote.safetyNoteZh}）
+                  </p>
+                </div>
+              )}
+
+              {!liveQuote && !liveQuoteError && !liveQuoteLoading && (
+                <p className="mt-2 text-[10px] text-slate-600">
+                  尚未刷新：預設不抓真實行情。按「手動刷新 3019」取得一次唯讀真實報價。
+                </p>
+              )}
+            </div>
 
             {/* ============================================================ */}
             {/* Position Strategy Plans (V26)                                  */}
