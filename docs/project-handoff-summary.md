@@ -1,5 +1,24 @@
 # Project Handoff Summary
 
+## 3019 Post-Deployment Explicit Manual Mode Verification Handoff Addendum
+
+- 3019 Post-Deployment Explicit Manual Mode Verification：針對已部署的 `ec31db1`
+  （deployment `dpl_H4sZ3WRCNuGsqtDREP6JgubrQUuc`，READY）重跑 production URL endpoint case，
+  確認 route 收緊為「mode 必須明確 manual」後 production 行為正確（4 case 皆 HTTP 200、未假造）。
+- production URL endpoint cases after ec31db1：
+  - Case A（3019 + manual）→ **verified**：live_verified、price 140、sourceTimestamp 2026-07-01T06:30:00.000Z、requestPerformed=true。
+  - Case B（4966 + manual）→ **rejected without fetch**：not_available、requestPerformed=false、price=null、reasonZh「非核准代號」。
+  - Case C（3019 缺 mode）→ **收緊後已拒絕**：not_available、requestPerformed=false、price=null、reasonZh「僅允許手動刷新（mode=manual）」。
+  - Case D（3019 + auto）→ **rejected without fetch**：not_available、requestPerformed=false、price=null、reasonZh「僅允許手動刷新（mode=manual）」。
+- stale dea7f4e Case C evidence superseded：舊部署缺 mode 仍 fetch（live_verified）的行為，已由 ec31db1 收緊後
+  的拒絕行為實測取代。
+- no price fabrication；approved live-fetch symbols remain **3019 only**；no /api/portfolio switch、no Supabase、
+  no DB write、no broker、no buy/sell command、no auto order、no production data switch、no process.env、no Yahoo、no new provider。
+- **未修改 provider runtime**、未擴大股票池。
+- Standalone validator：`npm run test:approved-live-quote-3019-post-deployment-explicit-manual`（不納入 safety-chain）；
+  safety-chain remains 22 checks。
+- 不因 Case A 成功就擴大到 core 5；4966／5347／4979／2455 需個別 owner approval。
+
 ## 3019 Production Endpoint Case Evidence Backfill Handoff Addendum
 
 - 3019 Production Endpoint Case Evidence Backfill：直接對 production URL endpoint

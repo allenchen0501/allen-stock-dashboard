@@ -249,6 +249,118 @@ Actual response summary：
 - this is not a trading signal。
 - this is not auto order。
 
+## Post-Deployment Explicit Manual Mode Verification
+
+針對已部署的 ec31db1 重跑 production endpoint case，確認 route 收緊（`mode` 必須明確為 `manual`）
+後 production 行為正確，並取代前一版舊部署（dea7f4e）下 Case C 仍會 fetch 的 stale evidence。
+
+- commit：ec31db1
+- deployment：dpl_H4sZ3WRCNuGsqtDREP6JgubrQUuc
+- production URL：https://allen-stock-dashboard.vercel.app/
+- endpoint：/api/war-room/approved-live-quote
+- state：READY
+- 執行時間：2026-07-01（UTC，實測）
+- 方法：`curl -s "<url>"`
+- ec31db1 production endpoint is deployed and reachable（4 個 case 皆 HTTP 200，實際取得回應，非假造）。
+
+### Case A：approved 3019 manual request
+
+Request：
+
+```
+GET https://allen-stock-dashboard.vercel.app/api/war-room/approved-live-quote?symbol=3019&mode=manual
+```
+
+Actual response summary：
+
+- http status：200
+- symbol：3019 ｜ sourceProvider：TWSE_TPEX ｜ approvedChannel：tse_3019.tw
+- dataStatus：live_verified
+- price：140（number，真實來源值，未假造）
+- previousClose / open / high / low / volume：142.5 / 143.5 / 144.5 / 140 / 3314
+- change / changePercent：-2.5 / -1.75
+- sourceTimestamp："2026-07-01T06:30:00.000Z"（string）
+- fetchedAt："2026-07-01T22:04:19.385Z"
+- requestPerformed：true
+- safety flags：notTradeAdvice=true、notEntrySignal=true、autoOrderRequested=false、
+  supabaseConnected=false、productionWritePerformed=false、brokerConnected=false、buySellCommandGenerated=false
+
+→ approved request behavior verified（真實報價已驗證，read-only、shadow-only、非操作型）。
+
+### Case B：non-approved symbol rejected
+
+Request：
+
+```
+GET https://allen-stock-dashboard.vercel.app/api/war-room/approved-live-quote?symbol=4966&mode=manual
+```
+
+Actual response summary：
+
+- http status：200
+- dataStatus：not_available
+- requestPerformed：false（no real fetch）
+- price：null ｜ sourceTimestamp：null（no fabrication）
+- reasonZh：「非核准代號：僅核准 3019（亞光），已拒絕且未進行任何真實行情請求。」
+- safety flags：notTradeAdvice=true、notEntrySignal=true、autoOrderRequested=false
+
+→ non-approved symbol rejection verified（4966 rejected without fetch）。
+
+### Case C：missing manual mode rejected after ec31db1
+
+Request：
+
+```
+GET https://allen-stock-dashboard.vercel.app/api/war-room/approved-live-quote?symbol=3019
+```
+
+Actual response summary（於 ec31db1 / deployment dpl_H4sZ3WRCNuGsqtDREP6JgubrQUuc 實測）：
+
+- http status：200
+- dataStatus：not_available
+- requestPerformed：false（no real fetch）
+- price：null ｜ sourceTimestamp：null（no fabrication）
+- fetchedAt："2026-07-01T22:04:21.323Z"
+- reasonZh：「僅允許手動刷新（mode=manual），已拒絕且未進行任何真實行情請求。」
+
+→ missing mode rejection verified after ec31db1。**this replaces the stale dea7f4e evidence
+where missing mode still fetched**：舊部署（dea7f4e）因 `mode ?? 'manual'` 預設而 fetch（live_verified）
+的行為，已被 ec31db1 收緊後的拒絕行為取代，本次實測確認缺 mode 不再 fetch。
+
+### Case D：auto mode rejected
+
+Request：
+
+```
+GET https://allen-stock-dashboard.vercel.app/api/war-room/approved-live-quote?symbol=3019&mode=auto
+```
+
+Actual response summary：
+
+- http status：200
+- dataStatus：not_available
+- requestPerformed：false（no real fetch）
+- price：null ｜ sourceTimestamp：null（no fabrication）
+- reasonZh：「僅允許手動刷新（mode=manual），已拒絕且未進行任何真實行情請求。」
+
+→ auto mode rejection verified（mode=auto rejected without fetch）。
+
+## Post-Deployment Evidence Conclusion
+
+- ec31db1 production endpoint is deployed and reachable：是（4 個 case 皆 HTTP 200，實測取得回應，未假造）。
+- Case A approved request verified：是（live_verified、price 140、真實來源值）。
+- Case B non-approved symbol rejection verified：是（4966 rejected without fetch、price=null）。
+- Case C missing mode rejection verified after ec31db1：是（not_available、requestPerformed=false、price=null、reasonZh 手動模式必須）。
+- Case D auto mode rejection verified：是（mode=auto rejected without fetch、price=null）。
+- stale dea7f4e Case C behavior is superseded by ec31db1 evidence：是（缺 mode 由「舊部署會 fetch」更正為「收緊後拒絕且不 fetch」）。
+- no price fabrication：是（所有 rejection / unavailable price=null、sourceTimestamp=null；真實報價僅記錄來源實際值）。
+- approved live-fetch symbols remain exactly ["3019"]。
+- manual endpoint verification is not in safety-chain。
+- this is not production data switch。
+- this is not /api/portfolio switch。
+- this is not a trading signal。
+- this is not auto order。
+
 ## Safety Boundary
 
 - approved live-fetch symbols remain exactly ["3019"]。
