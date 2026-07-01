@@ -1,5 +1,18 @@
 # Project Handoff Summary
 
+## Watchlist Universe Tier Spec Handoff Addendum
+
+- Production snapshot provided by owner：production commit `e93813a`，production deployment `dpl_ChJGNAyEx7jQ8QDuVMhBRX7WLS8k`，production state READY。
+- Safety-chain status：22 checks；本階段不得把 watchlist universe validator 加入 safety-chain。
+- Completed scope：Watchlist Universe Tier Spec、Core Universe、Extended Universe、Scanner Universe Plan、fixture-only contract、standalone validator。
+- Core Universe：3019、4966、5347、4979、2455。
+- Extended Universe：3450、3163、6442、3363、2383、2368、3491、2313、2344、6239、8299、3105。
+- Current live-fetch state：approved provider remains `TWSE_TPEX`；approved live-fetch symbols remain exactly `["3019"]`；approved channel remains `tse_3019.tw`。
+- Boundary：watchlist universe symbol metadata is allowed；new approved live-fetch symbol is not allowed；universe metadata is not live fetch approval。
+- Standalone validators：`npm run test:watchlist-universe-tier`、`npm run test:17-horsepower-scanner`、`npm run test:project-handoff-summary`。
+- Future allowed direction：future integration with 17 Horsepower、柯三弟、走多回檔甜蜜點、candidate ranking、risk/reward reference, and manual user decision after owner approval, staged validation, and manual sign-off。
+- Current phase restrictions：no provider runtime change、no live fetch、no Yahoo、no TPEx new channel、no API route、no `/api/portfolio` switch、no Supabase runtime、no env key read、no DB write、no broker API、no buy/sell command、no auto order、no production trading ready。
+
 本文件是 Allen Stock Dashboard 的最新交接摘要。每一版完成後，完成報告都必須附上一份
 Project Handoff Summary（見文末 Required Handoff Rule）。
 

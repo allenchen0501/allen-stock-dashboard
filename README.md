@@ -1,5 +1,20 @@
 # Allen Stock Dashboard
 
+## Watchlist Universe Tier Spec
+
+Watchlist Universe Tier defines fixture-only stock metadata for core and extended research universes. It does not approve additional live-fetch symbols, does not fetch real data, does not switch production data, and does not generate buy/sell commands.
+
+- 文件：[docs/watchlist-universe-tier.md](docs/watchlist-universe-tier.md)
+- Contract：[use-cases/war-room/build-watchlist-universe-tier-contract.ts](use-cases/war-room/build-watchlist-universe-tier-contract.ts)
+- Standalone validator：`npm run test:watchlist-universe-tier`
+- Core Universe：3019、4966、5347、4979、2455
+- Extended Universe：3450、3163、6442、3363、2383、2368、3491、2313、2344、6239、8299、3105
+- Approved live-fetch symbols remain exactly `["3019"]`; approved channel remains `tse_3019.tw`.
+- Universe metadata is not live fetch approval.
+- Scanner Universe Plan remains disabled now: `enabledNow=false`, `fullMarketScanEnabled=false`.
+- Future scanner references may include 17 Horsepower、柯三弟、走多回檔甜蜜點、candidate ranking、risk/reward reference, and manual user decision.
+- The validator remains standalone and is not part of `test:safety-chain`; safety-chain remains 22 checks.
+
 以 Next.js、TypeScript 與 Tailwind CSS 製作的個人台股戰情室，包含市場燈號、持股戰情、V8.5 核心評分、風報比、主升段候選與今日禁碰股。
 
 ## Project Handoff Rule（每版交接規則）

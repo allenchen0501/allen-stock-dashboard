@@ -100,7 +100,8 @@
     "test:limited-live-fetch-timeout-boundary": "node --require ./scripts/register-typescript.cjs ./scripts/validate-limited-live-fetch-timeout-boundary.ts",
     "test:system-safety-ui-language": "node --require ./scripts/register-typescript.cjs ./scripts/validate-system-safety-ui-language.ts",
     "test:project-handoff-summary": "node --require ./scripts/register-typescript.cjs ./scripts/validate-project-handoff-summary.ts",
-    "test:17-horsepower-scanner": "node --require ./scripts/register-typescript.cjs ./scripts/validate-17-horsepower-scanner.ts"
+    "test:17-horsepower-scanner": "node --require ./scripts/register-typescript.cjs ./scripts/validate-17-horsepower-scanner.ts",
+    "test:watchlist-universe-tier": "node --require ./scripts/register-typescript.cjs ./scripts/validate-watchlist-universe-tier.ts"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.108.2",
