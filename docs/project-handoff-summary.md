@@ -1,5 +1,27 @@
 # Project Handoff Summary
 
+## 4966 Owner Approval Decision Gate Handoff Addendum
+
+- 4966 Owner Approval Decision Gate：fixture-only governance/evidence gate，定義 Allen owner 如何
+  明確核准 4966 譜瑞進入下一版（4966 Read-Only Manual-Refresh MVP）。
+- **本版不核准 4966**：currentApprovalStatus 維持 `pending_owner_approval`、ownerApprovalReceived=false、
+  approvalDate=null、approvedChannel=null、inApprovedLiveFetchSymbols=false、nextVersionUnlocked=false。
+- 內容：decision states（pending/approved/rejected）+ 狀態轉換規則；owner 核准句 + 核准句必含的安全邊界
+  元素（read-only／manual-refresh-only／approved provider only／不切 portfolio API／不接 Supabase／
+  不接 broker／不下單／不自動交易）；approval text template（templateIsApproval=false，列出模板≠已核准）；
+  next-version preconditions（owner approval → channel verification → per-symbol validator → manual
+  smoke → production endpoint evidence）；post-approval remaining requirements。
+- gate 評估：ownerApprovalReceived=false → resultingStatus=pending_owner_approval、nextVersionUnlocked=false。
+- **本版不新增 runtime footprint**：no 4966 endpoint、no War Room button、no smoke、no production
+  endpoint call；4966 未進 runtime（provider／route／MVP contract／dashboard 皆不含 4966）；
+  approvedLiveFetchSymbols 仍只有 3019。
+- fixture-only、deterministic、no network、no Supabase、no env、no DB write、no API route、no broker、
+  no buy/sell command、no auto order、no production data switch、no new provider、no Yahoo、
+  no new runtime channel、not production trading ready。
+- Standalone validator：`npm run test:4966-owner-approval-decision-gate`（不納入 safety-chain）；
+  safety-chain remains 22 checks。
+- 下一版：**4966 Read-Only Manual-Refresh MVP**（需 Allen owner 明確提供核准句後才解鎖）。
+
 ## 4966 Owner Approval Packet & Channel Verification Prep Handoff Addendum
 
 - 4966 Owner Approval Packet & Channel Verification Prep：fixture-only governance prep，為
