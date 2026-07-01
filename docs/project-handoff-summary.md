@@ -27,6 +27,8 @@ Project Handoff Summary（見文末 Required Handoff Rule）。
 - System Safety UI Traditional Chinese Localization（系統安全頁繁中化）
 - System Safety UI Language Guard Validator（UI 語言 guard，standalone）
 - Monitoring Components Boolean UI Localization（monitoring 元件布林讀數繁中化）
+- 17 Horsepower Technical Scanner Spec（17 馬力多頭強度模型：fixture-only contract + standalone validator，
+  不納入 safety-chain；未來將與扣三低／走多逢低候選股整合；不抓真資料、不產生買賣指令）
 
 ## Current Validators
 
