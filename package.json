@@ -110,7 +110,8 @@
     "test:approved-live-quote-3019-production-smoke": "node --require ./scripts/register-typescript.cjs ./scripts/validate-approved-live-quote-3019-production-smoke.ts",
     "test:approved-live-quote-3019-production-endpoint-cases": "node --require ./scripts/register-typescript.cjs ./scripts/validate-approved-live-quote-3019-production-endpoint-cases.ts",
     "test:approved-live-quote-3019-post-deployment-explicit-manual": "node --require ./scripts/register-typescript.cjs ./scripts/validate-approved-live-quote-3019-post-deployment-explicit-manual.ts",
-    "test:core-5-expansion-approval-spec": "node --require ./scripts/register-typescript.cjs ./scripts/validate-core-5-expansion-approval-spec.ts"
+    "test:core-5-expansion-approval-spec": "node --require ./scripts/register-typescript.cjs ./scripts/validate-core-5-expansion-approval-spec.ts",
+    "test:4966-owner-approval-packet": "node --require ./scripts/register-typescript.cjs ./scripts/validate-4966-owner-approval-packet.ts"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.108.2",

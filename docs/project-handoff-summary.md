@@ -1,5 +1,26 @@
 # Project Handoff Summary
 
+## 4966 Owner Approval Packet & Channel Verification Prep Handoff Addendum
+
+- 4966 Owner Approval Packet & Channel Verification Prep：fixture-only governance prep，為
+  4966 譜瑞準備成為下一檔 read-only manual-refresh 候選標的的 owner approval packet 與 channel
+  verification prep。
+- **本版不核准 4966**：4966 維持 `candidate_only` / `pending_owner_approval` / not approved；
+  approvedChannel=null；proposedChannel `tse_4966.tw` 標記 proposed / unverified / not approved；
+  4966 **不在** approvedLiveFetchSymbols。
+- **本版不新增 runtime footprint**：no 4966 live-fetch endpoint、no 4966 War Room manual refresh
+  button、no smoke executed、no production endpoint called。candidate symbol / proposed channel
+  皆 spec-only，未進入 runtime（provider／route／MVP contract／dashboard 皆不含 4966）。
+- 內容：per-symbol required evidence checklist、future manual smoke plan（不執行）、future
+  production endpoint cases A–D（不執行）、owner approval record schema（未填入、未核准）、
+  owner 核准所需文字（Allen 明確書面核准後才進入下一版）。
+- fixture-only、deterministic、no network、no Supabase、no env、no DB write、no API route、
+  no broker、no buy/sell command、no auto order、no production data switch、no new provider、
+  no Yahoo、no new runtime channel、not production trading ready。
+- Standalone validator：`npm run test:4966-owner-approval-packet`（不納入 safety-chain）；
+  safety-chain remains 22 checks；approvedLiveFetchSymbols 仍只有 3019。
+- 下一版：**4966 Read-Only Manual-Refresh MVP**（需 Allen owner 明確核准後才可進行）。
+
 ## Core 5 Read-Only Expansion Approval Spec Handoff Addendum
 
 - Core 5 Read-Only Expansion Approval Spec：fixture-only governance spec，定義核心 5 檔
