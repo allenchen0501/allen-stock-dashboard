@@ -266,6 +266,21 @@ interface UiHorsepowerSummary {
   overheatedCount: number;
 }
 
+interface UiCrossModuleItem {
+  symbol: string;
+  nameZh: string;
+  allenScoreSignal: string;
+  seventeenLineSignal: string;
+  technicalRiskRewardSignal: string;
+  kouSanDiSignal: string;
+  positionStrategySignal: string;
+  conflictLevel: string;
+  hardGateStatus: string;
+  rankingEligible: boolean;
+  finalObservationLabelZh: string;
+  safetyNoteZh: string;
+}
+
 interface UiSnapshot {
   snapshotId: string;
   generatedAt: string;
@@ -304,6 +319,26 @@ interface UiSnapshot {
   horsepowerScannerItems: UiHorsepowerStock[];
   horsepowerScannerSummary: UiHorsepowerSummary;
   horsepowerScannerFixtureVersion: string;
+  // Cross-Module Consistency & Candidate Ranking Governance.
+  crossModuleConsistencyItems: UiCrossModuleItem[];
+  crossModuleConsistencyFixtureVersion: string;
+}
+
+/** conflictLevel code → 繁中顯示。 */
+function conflictLevelZh(level: string): string {
+  if (level === "none") return "無衝突";
+  if (level === "warning") return "訊號分歧";
+  if (level === "critical") return "嚴重衝突";
+  return level;
+}
+
+/** hardGateStatus code → 繁中顯示。 */
+function hardGateStatusZh(status: string): string {
+  if (status === "pass") return "通過";
+  if (status === "downgraded") return "降級";
+  if (status === "excluded") return "禁碰排除";
+  if (status === "data_insufficient") return "資料不足";
+  return status;
 }
 
 /** dataStatus code → 繁中顯示。 */
@@ -1245,6 +1280,53 @@ export function WarRoomDashboard() {
                       {hp.reliabilityNote ? (
                         <p className="mt-1 text-[9px] text-amber">資料可靠度提醒：{hp.reliabilityNote}</p>
                       ) : null}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ) : null}
+
+            {/* ============================================================ */}
+            {/* 跨模組一致性（Cross-Module Consistency Governance）            */}
+            {/* ============================================================ */}
+            {snapshot.crossModuleConsistencyItems && snapshot.crossModuleConsistencyItems.length > 0 ? (
+              <div>
+                <SectionLabel
+                  label={`跨模組一致性（Cross-Module Consistency Governance）（${snapshot.crossModuleConsistencyItems.length}）`}
+                />
+                <div className="mb-2 rounded-lg border border-amber/15 bg-amber/[0.03] px-3 py-2 text-[9px] leading-5 text-amber">
+                  一致性 / 治理層；偵測 Allen Score、17線馬力、Technical + RR、扣三低、Position Strategy 之間的矛盾；
+                  fixture data 不是即時資料；非買賣建議、非進場訊號、非自動下單；Position Strategy「禁碰」凌駕所有高分訊號。
+                </div>
+                <div className="grid gap-2 sm:grid-cols-2 xl:grid-cols-3">
+                  {snapshot.crossModuleConsistencyItems.map((cm, i) => (
+                    <div
+                      key={cm.symbol ?? i}
+                      className="rounded-xl border border-line bg-white/[0.012] px-3 py-2 text-[10px] text-slate-300"
+                    >
+                      <div className="flex items-center justify-between">
+                        <span className="font-semibold text-slate-100">
+                          {cm.symbol}｜{cm.nameZh}
+                        </span>
+                        <span className="text-slate-400">
+                          {conflictLevelZh(cm.conflictLevel)}
+                        </span>
+                      </div>
+                      <div className="mt-1 grid grid-cols-1 gap-y-0.5 font-mono text-[9px] text-slate-400">
+                        <span>Allen Score：{cm.allenScoreSignal}</span>
+                        <span>17線馬力：{cm.seventeenLineSignal}</span>
+                        <span>Technical + RR：{cm.technicalRiskRewardSignal}</span>
+                        <span>扣三低：{cm.kouSanDiSignal}</span>
+                        <span>Position Strategy：{cm.positionStrategySignal}</span>
+                        <span>衝突等級：{conflictLevelZh(cm.conflictLevel)}</span>
+                        <span>硬門檻：{hardGateStatusZh(cm.hardGateStatus)}</span>
+                        <span>可排序：{cm.rankingEligible ? "是" : "否"}</span>
+                      </div>
+                      <p className="mt-1 text-[10px] font-semibold text-slate-100">
+                        最終觀察標籤：{cm.finalObservationLabelZh}
+                      </p>
+                      <p className="mt-0.5 text-[9px] text-slate-500">{cm.safetyNoteZh}</p>
+                      <p className="mt-0.5 text-[9px] text-amber">安全標籤：非買賣建議 / 非進場訊號 / 非自動下單</p>
                     </div>
                   ))}
                 </div>

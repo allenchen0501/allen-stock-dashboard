@@ -104,7 +104,8 @@
     "test:watchlist-universe-tier": "node --require ./scripts/register-typescript.cjs ./scripts/validate-watchlist-universe-tier.ts",
     "test:watchlist-17-horsepower-candidate-matrix": "node --require ./scripts/register-typescript.cjs ./scripts/validate-watchlist-17-horsepower-candidate-matrix.ts",
     "test:technical-terminology": "node --require ./scripts/register-typescript.cjs ./scripts/validate-technical-terminology.ts",
-    "test:kou-san-di-scanner": "node --require ./scripts/register-typescript.cjs ./scripts/validate-kou-san-di-scanner.ts"
+    "test:kou-san-di-scanner": "node --require ./scripts/register-typescript.cjs ./scripts/validate-kou-san-di-scanner.ts",
+    "test:cross-module-consistency-governance": "node --require ./scripts/register-typescript.cjs ./scripts/validate-cross-module-consistency-governance.ts"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.108.2",

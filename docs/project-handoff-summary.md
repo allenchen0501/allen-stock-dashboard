@@ -1,5 +1,26 @@
 # Project Handoff Summary
 
+## Cross-Module Consistency & Candidate Ranking Governance Handoff Addendum
+
+- Cross-Module Consistency Guard：fixture-only 治理層，偵測 Allen Score 100、Allen 17-Line Power Score、
+  Technical + Risk Reward、扣三低、Position Strategy 對同一檔股票的方向矛盾，輸出 conflictLevel /
+  hardGateStatus / rankingEligible / 繁中 finalObservationLabelZh / safetyNoteZh。
+- Candidate Ranking Governance：候選排序分 Hard Gates（Position No Touch / marketStatus DANGER /
+  dataQuality FAIL / supportZone 缺失 / invalidLevel 缺失 / conflict critical）+ Weighted Observation
+  Score（trend 30 / technical 25 / risk 20 / volume 15 / research 10）兩層。
+- **No Touch overrides high scores**：Position Strategy 禁碰凌駕任何 A 級 / 高馬力 / 高風報比訊號。
+- **riskRewardRatio is not win rate**：風報比不是勝率；在 setupWinRate / backtest 完成前，
+  expected-value ranking not allowed（expectedValueRankingAllowed=false）。
+- Technical Score Collinearity Guard 僅建 spec、不重算 Allen Score 100；目前門檻皆未回測校準、
+  不得宣稱統計勝率。
+- fixture-only、deterministic、no network、no Supabase、no env、no DB write、no API route、no broker API、
+  no buy/sell command、no auto order、no production data switch。
+- War Room read-model/UI integration：新增 `crossModuleConsistencyItems` /
+  `crossModuleConsistencySummary` / `crossModuleConsistencyFixtureVersion="V1"`，dashboard 新增繁中
+  「跨模組一致性」區塊（標示非買賣建議 / 非進場訊號 / 非自動下單）。
+- Standalone validator：`npm run test:cross-module-consistency-governance`（不納入 safety-chain）；
+  safety-chain remains 22 checks；approved live-fetch symbols remain 3019 only。
+
 ## 扣三低 Terminology Hotfix + Allen 17-Line Power Score v1.1 Handoff Addendum
 
 - 扣三低 terminology hotfix：正式術語統一為 **扣三低**；常見錯字一律禁用，且只允許出現在

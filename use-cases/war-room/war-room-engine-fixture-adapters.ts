@@ -20,6 +20,7 @@
 
 import type {
   WarRoomAvoidItem,
+  WarRoomCrossModuleConsistencySummary,
   WarRoomDataQualitySummary,
   WarRoomHorsepowerScannerSummary,
   WarRoomMode,
@@ -30,6 +31,8 @@ import type {
 } from "./war-room-intelligence-contract";
 import type { HorsepowerStock } from "./build-17-horsepower-scanner-contract";
 import { build17HorsepowerScannerContract } from "./build-17-horsepower-scanner-contract";
+import type { CrossModuleSignalSummary } from "./build-cross-module-consistency-governance-contract";
+import { buildCrossModuleConsistencyGovernanceContract } from "./build-cross-module-consistency-governance-contract";
 import type {
   ResearchStockSnapshot,
   ResearchTopPick,
@@ -77,6 +80,34 @@ export interface WarRoomEngineFixtureBundle {
   horsepowerScannerItems: HorsepowerStock[];
   horsepowerScannerSummary: WarRoomHorsepowerScannerSummary;
   horsepowerScannerFixtureVersion: "V1_1";
+  // Cross-Module Consistency & Candidate Ranking Governance (fixture-only).
+  crossModuleConsistencyItems: CrossModuleSignalSummary[];
+  crossModuleConsistencySummary: WarRoomCrossModuleConsistencySummary;
+  crossModuleConsistencyFixtureVersion: "V1";
+}
+
+/** Maps the fixture-only cross-module consistency governance into the War Room bundle. */
+function crossModuleConsistency(generatedAt: string): {
+  items: CrossModuleSignalSummary[];
+  summary: WarRoomCrossModuleConsistencySummary;
+} {
+  const gov = buildCrossModuleConsistencyGovernanceContract({ generatedAt });
+  return {
+    items: gov.items,
+    summary: {
+      fixtureVersion: "V1",
+      totalCount: gov.summary.totalCount,
+      noConflictCount: gov.summary.noConflictCount,
+      warningConflictCount: gov.summary.warningConflictCount,
+      criticalConflictCount: gov.summary.criticalConflictCount,
+      rankingEligibleCount: gov.summary.rankingEligibleCount,
+      excludedCount: gov.summary.excludedCount,
+      dataInsufficientCount: gov.summary.dataInsufficientCount,
+      notTradeAdvice: true,
+      notEntrySignal: true,
+      notAutoOrder: true,
+    },
+  };
 }
 
 /** Maps the fixture-only 17-line power score scanner into the War Room bundle. */
@@ -557,6 +588,14 @@ export function buildWarRoomEngineFixtureBundle(
         horsepowerScannerItems: hp.items,
         horsepowerScannerSummary: hp.summary,
         horsepowerScannerFixtureVersion: "V1_1" as const,
+      };
+    })(),
+    ...(() => {
+      const cm = crossModuleConsistency(generatedAt);
+      return {
+        crossModuleConsistencyItems: cm.items,
+        crossModuleConsistencySummary: cm.summary,
+        crossModuleConsistencyFixtureVersion: "V1" as const,
       };
     })(),
   };

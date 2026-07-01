@@ -27,6 +27,26 @@ import type { TechnicalRiskRewardCandidate } from "../technical-strategy/technic
 import type { IntradayAlertPayload } from "../intraday-alert/intraday-alert-contract";
 import type { PositionStrategyPlan } from "../position-strategy/position-strategy-plan-contract";
 import type { HorsepowerStock } from "./build-17-horsepower-scanner-contract";
+import type { CrossModuleSignalSummary } from "./build-cross-module-consistency-governance-contract";
+
+/**
+ * Read-only surface of the fixture-only Cross-Module Consistency & Candidate Ranking
+ * Governance layer. The War Room only SURFACES the governance output — it is a
+ * consistency / governance layer, not a trade signal / buy point / order command.
+ */
+export interface WarRoomCrossModuleConsistencySummary {
+  fixtureVersion: "V1";
+  totalCount: number;
+  noConflictCount: number;
+  warningConflictCount: number;
+  criticalConflictCount: number;
+  rankingEligibleCount: number;
+  excludedCount: number;
+  dataInsufficientCount: number;
+  notTradeAdvice: true;
+  notEntrySignal: true;
+  notAutoOrder: true;
+}
 
 /**
  * Read-only surface of the fixture-only Allen 17-Line Power Score v1.1 scanner.
@@ -226,6 +246,11 @@ export interface WarRoomIntelligenceSnapshot {
   horsepowerScannerItems: HorsepowerStock[];
   horsepowerScannerSummary: WarRoomHorsepowerScannerSummary;
   horsepowerScannerFixtureVersion: "V1_1";
+
+  // Cross-Module Consistency & Candidate Ranking Governance (read-only surface).
+  crossModuleConsistencyItems: CrossModuleSignalSummary[];
+  crossModuleConsistencySummary: WarRoomCrossModuleConsistencySummary;
+  crossModuleConsistencyFixtureVersion: "V1";
 
   // Provenance + roll-up.
   sourceSummary: WarRoomSourceSummary[];

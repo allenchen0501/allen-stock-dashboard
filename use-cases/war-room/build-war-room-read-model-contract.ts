@@ -41,6 +41,7 @@ export interface BuildWarRoomReadModelContractOutput
   fixtureAdapterVersion: "V22";
   positionStrategyFixtureVersion: "V26";
   horsepowerScannerFixtureVersion: "V1_1";
+  crossModuleConsistencyFixtureVersion: "V1";
 }
 
 const VALID_MODES: readonly WarRoomMode[] = [
@@ -126,6 +127,10 @@ export function buildWarRoomReadModelContract(
     horsepowerScannerItems: bundle.horsepowerScannerItems,
     horsepowerScannerSummary: bundle.horsepowerScannerSummary,
     horsepowerScannerFixtureVersion: "V1_1",
+
+    crossModuleConsistencyItems: bundle.crossModuleConsistencyItems,
+    crossModuleConsistencySummary: bundle.crossModuleConsistencySummary,
+    crossModuleConsistencyFixtureVersion: "V1",
 
     sourceSummary: bundle.sourceSummary,
     dataQualitySummary: bundle.dataQualitySummary,
