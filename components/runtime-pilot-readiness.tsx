@@ -13,6 +13,11 @@ import type { RuntimePilotReadinessGate } from "@/use-cases/runtime-pilot/runtim
 
 const FIXED_GENERATED_AT = "2026-06-23T00:00:00.000Z";
 
+// 前台顯示：布林轉繁中（是／否），數字、id、狀態碼、時間戳保留原值。
+function zhBool(value: boolean, trueText = "是", falseText = "否"): string {
+  return value ? trueText : falseText;
+}
+
 const GATE_LABEL: Record<string, string> = {
   SOURCE_AUTHORIZATION: "資料源授權",
   SOURCE_LEGAL_STATUS: "資料源合法狀態",
@@ -111,7 +116,7 @@ function GateCard({ gate }: { gate: RuntimePilotReadinessGate }) {
               gate.passed ? "bg-positive/10 text-positive" : "bg-amber/10 text-amber"
             }`}
           >
-            passed={String(gate.passed)}
+            passed={zhBool(gate.passed)}
           </span>
         </div>
       </div>
@@ -198,21 +203,21 @@ export function RuntimePilotReadiness() {
             <Pill label="warningGateCount" value={String(ds.warningGateCount)} />
             <Pill
               label="allCriticalGatesPassed"
-              value={String(ds.allCriticalGatesPassed)}
+              value={zhBool(ds.allCriticalGatesPassed)}
               tone={ds.allCriticalGatesPassed ? "text-positive" : "text-amber"}
             />
-            <Pill label="dryRunModeRequired" value={String(ds.dryRunModeRequired)} />
-            <Pill label="noWriteModeRequired" value={String(ds.noWriteModeRequired)} />
+            <Pill label="dryRunModeRequired" value={zhBool(ds.dryRunModeRequired, "需要", "不需要")} />
+            <Pill label="noWriteModeRequired" value={zhBool(ds.noWriteModeRequired, "需要", "不需要")} />
             <Pill
               label="productionWriteAllowed"
-              value={String(ds.productionWriteAllowed)}
+              value={zhBool(ds.productionWriteAllowed, "允許", "禁止")}
               tone="text-negative"
             />
             <Pill
               label="buySellCommandGenerationBlocked"
-              value={String(ds.buySellCommandGenerationBlocked)}
+              value={zhBool(ds.buySellCommandGenerationBlocked)}
             />
-            <Pill label="notTradeAdviceAlwaysTrue" value={String(ds.notTradeAdviceAlwaysTrue)} />
+            <Pill label="notTradeAdviceAlwaysTrue" value={zhBool(ds.notTradeAdviceAlwaysTrue)} />
             <Pill label="GO/NO-GO" value={ds.decision} tone={decisionTone(ds.decision).split(" ")[0]} />
           </div>
           <p className="mt-2 text-[9px] leading-5 text-amber">
@@ -290,16 +295,16 @@ export function RuntimePilotReadiness() {
             <div className="flex flex-col gap-0.5 font-mono text-[8px] text-slate-500">
               <span>auditId：{audit.auditId}</span>
               <span>generatedAt：{audit.generatedAt}</span>
-              <span>sourceId：{String(audit.sourceId)}</span>
-              <span>stockId：{String(audit.stockId)}</span>
-              <span>gateId：{audit.gateId}</span>
-              <span>beforeStatus：{String(audit.beforeStatus)}</span>
-              <span>afterStatus：{audit.afterStatus}</span>
+              <span>sourceId 資料源代碼：{String(audit.sourceId)}</span>
+              <span>stockId 股票代號：{String(audit.stockId)}</span>
+              <span>gateId 關卡代碼：{audit.gateId}</span>
+              <span>beforeStatus 變更前狀態：{String(audit.beforeStatus)}</span>
+              <span>afterStatus 變更後狀態：{audit.afterStatus}</span>
               <span>decision：{audit.decision}</span>
               <span>reason：{audit.reason}</span>
-              <span>requestPerformed：{String(audit.requestPerformed)}</span>
-              <span>supabaseConnected：{String(audit.supabaseConnected)}</span>
-              <span>productionWritePerformed：{String(audit.productionWritePerformed)}</span>
+              <span>requestPerformed 已發出請求：{zhBool(audit.requestPerformed)}</span>
+              <span>supabaseConnected 已連 Supabase：{zhBool(audit.supabaseConnected)}</span>
+              <span>productionWritePerformed 已寫入正式：{zhBool(audit.productionWritePerformed)}</span>
             </div>
           </div>
           <div className="rounded-xl border border-line bg-white/[0.012] p-3">
@@ -321,13 +326,13 @@ export function RuntimePilotReadiness() {
             </p>
             <div className="flex flex-col gap-0.5 font-mono text-[8px] text-slate-500">
               <span>killSwitchId：{kill.killSwitchId}</span>
-              <span>enabled：{String(kill.enabled)}</span>
+              <span>enabled 已啟用：{zhBool(kill.enabled, "已啟用", "未啟用")}</span>
               <span>reason：{kill.reason}</span>
               <span>affectedRuntime：{kill.affectedRuntime}</span>
-              <span>activatedAt：{String(kill.activatedAt)}</span>
-              <span>deactivatedAt：{String(kill.deactivatedAt)}</span>
+              <span>activatedAt 啟用時間：{String(kill.activatedAt)}</span>
+              <span>deactivatedAt 停用時間：{String(kill.deactivatedAt)}</span>
               <span>owner：{kill.owner}</span>
-              <span>requiresManualReview：{String(kill.requiresManualReview)}</span>
+              <span>requiresManualReview 需人工複核：{zhBool(kill.requiresManualReview, "需要", "不需要")}</span>
             </div>
           </div>
         </div>

@@ -54,9 +54,18 @@
 - **safety-chain remains 22 checks** — 本版不更動 safety-chain 組成。
 - **no runtime / no fetch / no smoke** — 純靜態讀檔，不打網路、不跑 smoke、不改 provider runtime。
 
-## Known follow-up
+## Monitoring components boolean readouts
 
 monitoring 元件（runtime-pilot-readiness / monitoring、first-authorized-source-dry-run-monitoring、
-shadow-runner-dry-run-monitoring）目前已完成**卡片標題**繁中化；其內部的技術布林讀數仍以
-`{String(…)}` 呈現（多為混合布林／數值，逐一轉換風險較高）。本 guard 嚴格檢查 page + card 的
-`zhBool()` 規則，monitoring 內部讀數的深度繁中化列為後續獨立版本處理。
+shadow-runner-dry-run-monitoring）內部技術讀數已逐欄位人工分類並繁中化：
+
+- **boolean readouts are localized** — 布林讀數改以 `zhBool()`（是／否、允許／禁止、需要／不需要、
+  已啟用／未啟用…）呈現；通用列渲染 `KV` 改用 `zhDisplay()`（布林→繁中、其餘保留原值）。不再直接顯示
+  `true` / `false`。
+- **numeric readouts remain numeric** — 數字讀數（例如 criticalGateCount 等計數）保留 `String(number)`，
+  不轉成 zhBool。
+- **status-code readouts may remain technical but require Chinese explanation** — 狀態碼 / id /
+  enum / 時間戳（例如 sourceId、stockId、beforeStatus、afterStatus、activatedAt、lifecycleState、
+  readinessDecision）保留技術值，但旁邊加繁中說明。
+- **no direct true / false UI display** — guard 以 `05b_monitoring_no_raw_boolean` 檢查 4 個
+  monitoring 元件：必須使用 `zhBool()`、不得殘留 `String(<boolean>)`、不得出現字面 `true` / `false`。

@@ -24,11 +24,20 @@ function tone(value: unknown): string {
   return 'text-slate-200';
 }
 
+// 前台顯示：布林轉繁中（是／否），數字與 enum / 狀態碼保留原值。
+function zhBool(value: boolean, trueText = '是', falseText = '否'): string {
+  return value ? trueText : falseText;
+}
+function zhDisplay(value: unknown): string {
+  if (typeof value === 'boolean') return zhBool(value);
+  return String(value);
+}
+
 function KV({ label, value }: { label: string; value: unknown }) {
   return (
     <div className="flex items-center justify-between gap-2 border-b border-line/40 py-0.5 text-[9px] last:border-0">
       <span className="font-mono text-slate-600">{label}</span>
-      <span className={`break-all font-mono ${tone(value)}`}>{String(value)}</span>
+      <span className={`break-all font-mono ${tone(value)}`}>{zhDisplay(value)}</span>
     </div>
   );
 }
@@ -153,29 +162,29 @@ export function FirstAuthorizedSourceDryRunMonitoring() {
               </div>
               <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 xl:grid-cols-6">
                 <Pill label="decision" value={s.decision} tone="text-amber" />
-                <Pill label="dryRunAllowed" value={String(s.dryRunAllowed)} tone="text-positive" />
-                <Pill label="manualSignOffCompleted" value={String(s.manualSignOffCompleted)} tone="text-positive" />
+                <Pill label="dryRunAllowed" value={zhBool(s.dryRunAllowed)} tone="text-positive" />
+                <Pill label="manualSignOffCompleted" value={zhBool(s.manualSignOffCompleted)} tone="text-positive" />
                 <Pill label="authorizationStatus" value={s.authorizationStatus} />
                 <Pill label="legalStatus" value={s.legalStatus} />
                 <Pill label="sourceCategory" value={s.sourceCategory} />
                 <Pill label="requestMode" value={s.requestMode} />
-                <Pill label="requestPerformed" value={String(s.requestPerformed)} tone="text-positive" />
-                <Pill label="rawResponseStored" value={String(s.rawResponseStored)} tone="text-positive" />
-                <Pill label="normalizedSnapshotProduced" value={String(s.normalizedSnapshotProduced)} tone="text-positive" />
-                <Pill label="priceVerified" value={String(s.priceVerified)} tone="text-positive" />
-                <Pill label="highConfidenceConclusionAllowed" value={String(s.highConfidenceConclusionAllowed)} tone="text-positive" />
-                <Pill label="precisePriceZoneAllowed" value={String(s.precisePriceZoneAllowed)} tone="text-positive" />
+                <Pill label="requestPerformed" value={zhBool(s.requestPerformed)} tone="text-positive" />
+                <Pill label="rawResponseStored" value={zhBool(s.rawResponseStored)} tone="text-positive" />
+                <Pill label="normalizedSnapshotProduced" value={zhBool(s.normalizedSnapshotProduced)} tone="text-positive" />
+                <Pill label="priceVerified" value={zhBool(s.priceVerified)} tone="text-positive" />
+                <Pill label="highConfidenceConclusionAllowed" value={zhBool(s.highConfidenceConclusionAllowed)} tone="text-positive" />
+                <Pill label="precisePriceZoneAllowed" value={zhBool(s.precisePriceZoneAllowed)} tone="text-positive" />
                 <Pill label="projectedAlertLevel" value={s.projectedAlertLevel} />
-                <Pill label="buySellCommandGenerated" value={String(s.buySellCommandGenerated)} tone="text-positive" />
-                <Pill label="autoOrderRequested" value={String(s.autoOrderRequested)} tone="text-positive" />
-                <Pill label="productionWriteRequested" value={String(s.productionWriteRequested)} tone="text-positive" />
-                <Pill label="writeAttempted" value={String(s.writeAttempted)} tone="text-positive" />
-                <Pill label="databaseWritePerformed" value={String(s.databaseWritePerformed)} tone="text-positive" />
-                <Pill label="externalOrderPerformed" value={String(s.externalOrderPerformed)} tone="text-positive" />
-                <Pill label="productionWritePerformed" value={String(s.productionWritePerformed)} tone="text-positive" />
-                <Pill label="supabaseConnected" value={String(s.supabaseConnected)} tone="text-positive" />
-                <Pill label="dryRunCanContinue" value={String(s.dryRunCanContinue)} />
-                <Pill label="rollbackRequired" value={String(s.rollbackRequired)} />
+                <Pill label="buySellCommandGenerated" value={zhBool(s.buySellCommandGenerated)} tone="text-positive" />
+                <Pill label="autoOrderRequested" value={zhBool(s.autoOrderRequested)} tone="text-positive" />
+                <Pill label="productionWriteRequested" value={zhBool(s.productionWriteRequested)} tone="text-positive" />
+                <Pill label="writeAttempted" value={zhBool(s.writeAttempted)} tone="text-positive" />
+                <Pill label="databaseWritePerformed" value={zhBool(s.databaseWritePerformed)} tone="text-positive" />
+                <Pill label="externalOrderPerformed" value={zhBool(s.externalOrderPerformed)} tone="text-positive" />
+                <Pill label="productionWritePerformed" value={zhBool(s.productionWritePerformed)} tone="text-positive" />
+                <Pill label="supabaseConnected" value={zhBool(s.supabaseConnected)} tone="text-positive" />
+                <Pill label="dryRunCanContinue" value={zhBool(s.dryRunCanContinue)} />
+                <Pill label="rollbackRequired" value={zhBool(s.rollbackRequired)} />
                 <Pill label="noWriteProofStatus" value={s.noWriteProofStatus} />
               </div>
             </div>

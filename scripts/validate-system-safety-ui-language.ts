@@ -164,6 +164,25 @@ for (const rel of MONITORING_RELS) {
 }
 pushCheck("05_monitoring_titles_chinese_primary", monitoringConds);
 
+// 5b. Monitoring components must NOT render booleans directly as true / false.
+//     Every boolean readout must go through zhBool()/zhDisplay(); any String(…) that
+//     remains must wrap a non-boolean (number / id / status code / timestamp / error).
+//     Boolean fields are detected by common suffixes on the field name inside String(…).
+const BOOLEAN_STRING = /String\(\s*[\w.]*(Allowed|Performed|Connected|Required|Generated|Requested|Attempted|Enabled|Verified|Passed|Completed|Stored|Produced|Blocked|CanContinue|AlwaysTrue|Mutated)\s*\)/;
+const BOOLEAN_DOT = /String\(\s*[\w.]*\.(ok|passed|enabled|connected)\s*\)/;
+const monitoringBoolConds: Array<{ ok: boolean; pass: string; fail: string }> = [];
+for (const rel of MONITORING_RELS) {
+  const body = readFile(resolve(rel));
+  const stripped = body == null ? "" : stripComments(body);
+  const hasZhBool = stripped.includes("zhBool");
+  const rawBool = BOOLEAN_STRING.exec(stripped) ?? BOOLEAN_DOT.exec(stripped);
+  const literalTrueFalse = />\s*(true|false)\s*</.test(stripped);
+  monitoringBoolConds.push({ ok: hasZhBool, pass: `${rel} defines/uses zhBool().`, fail: `${rel} must use zhBool() for boolean display.` });
+  monitoringBoolConds.push({ ok: rawBool == null, pass: `${rel} has no raw String(<boolean>) readout.`, fail: `${rel} still renders a boolean via String(): ${rawBool?.[0] ?? ""}.` });
+  monitoringBoolConds.push({ ok: !literalTrueFalse, pass: `${rel} renders no literal >true</ / >false<.`, fail: `${rel} must not render literal true / false.` });
+}
+pushCheck("05b_monitoring_no_raw_boolean", monitoringBoolConds);
+
 // 6. Shadow comparison card keeps its Chinese warning.
 pushCheck("06_card_chinese_warning", [
   { ok: card != null && card.includes("此卡僅為介面外殼"), pass: "Card contains Chinese warning 「此卡僅為介面外殼」.", fail: "Card must contain a Chinese warning（此卡僅為介面外殼）." },

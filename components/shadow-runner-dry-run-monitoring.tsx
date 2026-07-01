@@ -25,11 +25,20 @@ function tone(value: unknown): string {
   return "text-slate-200";
 }
 
+// 前台顯示：布林轉繁中（是／否），數字與 enum / 狀態碼保留原值。
+function zhBool(value: boolean, trueText = "是", falseText = "否"): string {
+  return value ? trueText : falseText;
+}
+function zhDisplay(value: unknown): string {
+  if (typeof value === "boolean") return zhBool(value);
+  return String(value);
+}
+
 function KV({ label, value }: { label: string; value: unknown }) {
   return (
     <div className="flex items-center justify-between gap-2 border-b border-line/40 py-0.5 text-[9px] last:border-0">
       <span className="font-mono text-slate-600">{label}</span>
-      <span className={`break-all font-mono ${tone(value)}`}>{String(value)}</span>
+      <span className={`break-all font-mono ${tone(value)}`}>{zhDisplay(value)}</span>
     </div>
   );
 }
@@ -145,7 +154,7 @@ export function ShadowRunnerDryRunMonitoring() {
                 API Summary
               </p>
               <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 xl:grid-cols-6">
-                <Pill label="ok" value={String(payload.ok)} tone="text-amber" />
+                <Pill label="ok" value={zhBool(payload.ok)} tone="text-amber" />
                 <Pill label="apiContractVersion" value={payload.apiContractVersion} />
                 <Pill label="responseSource" value={payload.responseSource} />
                 <Pill label="sourceMode" value={payload.sourceMode} />
