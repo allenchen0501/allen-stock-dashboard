@@ -282,10 +282,16 @@ export function mapApproved3019LiveQuoteResponse(
 /**
  * Response for a rejected (non-approved) symbol/mode request. No fetch was performed, so
  * requestPerformed=false and every quote value is null. Approved symbols remain ["3019"].
+ * An optional `reasonZh` explains WHY the request was rejected (non-approved symbol vs
+ * manual-mode-required) without fabricating any price.
  */
 export function buildApproved3019RejectionResponse(
-  options: { now?: () => Date } = {},
+  options: { now?: () => Date; reasonZh?: string } = {},
 ): Approved3019LiveQuoteResponse {
   const fetchedAt = (options.now ? options.now() : new Date()).toISOString();
-  return baseResponse("not_available", nullQuote(fetchedAt), false);
+  const resp = baseResponse("not_available", nullQuote(fetchedAt), false);
+  if (options.reasonZh) {
+    return { ...resp, uiStatusZh: options.reasonZh, sourceNoteZh: options.reasonZh };
+  }
+  return resp;
 }

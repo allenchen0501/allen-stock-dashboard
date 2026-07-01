@@ -30,12 +30,25 @@ export async function GET(request: Request) {
   const symbol = searchParams.get('symbol') ?? APPROVED_LIVE_QUOTE_SYMBOL;
   const mode = searchParams.get('mode') ?? 'manual';
 
-  // Reject any non-approved symbol / non-manual mode WITHOUT any fetch.
+  // Reject any non-approved symbol WITHOUT any fetch.
   // approved live-fetch symbols remain exactly ["3019"].
-  if (symbol !== APPROVED_LIVE_QUOTE_SYMBOL || mode !== 'manual') {
-    return NextResponse.json(buildApproved3019RejectionResponse(), {
-      headers: { 'Cache-Control': 'no-store' },
-    });
+  if (symbol !== APPROVED_LIVE_QUOTE_SYMBOL) {
+    return NextResponse.json(
+      buildApproved3019RejectionResponse({
+        reasonZh: '非核准代號：僅核准 3019（亞光），已拒絕且未進行任何真實行情請求。',
+      }),
+      { headers: { 'Cache-Control': 'no-store' } },
+    );
+  }
+
+  // Reject any non-manual mode WITHOUT any fetch (manual refresh only).
+  if (mode !== 'manual') {
+    return NextResponse.json(
+      buildApproved3019RejectionResponse({
+        reasonZh: '僅允許手動刷新（mode=manual），已拒絕且未進行任何真實行情請求。',
+      }),
+      { headers: { 'Cache-Control': 'no-store' } },
+    );
   }
 
   // Approved read-only live fetch for 3019 only (via the approved provider). The provider

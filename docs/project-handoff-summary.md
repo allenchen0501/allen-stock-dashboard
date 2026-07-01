@@ -1,5 +1,26 @@
 # Project Handoff Summary
 
+## 3019 Approved Live Quote Production Smoke Verification Handoff Addendum
+
+- 3019 Approved Live Quote Production Smoke Verification：驗證 commit `36a7220` /
+  deployment `dpl_FWMFvQd4poKngGWHBsiYTecAXdMx` 的 3019 manual-refresh MVP production readiness。
+- manual smoke verification：real-network `npm run smoke:limited-live-fetch:3019` 於 2026-07-01
+  執行結果 **LIVE_FETCH_OK**（price 140、sourceTimestamp 2026-07-01T06:30:00.000Z，皆真實來源值、
+  未假造）；若 source 不可用只回報 fallback／timeout／source_error／not_available，price=null。
+- approved request 3019 + manual only：只有 `symbol=3019&mode=manual` 可 fetch。
+- non-approved symbols rejected without fetch：`symbol=4966` → `requestPerformed=false`、not_available、
+  reason「非核准代號」；`mode=auto`（或任何非 manual）→ `requestPerformed=false`、reason「僅允許手動刷新」。
+- default page load no fetch：War Room 頁面 useEffect 只讀 fixture `/api/war-room`，approved-live-quote
+  僅由「手動刷新 3019」onClick 觸發。
+- fallback / timeout / source_error safe UI：price/sourceTimestamp=null、以「資料不足」安全顯示、UI 不崩潰。
+- 本版最小幅度修正 route rejection mapping（拒絕時回傳可辨識 reasonZh），**未修改 provider runtime**、
+  未擴大股票池；approved live-fetch symbols remain **3019 only**。
+- no /api/portfolio switch、no Supabase、no DB write、no broker、no buy/sell command、no auto order、
+  no production data switch、no process.env、no Yahoo、no new provider、no new TPEx channel。
+- Standalone validator：`npm run test:approved-live-quote-3019-production-smoke`（不納入 safety-chain）；
+  safety-chain remains 22 checks。manual smoke not in safety-chain。
+- 不因 smoke 成功就擴大到 core 5；4966／5347／4979／2455 需個別 owner approval。
+
 ## 3019 Approved Live Quote Manual-Refresh MVP Handoff Addendum
 
 - 3019 Approved Live Quote Manual-Refresh MVP：新增唯讀真實報價路徑
