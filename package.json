@@ -102,7 +102,9 @@
     "test:project-handoff-summary": "node --require ./scripts/register-typescript.cjs ./scripts/validate-project-handoff-summary.ts",
     "test:17-horsepower-scanner": "node --require ./scripts/register-typescript.cjs ./scripts/validate-17-horsepower-scanner.ts",
     "test:watchlist-universe-tier": "node --require ./scripts/register-typescript.cjs ./scripts/validate-watchlist-universe-tier.ts",
-    "test:watchlist-17-horsepower-candidate-matrix": "node --require ./scripts/register-typescript.cjs ./scripts/validate-watchlist-17-horsepower-candidate-matrix.ts"
+    "test:watchlist-17-horsepower-candidate-matrix": "node --require ./scripts/register-typescript.cjs ./scripts/validate-watchlist-17-horsepower-candidate-matrix.ts",
+    "test:technical-terminology": "node --require ./scripts/register-typescript.cjs ./scripts/validate-technical-terminology.ts",
+    "test:kou-san-di-scanner": "node --require ./scripts/register-typescript.cjs ./scripts/validate-kou-san-di-scanner.ts"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.108.2",

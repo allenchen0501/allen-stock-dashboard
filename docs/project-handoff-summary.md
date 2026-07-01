@@ -1,5 +1,17 @@
 # Project Handoff Summary
 
+## Technical Terminology Guard + 柯三弟 Scanner Spec Handoff Addendum
+
+- Production snapshot provided by owner：production commit `b3ff37d`，production deployment `dpl_KVRF26xY6Hw7q2LxHvdhG3QdqB3Z`，production state READY。
+- Safety-chain status：22 checks；本階段不得把 terminology guard 或 柯三弟 scanner validator 加入 safety-chain。
+- Completed scope：Technical Terminology Guard、柯三弟 Scanner Spec、fixture-only contract、standalone validators。
+- Correct terminology：柯三弟；README、handoff summary 與一般文件統一使用正確術語。
+- Scanner samples：柯三弟成立、等待確認、排除；all samples are observation-only and not buy/sell instruction。
+- Standalone validators：`npm run test:technical-terminology`、`npm run test:kou-san-di-scanner`、`npm run test:watchlist-17-horsepower-candidate-matrix`、`npm run test:project-handoff-summary`。
+- Current live-fetch state：approved provider remains `TWSE_TPEX`；approved live-fetch symbols remain exactly `["3019"]`；approved channel remains `tse_3019.tw`。
+- Current phase restrictions：no provider runtime change、no live fetch、no Yahoo、no new TPEx channel、no API route、no `/api/portfolio` switch、no Supabase runtime、no env key read、no DB write、no broker API、no buy/sell command、no order command、no auto order、no production trading ready。
+- Future allowed direction：future integration with Watchlist 17 Horsepower Candidate Matrix、走多回檔甜蜜點、risk/reward model, scanner UI, and manual user decision after owner approval, staged validation, and manual sign-off。
+
 ## Watchlist 17 Horsepower Candidate Matrix Handoff Addendum
 
 - Production snapshot provided by owner：production commit `33aabaf`，production deployment `dpl_EkLsiNE6ChJ92ECc8kuWxEKcXfgv`，production state READY。

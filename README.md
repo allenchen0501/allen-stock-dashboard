@@ -1,5 +1,20 @@
 # Allen Stock Dashboard
 
+## 柯三弟 Technical Scanner
+
+柯三弟 Technical Scanner is a fixture-only technical-analysis specification for future low-risk bullish pullback screening. It uses the correct Traditional Chinese term 柯三弟, rejects common terminology typos through a standalone guard, does not fetch real data, does not switch production data, and does not generate buy/sell commands.
+
+- 文件：[docs/technical-scanner-kou-san-di.md](docs/technical-scanner-kou-san-di.md)
+- Contract：[use-cases/war-room/build-kou-san-di-scanner-contract.ts](use-cases/war-room/build-kou-san-di-scanner-contract.ts)
+- Terminology guard：`npm run test:technical-terminology`
+- Scanner validator：`npm run test:kou-san-di-scanner`
+- Correct term：柯三弟
+- Samples cover：柯三弟成立、等待確認、排除
+- Approved live-fetch symbols remain exactly `["3019"]`; approved channel remains `tse_3019.tw`.
+- Fixture-only；不做 real quote validation、不切 production data、不產生買賣或下單指令。
+- Future integration may include Watchlist 17 Horsepower Candidate Matrix、走多回檔甜蜜點、risk/reward model, scanner UI, and manual user decision.
+- Both validators remain standalone and are not part of `test:safety-chain`; safety-chain remains 22 checks.
+
 ## Watchlist 17 Horsepower Candidate Matrix
 
 Watchlist 17 Horsepower Candidate Matrix is a fixture-only integration between watchlist universe metadata and the 17 Horsepower scanner. It ranks candidates for observation only, does not fetch real data, does not switch production data, and does not generate buy/sell commands.
