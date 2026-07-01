@@ -1,5 +1,25 @@
 # Project Handoff Summary
 
+## Core 5 Read-Only Expansion Approval Spec Handoff Addendum
+
+- Core 5 Read-Only Expansion Approval Spec：fixture-only governance spec，定義核心 5 檔
+  （3019 亞光、4966 譜瑞、5347 世界、4979 華星光、2455 全新）唯讀擴充前的 owner approval 流程與
+  per-symbol evidence gates。
+- **本版不新增任何 live fetch symbol**：只有 3019 已核准且在 approvedLiveFetchSymbols；
+  4966／5347／4979／2455 皆 `pending_owner_approval`，**不得**加入 approvedLiveFetchSymbols。
+- 每一檔進入 approved set 前必須完成：owner approval → channel verification（tse_/otc_ 前綴逐檔驗證）
+  → per-symbol standalone validator（不納入 safety-chain）→ manual-refresh-only + read-only →
+  non-approved / missing-mode / auto-mode rejection cases → manual smoke evidence → production
+  endpoint evidence；缺一不可。
+- candidate symbols / proposed channels 皆 **spec-only**，未進入 runtime：provider／route／MVP contract／
+  dashboard 皆不含 4966／5347／4979／2455，runtime approved set 仍只有 3019 / tse_3019.tw。
+- fixture-only、deterministic、no network、no Supabase、no env、no DB write、no API route、no broker、
+  no buy/sell command、no auto order、no production data switch、no new provider、no Yahoo、
+  no new runtime channel、not production trading ready。
+- Standalone validator：`npm run test:core-5-expansion-approval-spec`（不納入 safety-chain）；
+  safety-chain remains 22 checks。
+- 不因 3019 成功就直接擴大到 core 5；每檔擴充仍需 owner approval + 分階段驗證 + manual sign-off。
+
 ## 3019 Post-Deployment Explicit Manual Mode Verification Handoff Addendum
 
 - 3019 Post-Deployment Explicit Manual Mode Verification：針對已部署的 `ec31db1`
