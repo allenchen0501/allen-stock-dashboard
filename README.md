@@ -1,15 +1,15 @@
 # Allen Stock Dashboard
 
-## 柯三弟 Technical Scanner
+## 扣三低 Technical Scanner
 
-柯三弟 Technical Scanner is a fixture-only technical-analysis specification for future low-risk bullish pullback screening. It uses the correct Traditional Chinese term 柯三弟, rejects common terminology typos through a standalone guard, does not fetch real data, does not switch production data, and does not generate buy/sell commands.
+扣三低 Technical Scanner is a fixture-only technical-analysis specification for future low-risk bullish pullback screening. It uses the correct Traditional Chinese term 扣三低, rejects common terminology typos through a standalone guard, does not fetch real data, does not switch production data, and does not generate buy/sell commands.
 
 - 文件：[docs/technical-scanner-kou-san-di.md](docs/technical-scanner-kou-san-di.md)
 - Contract：[use-cases/war-room/build-kou-san-di-scanner-contract.ts](use-cases/war-room/build-kou-san-di-scanner-contract.ts)
 - Terminology guard：`npm run test:technical-terminology`
 - Scanner validator：`npm run test:kou-san-di-scanner`
-- Correct term：柯三弟
-- Samples cover：柯三弟成立、等待確認、排除
+- Correct term：扣三低
+- Samples cover：扣三低通過、等待確認、排除
 - Approved live-fetch symbols remain exactly `["3019"]`; approved channel remains `tse_3019.tw`.
 - Fixture-only；不做 real quote validation、不切 production data、不產生買賣或下單指令。
 - Future integration may include Watchlist 17 Horsepower Candidate Matrix、走多回檔甜蜜點、risk/reward model, scanner UI, and manual user decision.
@@ -26,7 +26,7 @@ Watchlist 17 Horsepower Candidate Matrix is a fixture-only integration between w
 - Approved live-fetch symbols remain exactly `["3019"]`; approved channel remains `tse_3019.tw`.
 - Candidate tags：主升段、逢低候選、觀察、排除。
 - Ranking is observation-only and is not a buy/sell instruction.
-- Future integration may include 柯三弟、走多回檔甜蜜點、risk/reward model, scanner UI, and manual user decision.
+- Future integration may include 扣三低、走多回檔甜蜜點、risk/reward model, scanner UI, and manual user decision.
 - The validator remains standalone and is not part of `test:safety-chain`; safety-chain remains 22 checks.
 
 ## Watchlist Universe Tier Spec
@@ -41,7 +41,7 @@ Watchlist Universe Tier defines fixture-only stock metadata for core and extende
 - Approved live-fetch symbols remain exactly `["3019"]`; approved channel remains `tse_3019.tw`.
 - Universe metadata is not live fetch approval.
 - Scanner Universe Plan remains disabled now: `enabledNow=false`, `fullMarketScanEnabled=false`.
-- Future scanner references may include 17 Horsepower、柯三弟、走多回檔甜蜜點、candidate ranking、risk/reward reference, and manual user decision.
+- Future scanner references may include 17 Horsepower、扣三低、走多回檔甜蜜點、candidate ranking、risk/reward reference, and manual user decision.
 - The validator remains standalone and is not part of `test:safety-chain`; safety-chain remains 22 checks.
 
 以 Next.js、TypeScript 與 Tailwind CSS 製作的個人台股戰情室，包含市場燈號、持股戰情、V8.5 核心評分、風報比、主升段候選與今日禁碰股。
@@ -52,7 +52,7 @@ Every completed version must include a Project Handoff Summary in the final repo
 
 Real quote validation, multi-symbol watchlists, and technical scanners are future allowed directions after owner approval, staged validation, and manual sign-off; they are not the same as auto trading or automatic order execution.
 
-17 Horsepower Technical Scanner is a fixture-only technical-analysis specification for future multi-symbol candidate screening. It does not fetch real data, does not switch production data, and does not generate buy/sell commands.（17 馬力多頭強度模型：以 17 條參考線計分 0～17 判斷多頭強度，供未來扣三低／走多逢低候選股／主升段觀察篩選；本版僅 spec / fixture / standalone validator，不抓真資料、不做全市場掃描、不產生買賣指令、不切正式行情、不納入 safety-chain。見 [docs/technical-scanner-17-horsepower.md](docs/technical-scanner-17-horsepower.md)、`use-cases/war-room/build-17-horsepower-scanner-contract.ts`；`npm run test:17-horsepower-scanner`。17 馬力是多頭強度評分器，不是單獨買進訊號、不是交易指令、不是自動下單。）（真實行情驗證、多檔 watchlist、技術掃描器屬**未來允許方向**，需 owner approval + 分階段驗證 + manual sign-off，與自動交易／自動下單是兩回事。）「紅線」用語分為 **Permanent Red Lines / 永久紅線**（不可跨越：不替使用者下單、不自動交易、不自動執行買賣、未經 owner approval 不擴大正式 live fetch 股票池／不切正式資料／不接 broker API／不切 production data switch）與 **Current Phase Restrictions / 目前階段性限制**（暫時、未來可經核准解除）。
+Allen 17-Line Power Score v1.1 upgrades the fixture-only 17 Horsepower scanner with powerRatio, weightedPower, group scores, volume confirmation, overheat filtering, dataStatus, and War Room read-model/UI integration. It is a multi-timeframe trend-strength screener, not a complete trading system, not a buy/sell instruction, and not an auto-trading feature.（17 馬力多頭強度模型 v1.1：保留原始 `horsepowerScore` 0～17，新增 `powerRatio`、`weightedPower`（0～100，group 加權 shortCost 25 / dailyMA 30 / weekly 25 / monthly 20）、group scores、`nearestSupport`/`nearestPressure`、量能確認（volumeRatio20/volumePercentile60）、過熱濾網（bias20/bias20Percentile120）、`dataStatus`（confirmed_close／intraday_estimated 顯示為「已確認收盤／盤中估算」）、`powerRating`、`effectiveAttack`、`strongButOverheated`，並整合進 War Room read model 與 UI「17線馬力分數」區塊（標示非買賣建議／非進場訊號）。與既有 Technical + Risk Reward Strategy Engine、Allen Score 100、Position Strategy Plan 並存、不覆蓋。仍 fixture-only、deterministic、不抓真資料、不切正式行情、不產生買賣指令、不納入 safety-chain。見 [docs/technical-scanner-17-horsepower.md](docs/technical-scanner-17-horsepower.md)；`npm run test:17-horsepower-scanner`。此模型不是完整交易系統、不是買點、不是買賣指令、不是自動交易，且不能宣稱為江江原版公式；週/月 turn 線僅為價格動能參考線。）（真實行情驗證、多檔 watchlist、技術掃描器屬**未來允許方向**，需 owner approval + 分階段驗證 + manual sign-off，與自動交易／自動下單是兩回事。）「紅線」用語分為 **Permanent Red Lines / 永久紅線**（不可跨越：不替使用者下單、不自動交易、不自動執行買賣、未經 owner approval 不擴大正式 live fetch 股票池／不切正式資料／不接 broker API／不切 production data switch）與 **Current Phase Restrictions / 目前階段性限制**（暫時、未來可經核准解除）。
 
 ## UI 語言規則（Traditional Chinese UI）
 

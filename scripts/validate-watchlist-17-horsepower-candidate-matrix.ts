@@ -229,7 +229,7 @@ pushCheck("35_doc_ranking_not_instruction", [
   { ok: docHas("ranking is not buy/sell instruction"), pass: "doc states ranking is not buy/sell instruction.", fail: "doc must state ranking is not buy/sell instruction." },
 ]);
 pushCheck("36_doc_ko_san_di", [
-  { ok: docHas("柯三弟"), pass: "doc includes 柯三弟.", fail: "doc must include 柯三弟." },
+  { ok: docHas("扣三低"), pass: "doc includes 扣三低.", fail: "doc must include 扣三低." },
 ]);
 pushCheck("37_doc_pullback_sweet_spot", [
   { ok: docHas("走多回檔甜蜜點"), pass: "doc includes 走多回檔甜蜜點.", fail: "doc must include 走多回檔甜蜜點." },

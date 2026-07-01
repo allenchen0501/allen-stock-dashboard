@@ -28,6 +28,25 @@ export type HorsepowerLineName =
 export type HorsepowerLevel = "強多主升段" | "多方轉強" | "多空交戰" | "偏弱" | "空方";
 export type CandidateTag = "主升段" | "逢低候選" | "觀察" | "排除";
 
+// v1.1 — Allen 17-Line Power Score.
+export type PowerRating =
+  | "弱勢空方" | "偏空整理" | "初步翻多" | "轉強觀察" | "多頭攻擊" | "多方全勝";
+export type DataStatus = "confirmed_close" | "intraday_estimated";
+
+/** Per-group pass / available / ratio. If available === 0, ratio is 0 (資料不足). */
+export interface HorsepowerGroupScore {
+  passed: number;
+  available: number;
+  ratio: number;
+}
+
+export interface HorsepowerGroupWeights {
+  shortCost: 25;
+  dailyMA: 30;
+  weekly: 25;
+  monthly: 20;
+}
+
 /** One reference line. value === null means the line is unavailable (e.g. 60-min K missing). */
 export interface HorsepowerLine {
   name: HorsepowerLineName;
@@ -57,6 +76,12 @@ export interface HorsepowerSampleInput {
   lines: HorsepowerLine[];
   pullback: HorsepowerPullbackInputs;
   koSanDi: KoSanDiInputs;
+  // v1.1 observation inputs (fixture-only).
+  volumeRatio20: number; // 當日量 / 20 日均量
+  volumePercentile60: number; // 60 日量能百分位 0～1
+  bias20: number; // 對 MA20 乖離率（%）
+  bias20Percentile120: number; // 120 日內乖離百分位 0～1
+  dataStatus: DataStatus;
 }
 
 export interface HorsepowerStock {
@@ -80,16 +105,43 @@ export interface HorsepowerStock {
   riskNote: string;
   candidateTag: CandidateTag;
   lines: HorsepowerLine[];
+
+  // v1.1 — power ratio + weighted power + group scores + observation filters.
+  maxAvailable: number;
+  powerRatio: number;
+  previousPowerRatio: number;
+  weightedPower: number; // 0～100
+  shortCostScore: HorsepowerGroupScore;
+  dailyMAScore: HorsepowerGroupScore;
+  weeklyScore: HorsepowerGroupScore;
+  monthlyScore: HorsepowerGroupScore;
+  nearestSupport: number | null;
+  nearestPressure: number | null;
+  volumeRatio20: number;
+  volumePercentile60: number;
+  isVolumeConfirmed: boolean;
+  bias20: number;
+  bias20Percentile120: number;
+  isOverheated: boolean;
+  dataStatus: DataStatus;
+  powerRating: PowerRating;
+  effectiveAttack: boolean;
+  strongButOverheated: boolean;
+  notTradeAdvice: true;
+  notEntrySignal: true;
 }
 
 export interface Scanner17HorsepowerContract {
   contractVersion: "SCANNER_17_HORSEPOWER";
+  modelVersion: "V1_1";
+  modelName: "Allen 17-Line Power Score v1.1";
   mode: "SPEC_FIXTURE_ONLY_NO_NETWORK";
   generatedAt: string;
   decision: "FIXTURE_ONLY_SPEC";
 
   scannerType: "BULLISH_STRENGTH_SCORER";
   totalLines: 17;
+  groupWeights: HorsepowerGroupWeights;
 
   // Positioning — this model is NOT a trade signal / command / order / switch.
   isBuySignal: false;
@@ -133,6 +185,27 @@ function levelFor(score: number): HorsepowerLevel {
   return "空方";
 }
 
+const GROUP_WEIGHTS: HorsepowerGroupWeights = { shortCost: 25, dailyMA: 30, weekly: 25, monthly: 20 };
+
+/** powerRating 由 powerRatio 判讀（依序）。 */
+function powerRatingFor(powerRatio: number): PowerRating {
+  if (powerRatio <= 5 / 17) return "弱勢空方";
+  if (powerRatio <= 8 / 17) return "偏空整理";
+  if (powerRatio <= 10 / 17) return "初步翻多";
+  if (powerRatio <= 12 / 17) return "轉強觀察";
+  if (powerRatio <= 16 / 17) return "多頭攻擊";
+  return "多方全勝";
+}
+
+/** 單組 group score：passed / available / ratio（available=0 時 ratio=0）。 */
+function groupScore(lines: HorsepowerLine[], group: HorsepowerGroup, close: number): HorsepowerGroupScore {
+  const groupLines = lines.filter((l) => l.group === group);
+  const available = groupLines.filter((l) => l.value !== null).length;
+  const passed = groupLines.filter((l) => l.value !== null && close >= (l.value as number)).length;
+  const ratio = available > 0 ? passed / available : 0;
+  return { passed, available, ratio };
+}
+
 /** Deterministic derivation of one stock from its fixture inputs. */
 function deriveStock(input: HorsepowerSampleInput): HorsepowerStock {
   const { close, lines } = input;
@@ -146,16 +219,52 @@ function deriveStock(input: HorsepowerSampleInput): HorsepowerStock {
   const horsepowerAcceleration = horsepowerChange;
   const horsepowerLevel = levelFor(horsepowerScore);
 
+  // v1.1 — ratio + weighted power over group ratios.
+  const maxAvailable = availableLines;
+  const powerRatio = maxAvailable > 0 ? horsepowerScore / maxAvailable : 0;
+  const previousPowerRatio = maxAvailable > 0 ? previousHorsepowerScore / maxAvailable : 0;
+  const shortCostScore = groupScore(lines, "shortCost", close);
+  const dailyMAScore = groupScore(lines, "dailyMA", close);
+  const weeklyScore = groupScore(lines, "weekly", close);
+  const monthlyScore = groupScore(lines, "monthly", close);
+  const weightedPower =
+    shortCostScore.ratio * GROUP_WEIGHTS.shortCost +
+    dailyMAScore.ratio * GROUP_WEIGHTS.dailyMA +
+    weeklyScore.ratio * GROUP_WEIGHTS.weekly +
+    monthlyScore.ratio * GROUP_WEIGHTS.monthly;
+
+  // nearest support = 收盤下方最近的可用線；nearest pressure = 收盤上方最近的可用線。
+  const values = lines.filter((l) => l.value !== null).map((l) => l.value as number);
+  const below = values.filter((v) => v <= close);
+  const above = values.filter((v) => v > close);
+  const nearestSupport = below.length > 0 ? Math.max(...below) : null;
+  const nearestPressure = above.length > 0 ? Math.min(...above) : null;
+
+  // 量能確認與過熱濾網（觀察條件，非買賣指令）。
+  const isVolumeConfirmed = input.volumeRatio20 >= 1.2 || input.volumePercentile60 >= 0.7;
+  const isOverheated = input.bias20Percentile120 >= 0.9;
+
+  const groupInsufficient =
+    shortCostScore.available === 0 ||
+    dailyMAScore.available === 0 ||
+    weeklyScore.available === 0 ||
+    monthlyScore.available === 0;
   const reliabilityNote =
-    unavailableLines > 0
-      ? `有 ${unavailableLines} 條線資料缺失（例如 60 分 K 缺失時，短線主力成本 5 匹標示為 unavailable 不可用），分數僅供參考，不可默默算作通過。`
+    unavailableLines > 0 || groupInsufficient
+      ? `有 ${unavailableLines} 條線資料缺失（例如 60 分 K 缺失時，短線成本群標示為 unavailable 不可用；該組 ratio 記為 0），分數與加權僅供參考，不可默默算作通過。`
       : "";
 
   const firstBullTurn = previousHorsepowerScore <= 11 && horsepowerScore >= 13;
   const strongBullConfirm = horsepowerScore >= 15;
-  // 單日下降 >= 3，或由 >=11 跌破 11。
-  const deteriorationAlert = horsepowerChange <= -3 || (previousHorsepowerScore >= 11 && horsepowerScore < 11);
+  // v1.1 — 單日下降 >= 3，或由 >=11/17 跌破 11/17（比例輔助判斷）。
+  const deteriorationAlert =
+    horsepowerChange <= -3 || (previousPowerRatio >= 11 / 17 && powerRatio < 11 / 17);
   const bearTurn = horsepowerScore <= 8;
+
+  const powerRating = powerRatingFor(powerRatio);
+  const effectiveAttack =
+    previousPowerRatio <= 12 / 17 && powerRatio >= 13 / 17 && isVolumeConfirmed && !isOverheated;
+  const strongButOverheated = powerRatio >= 13 / 17 && isOverheated;
 
   const pullbackSweetSpot =
     horsepowerScore >= 13 &&
@@ -202,6 +311,29 @@ function deriveStock(input: HorsepowerSampleInput): HorsepowerStock {
     riskNote,
     candidateTag,
     lines,
+
+    maxAvailable,
+    powerRatio,
+    previousPowerRatio,
+    weightedPower,
+    shortCostScore,
+    dailyMAScore,
+    weeklyScore,
+    monthlyScore,
+    nearestSupport,
+    nearestPressure,
+    volumeRatio20: input.volumeRatio20,
+    volumePercentile60: input.volumePercentile60,
+    isVolumeConfirmed,
+    bias20: input.bias20,
+    bias20Percentile120: input.bias20Percentile120,
+    isOverheated,
+    dataStatus: input.dataStatus,
+    powerRating,
+    effectiveAttack,
+    strongButOverheated,
+    notTradeAdvice: true,
+    notEntrySignal: true,
   };
 }
 
@@ -232,6 +364,7 @@ const SAMPLE_INPUTS: HorsepowerSampleInput[] = [
     ],
     pullback: { closeNearSupport: false, volumeContraction: false, riskRewardAcceptable: false },
     koSanDi: { recentThreeLowsRising: true, pullbackVolumeContracts: false, closeRecoversShortMA: true, kdjJTurnsUp: true, macdHistogramImproves: true },
+    volumeRatio20: 1.5, volumePercentile60: 0.82, bias20: 15, bias20Percentile120: 0.95, dataStatus: "confirmed_close",
   },
   // 2) 多方轉強逢低候選 — close above 14 lines / below 3 → score 14; pullback sweet-spot.
   {
@@ -250,6 +383,7 @@ const SAMPLE_INPUTS: HorsepowerSampleInput[] = [
     ],
     pullback: { closeNearSupport: true, volumeContraction: true, riskRewardAcceptable: true },
     koSanDi: { recentThreeLowsRising: true, pullbackVolumeContracts: true, closeRecoversShortMA: true, kdjJTurnsUp: true, macdHistogramImproves: true },
+    volumeRatio20: 1.3, volumePercentile60: 0.55, bias20: 6, bias20Percentile120: 0.6, dataStatus: "intraday_estimated",
   },
   // 3) 轉弱排除 — 60-min missing → shortCost 5 匹 unavailable; score 8 of 12; deterioration.
   {
@@ -268,6 +402,7 @@ const SAMPLE_INPUTS: HorsepowerSampleInput[] = [
     ],
     pullback: { closeNearSupport: false, volumeContraction: false, riskRewardAcceptable: false },
     koSanDi: { recentThreeLowsRising: false, pullbackVolumeContracts: false, closeRecoversShortMA: false, kdjJTurnsUp: false, macdHistogramImproves: false },
+    volumeRatio20: 0.8, volumePercentile60: 0.3, bias20: -5, bias20Percentile120: 0.2, dataStatus: "confirmed_close",
   },
 ];
 
@@ -283,12 +418,15 @@ export function build17HorsepowerScannerContract(
 
   return {
     contractVersion: "SCANNER_17_HORSEPOWER",
+    modelVersion: "V1_1",
+    modelName: "Allen 17-Line Power Score v1.1",
     mode: "SPEC_FIXTURE_ONLY_NO_NETWORK",
     generatedAt,
     decision: "FIXTURE_ONLY_SPEC",
 
     scannerType: "BULLISH_STRENGTH_SCORER",
     totalLines: 17,
+    groupWeights: GROUP_WEIGHTS,
 
     isBuySignal: false,
     isTradeCommand: false,

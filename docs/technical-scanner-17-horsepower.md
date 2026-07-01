@@ -1,6 +1,33 @@
 # 17 Horsepower Technical Scanner（17 馬力多頭強度模型）
 
-本版**只做 spec / fixture / validator**：不抓真資料、不做全市場掃描、不產生買賣指令。
+## Allen 17-Line Power Score v1.1（定位）
+
+**Allen 17-Line Power Score v1.1** 是「**多週期趨勢強弱篩選器**」（multi-timeframe
+trend-strength screener），用來衡量多頭強度並提供未來候選股觀察。定位重點：
+
+- 它**不是完整交易系統**（not a complete trading system）。
+- 它**不是買點**、**不是買賣指令**（not a buy point, not a buy/sell instruction）。
+- 它**不是自動交易**（not auto trading）。
+- **不能宣稱為江江原版公式**（this is an internal fixture model, not the Jiang Jiang original formula）。
+- 週線 / 月線的 turn 線只能稱為「**價格動能參考線**」（price-momentum reference line），
+  **不可寫成均線斜率保證**（not a moving-average-slope guarantee）。
+- **量能確認與過熱濾網是觀察條件，不是買賣指令**（isVolumeConfirmed / isOverheated；
+  volume confirmation and overheat filter are observation-only, not buy/sell instructions）。
+- 它與既有的 Technical + Risk Reward Strategy Engine、Allen Score 100、Position Strategy Plan
+  **並存**，不覆蓋、不取代它們。
+- 所有**使用者可見 UI 必須繁體中文**。
+
+v1.1 在原始 `horsepowerScore`（0～17）之上，新增 `powerRatio`、`weightedPower`（0～100）、
+group scores（短線成本／日線／週線／月線）、`nearestSupport` / `nearestPressure`、
+量能確認（volumeRatio20 / volumePercentile60）、過熱濾網（bias20 / bias20Percentile120）、
+`dataStatus`（confirmed_close / intraday_estimated）、`powerRating`、`effectiveAttack`、
+`strongButOverheated`，並整合進 War Room read model / UI。仍為 fixture-only、deterministic、
+no network、no Supabase、no env、no DB write、no API route、no broker API、no buy/sell command、
+no auto order、no production data switch。
+
+---
+
+本版**只做 spec / fixture / validator + War Room fixture-only 整合**：不抓真資料、不做全市場掃描、不產生買賣指令。
 
 ## Purpose（用途）
 

@@ -1,13 +1,13 @@
 /**
  * Kou San Di Scanner Contract.
  *
- * Fixture-only technical-analysis specification for the 柯三弟 scanner. This is
+ * Fixture-only technical-analysis specification for the 扣三低 scanner. This is
  * observation-only: no real quote validation, no live fetch, no production data switch,
  * no buy/sell command, and no order command.
  */
 
 export type KouSanDiMaWindow = "MA5" | "MA10" | "MA20";
-export type KouSanDiCandidateTag = "柯三弟成立" | "等待確認" | "排除";
+export type KouSanDiCandidateTag = "扣三低通過" | "等待確認" | "排除";
 
 export interface KouSanDiDeductionWindow {
   ma: KouSanDiMaWindow;
@@ -43,8 +43,7 @@ export interface KouSanDiScannerContract {
   mode: "FIXTURE_ONLY_NO_NETWORK";
   decision: "SPEC_ONLY_NOT_CONNECTED";
   terminology: {
-    correctTerm: "柯三弟";
-    forbiddenTerms: readonly ["扣三弟", "柯三地", "柯三低"];
+    correctTerm: "扣三低";
   };
   liveFetchBoundary: {
     approvedProvider: "TWSE_TPEX";
@@ -108,7 +107,7 @@ function deriveSample(input: Omit<KouSanDiScannerSample, "maDeductionLowCount" |
     !input.bearTurn;
 
   let candidateTag: KouSanDiCandidateTag = "等待確認";
-  if (basePass) candidateTag = "柯三弟成立";
+  if (basePass) candidateTag = "扣三低通過";
   else if (!maDeductionLowPass || input.deteriorationAlert || input.bearTurn || input.horsepowerScore <= 9) candidateTag = "排除";
 
   return {
@@ -195,8 +194,7 @@ export function buildKouSanDiScannerContract(
     mode: "FIXTURE_ONLY_NO_NETWORK",
     decision: "SPEC_ONLY_NOT_CONNECTED",
     terminology: {
-      correctTerm: "柯三弟",
-      forbiddenTerms: ["扣三弟", "柯三地", "柯三低"],
+      correctTerm: "扣三低",
     },
     liveFetchBoundary: {
       approvedProvider: "TWSE_TPEX",
@@ -207,7 +205,7 @@ export function buildKouSanDiScannerContract(
     },
     samples,
     summary: {
-      passCount: samples.filter((item) => item.candidateTag === "柯三弟成立").length,
+      passCount: samples.filter((item) => item.candidateTag === "扣三低通過").length,
       waitingCount: samples.filter((item) => item.candidateTag === "等待確認").length,
       excludedCount: samples.filter((item) => item.candidateTag === "排除").length,
     },
@@ -225,7 +223,7 @@ export function buildKouSanDiScannerContract(
     productionTradingReady: false,
     safetyLabels: [
       "Technical Terminology Guard",
-      "柯三弟 scanner spec",
+      "扣三低 scanner spec",
       "fixture-only technical scanner",
       "approved live-fetch symbols remain 3019 only",
       "not buy/sell instruction",

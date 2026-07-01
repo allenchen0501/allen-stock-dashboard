@@ -3,7 +3,7 @@
 ## Purpose
 
 - 建立 Allen Stock Dashboard 的核心與延伸觀察名單 universe。
-- 提供未來 17 Horsepower、柯三弟、走多回檔甜蜜點等 scanner 可使用的 fixture-only metadata。
+- 提供未來 17 Horsepower、扣三低、走多回檔甜蜜點等 scanner 可使用的 fixture-only metadata。
 - 本文件只定義股票 metadata 與研究分層。
 - 不新增 live fetch symbol。
 - 不啟用 live fetch。
@@ -47,7 +47,7 @@
 - industry theme scanner
 - full-market scanner
 - 17 Horsepower scanner
-- 柯三弟 scanner
+- 扣三低 scanner
 - 走多回檔甜蜜點 scanner
 - candidate ranking
 - risk/reward reference
@@ -93,7 +93,7 @@ Scanner Universe Plan 目前只是一份研究路線圖；`enabledNow=false`，`
 本 universe 可作為以下功能的研究輸入：
 
 - 17 Horsepower Technical Scanner
-- 柯三弟 scanner
+- 扣三低 scanner
 - 走多回檔甜蜜點 scanner
 - candidate ranking
 - risk/reward reference

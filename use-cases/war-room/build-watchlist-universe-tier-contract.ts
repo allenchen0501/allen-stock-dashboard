@@ -322,13 +322,13 @@ export function buildWatchlistUniverseTierContract(
     scannerUniversePlan: {
       enabledNow: false,
       fullMarketScanEnabled: false,
-      descriptionZh: "目前只建立 core / extended universe metadata；未來可供 17 Horsepower、柯三弟、走多回檔甜蜜點與候選排序研究使用。",
+      descriptionZh: "目前只建立 core / extended universe metadata；未來可供 17 Horsepower、扣三低、走多回檔甜蜜點與候選排序研究使用。",
       futureStages: [
         "core + extended watchlist scanner",
         "industry theme scanner",
         "full-market scanner after explicit owner approval",
         "17 Horsepower scanner",
-        "柯三弟 scanner",
+        "扣三低 scanner",
         "走多回檔甜蜜點 scanner",
         "candidate ranking",
         "risk/reward reference",

@@ -26,6 +26,23 @@ import type { ResearchTopPick } from "../research/research-center-contract";
 import type { TechnicalRiskRewardCandidate } from "../technical-strategy/technical-risk-reward-contract";
 import type { IntradayAlertPayload } from "../intraday-alert/intraday-alert-contract";
 import type { PositionStrategyPlan } from "../position-strategy/position-strategy-plan-contract";
+import type { HorsepowerStock } from "./build-17-horsepower-scanner-contract";
+
+/**
+ * Read-only surface of the fixture-only Allen 17-Line Power Score v1.1 scanner.
+ * The War Room only SURFACES the scanner output — it is a multi-timeframe trend-
+ * strength screener, not a trade signal / buy point / order command.
+ */
+export interface WarRoomHorsepowerScannerSummary {
+  fixtureVersion: "V1_1";
+  modelName: "Allen 17-Line Power Score v1.1";
+  totalStocks: number;
+  effectiveAttackCount: number;
+  strongButOverheatedCount: number;
+  overheatedCount: number;
+  notTradeAdvice: true;
+  notEntrySignal: true;
+}
 
 export type WarRoomMode =
   | "PREMARKET"
@@ -204,6 +221,11 @@ export interface WarRoomIntelligenceSnapshot {
   positionNoTouchPlans: PositionStrategyPlan[];
   positionDataInsufficientPlans: PositionStrategyPlan[];
   positionStrategyFixtureVersion: "V26";
+
+  // Allen 17-Line Power Score v1.1 fixture-only scanner (read-only surface).
+  horsepowerScannerItems: HorsepowerStock[];
+  horsepowerScannerSummary: WarRoomHorsepowerScannerSummary;
+  horsepowerScannerFixtureVersion: "V1_1";
 
   // Provenance + roll-up.
   sourceSummary: WarRoomSourceSummary[];

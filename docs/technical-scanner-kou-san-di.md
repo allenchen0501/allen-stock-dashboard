@@ -1,8 +1,8 @@
-# 柯三弟 Technical Scanner
+# 扣三低 Technical Scanner
 
 ## Purpose
 
-- 建立「柯三弟」技術分析 scanner 的 fixture-only 規格。
+- 建立「扣三低」技術分析 scanner 的 fixture-only 規格。
 - 作為 future technical scanner 的低風險多頭回檔篩選參考。
 - 定義 MA 扣抵低檔層、結構確認層與 17 Horsepower filter 的組合方式。
 - 本版本不讀取真實行情、不做 real quote validation、不執行 live fetch。
@@ -10,9 +10,9 @@
 
 ## Terminology
 
-本專案統一使用正確術語：柯三弟。
+本專案統一使用正確術語：扣三低。
 
-- 正確術語：柯三弟。
+- 正確術語：扣三低。
 - 常見錯字不得出現在 README、handoff summary、UI 文案或一般文件中。
 - 程式碼中的 technical keys 可以使用 English，例如 `kouSanDiPass`。
 
@@ -20,7 +20,7 @@
 
 這是 fixture-only working definition，未來仍需要 Allen owner confirmation 與 staged validation 才能進入 runtime。
 
-柯三弟 working definition 包含兩層：
+扣三低 working definition 包含兩層：
 
 ### MA Deduction Low Layer
 
@@ -43,7 +43,7 @@
 - MACD histogram improves
 - 17 Horsepower score remains >= 13
 
-MA Deduction Low Layer 是柯三弟的扣抵條件；Structure Confirmation Layer 是避免單一條件誤判的確認層。
+MA Deduction Low Layer 是扣三低的扣抵條件；Structure Confirmation Layer 是避免單一條件誤判的確認層。
 
 ## Output Fields
 
@@ -63,13 +63,13 @@ MA Deduction Low Layer 是柯三弟的扣抵條件；Structure Confirmation Laye
 - horsepowerScore
 - horsepowerFilterPass
 - kouSanDiPass
-- candidateTag：柯三弟成立 / 等待確認 / 排除
+- candidateTag：扣三低通過 / 等待確認 / 排除
 - riskNoteZh
 - actionLabelZh
 
 ## Candidate Tag Rules
 
-### 柯三弟成立
+### 扣三低通過
 
 - maDeductionLowPass = true
 - threeRisingLowsPass = true
@@ -97,8 +97,8 @@ MA Deduction Low Layer 是柯三弟的扣抵條件；Structure Confirmation Laye
 
 - Watchlist 17 Horsepower Candidate Matrix
 - 主升段 / 逢低候選 / 觀察 / 排除
-- 柯三弟只作為候選觀察條件之一
-- 柯三弟 is not buy/sell instruction
+- 扣三低只作為候選觀察條件之一
+- 扣三低 is not buy/sell instruction
 
 ## UI Language Rule
 

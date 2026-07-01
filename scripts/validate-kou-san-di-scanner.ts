@@ -136,10 +136,10 @@ pushCheck("14_no_production_switch", [
   { ok: scannerA.productionDataSwitched === false && scannerA.productionTradingReady === false && scannerA.liveFetchBoundary.productionDataSwitchAllowed === false, pass: "no production data switch.", fail: "contract must not switch production data." },
 ]);
 pushCheck("15_terminology_correct", [
-  { ok: scannerA.terminology.correctTerm === "柯三弟", pass: "correctTerm is 柯三弟.", fail: "correctTerm must be 柯三弟." },
+  { ok: scannerA.terminology.correctTerm === "扣三低", pass: "correctTerm is 扣三低.", fail: "correctTerm must be 扣三低." },
 ]);
-pushCheck("16_forbidden_terms_output", [
-  { ok: arraysEqual(scannerA.terminology.forbiddenTerms, ["扣三弟", "柯三地", "柯三低"]), pass: "forbiddenTerms include the expected typo list.", fail: "forbiddenTerms must include 扣三弟 / 柯三地 / 柯三低." },
+pushCheck("16_terminology_no_typo_list", [
+  { ok: (scannerA.terminology as unknown as Record<string, unknown>).forbiddenTerms === undefined, pass: "terminology output no longer exposes a typo list (typos live only in the terminology guard).", fail: "terminology output must not expose a typo list." },
 ]);
 pushCheck("17_approved_symbols_exact", [
   { ok: arraysEqual(scannerA.liveFetchBoundary.approvedLiveFetchSymbols, ["3019"]), pass: "approvedLiveFetchSymbols exactly [3019].", fail: "approvedLiveFetchSymbols must be exactly [3019]." },
@@ -151,7 +151,7 @@ pushCheck("19_samples_min_three", [
   { ok: samples.length >= 3, pass: "samples length is at least 3.", fail: "samples length must be at least 3." },
 ]);
 pushCheck("20_has_pass", [
-  { ok: samples.some((sample) => sample.candidateTag === "柯三弟成立"), pass: "samples include 柯三弟成立.", fail: "samples must include 柯三弟成立." },
+  { ok: samples.some((sample) => sample.candidateTag === "扣三低通過"), pass: "samples include 扣三低通過.", fail: "samples must include 扣三低通過." },
 ]);
 pushCheck("21_has_waiting", [
   { ok: samples.some((sample) => sample.candidateTag === "等待確認"), pass: "samples include 等待確認.", fail: "samples must include 等待確認." },
@@ -166,7 +166,7 @@ pushCheck("24_ma_pass_rule", [
   { ok: samples.every((sample) => sample.maDeductionLowPass === (sample.maDeductionLowCount >= 3)), pass: "maDeductionLowPass rule is consistent.", fail: "maDeductionLowPass must match maDeductionLowCount >= 3." },
 ]);
 pushCheck("25_kou_san_di_pass_rule", [
-  { ok: samples.every((sample) => !sample.kouSanDiPass || sample.candidateTag === "柯三弟成立"), pass: "kouSanDiPass implies 柯三弟成立.", fail: "kouSanDiPass must imply candidateTag is 柯三弟成立." },
+  { ok: samples.every((sample) => !sample.kouSanDiPass || sample.candidateTag === "扣三低通過"), pass: "kouSanDiPass implies 扣三低通過.", fail: "kouSanDiPass must imply candidateTag is 扣三低通過." },
 ]);
 pushCheck("26_horsepower_score_range", [
   { ok: samples.every((sample) => Number.isInteger(sample.horsepowerScore) && sample.horsepowerScore >= 0 && sample.horsepowerScore <= 17), pass: "every horsepowerScore is 0-17.", fail: "horsepowerScore must be 0-17." },
@@ -187,7 +187,7 @@ pushCheck("31_doc_risk_reward", [
   { ok: docHas("risk/reward"), pass: "doc includes risk/reward.", fail: "doc must include risk/reward." },
 ]);
 pushCheck("32_doc_not_instruction", [
-  { ok: docHas("柯三弟 is not buy/sell instruction"), pass: "doc states 柯三弟 is not buy/sell instruction.", fail: "doc must state 柯三弟 is not buy/sell instruction." },
+  { ok: docHas("扣三低 is not buy/sell instruction"), pass: "doc states 扣三低 is not buy/sell instruction.", fail: "doc must state 扣三低 is not buy/sell instruction." },
 ]);
 pushCheck("33_36_action_labels_safe", [
   { ok: samples.every((sample) => FORBIDDEN_ACTION_TERMS.every((term) => !sample.actionLabelZh.includes(term))), pass: "actionLabelZh contains no execution terms.", fail: "actionLabelZh must not contain execution terms." },
@@ -224,7 +224,7 @@ pushCheck("40_matrix_validator_standalone", [
 pushCheck("41_handoff_present", [
   { ok: fileExists(resolve(HANDOFF_REL)), pass: "project handoff summary exists.", fail: "project handoff summary must exist." },
   { ok: handoff != null && handoff.includes("Project Handoff Summary"), pass: "handoff contains Project Handoff Summary.", fail: "handoff must contain Project Handoff Summary." },
-  { ok: handoff != null && handoff.includes("柯三弟"), pass: "handoff includes 柯三弟.", fail: "handoff must include 柯三弟." },
+  { ok: handoff != null && handoff.includes("扣三低"), pass: "handoff includes 扣三低.", fail: "handoff must include 扣三低." },
 ]);
 pushCheck("42_completion_report_rule", [
   { ok: readme != null && readme.includes("future completed version must include Project Handoff Summary"), pass: "README keeps Project Handoff Summary completion rule.", fail: "README must keep Project Handoff Summary completion rule." },

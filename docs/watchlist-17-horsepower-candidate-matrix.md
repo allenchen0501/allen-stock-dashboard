@@ -99,7 +99,7 @@
 
 未來可在 owner approval、staging validation、manual sign-off 後再討論：
 
-- 柯三弟 scanner
+- 扣三低 scanner
 - 走多回檔甜蜜點 scanner
 - historical K-line contract
 - risk/reward model

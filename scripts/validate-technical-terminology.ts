@@ -23,13 +23,12 @@ interface CheckResult {
   details: string[];
 }
 
-const CORRECT_TERM = "柯三弟";
-const FORBIDDEN_TERMS = ["扣三弟", "柯三地", "柯三低"] as const;
+const CORRECT_TERM = "扣三低";
+const FORBIDDEN_TERMS = ["柯三弟", "柯三低", "扣三弟", "柯三地"] as const;
 const TARGET_ROOTS = ["README.md", "docs", "scripts", "use-cases"];
+// Only this guard file may contain the forbidden typos (in the FORBIDDEN_TERMS list).
 const ALLOWED_FORBIDDEN_TERM_FILES = new Set([
   "scripts/validate-technical-terminology.ts",
-  "scripts/validate-kou-san-di-scanner.ts",
-  "use-cases/war-room/build-kou-san-di-scanner-contract.ts",
 ]);
 
 const checks: CheckResult[] = [];
@@ -141,11 +140,11 @@ pushCheck("02_no_forbidden_terms", [
 ]);
 
 pushCheck("03_handoff_correct_term", [
-  { ok: handoff != null && handoff.includes(CORRECT_TERM), pass: "Project handoff summary uses correct term.", fail: "Project handoff summary must use correct term 柯三弟." },
+  { ok: handoff != null && handoff.includes(CORRECT_TERM), pass: "Project handoff summary uses correct term.", fail: "Project handoff summary must use correct term 扣三低." },
 ]);
 
 pushCheck("04_readme_correct_term", [
-  { ok: readme != null && readme.includes(CORRECT_TERM), pass: "README uses correct term.", fail: "README must use correct term 柯三弟." },
+  { ok: readme != null && readme.includes(CORRECT_TERM), pass: "README uses correct term.", fail: "README must use correct term 扣三低." },
 ]);
 
 pushCheck("05_validator_standalone", [

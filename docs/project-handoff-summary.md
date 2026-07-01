@@ -1,12 +1,31 @@
 # Project Handoff Summary
 
-## Technical Terminology Guard + 柯三弟 Scanner Spec Handoff Addendum
+## 扣三低 Terminology Hotfix + Allen 17-Line Power Score v1.1 Handoff Addendum
+
+- 扣三低 terminology hotfix：正式術語統一為 **扣三低**；常見錯字一律禁用，且只允許出現在
+  `scripts/validate-technical-terminology.ts` 的 forbidden typo list；README、docs、handoff summary、
+  contract output、UI 一律使用 扣三低。
+- Allen 17-Line Power Score v1.1：既有 17 Horsepower scanner 升級（保留 horsepowerScore 0～17，新增
+  powerRatio / weightedPower / group scores / nearestSupport / nearestPressure / 量能確認 / 過熱濾網 /
+  dataStatus / powerRating / effectiveAttack / strongButOverheated / notTradeAdvice / notEntrySignal）。
+- fixture-only、deterministic、no network、no Supabase、no env、no DB write、no API route、no broker API、
+  no buy/sell command、no auto order、no production data switch。
+- War Room read-model/UI integration：War Room snapshot 新增 `horsepowerScannerItems` /
+  `horsepowerScannerSummary` / `horsepowerScannerFixtureVersion="V1_1"`，dashboard 新增繁中「17線馬力分數」
+  區塊（標示非買賣建議 / 非進場訊號 / 已確認收盤 / 盤中估算 / 量能確認 / 過熱 / 資料可靠度提醒）。
+- observation-only：多週期趨勢強弱篩選器，不是完整交易系統、不是買點、不是買賣指令、不是自動交易；
+  與既有 Technical + Risk Reward Strategy Engine、Allen Score 100、Position Strategy Plan 並存。
+- approved live-fetch symbols remain 3019 only；no production data switch。
+- future integration with 走多逢低 / risk-reward / historical K-line（需 owner approval + 分階段驗證 + manual sign-off）。
+- Standalone validator：`npm run test:17-horsepower-scanner`（不納入 safety-chain）；safety-chain remains 22 checks。
+
+## Technical Terminology Guard + 扣三低 Scanner Spec Handoff Addendum
 
 - Production snapshot provided by owner：production commit `b3ff37d`，production deployment `dpl_KVRF26xY6Hw7q2LxHvdhG3QdqB3Z`，production state READY。
-- Safety-chain status：22 checks；本階段不得把 terminology guard 或 柯三弟 scanner validator 加入 safety-chain。
-- Completed scope：Technical Terminology Guard、柯三弟 Scanner Spec、fixture-only contract、standalone validators。
-- Correct terminology：柯三弟；README、handoff summary 與一般文件統一使用正確術語。
-- Scanner samples：柯三弟成立、等待確認、排除；all samples are observation-only and not buy/sell instruction。
+- Safety-chain status：22 checks；本階段不得把 terminology guard 或 扣三低 scanner validator 加入 safety-chain。
+- Completed scope：Technical Terminology Guard、扣三低 Scanner Spec、fixture-only contract、standalone validators。
+- Correct terminology：扣三低；README、handoff summary 與一般文件統一使用正確術語。
+- Scanner samples：扣三低通過、等待確認、排除；all samples are observation-only and not buy/sell instruction。
 - Standalone validators：`npm run test:technical-terminology`、`npm run test:kou-san-di-scanner`、`npm run test:watchlist-17-horsepower-candidate-matrix`、`npm run test:project-handoff-summary`。
 - Current live-fetch state：approved provider remains `TWSE_TPEX`；approved live-fetch symbols remain exactly `["3019"]`；approved channel remains `tse_3019.tw`。
 - Current phase restrictions：no provider runtime change、no live fetch、no Yahoo、no new TPEx channel、no API route、no `/api/portfolio` switch、no Supabase runtime、no env key read、no DB write、no broker API、no buy/sell command、no order command、no auto order、no production trading ready。
@@ -22,7 +41,7 @@
 - Standalone validators：`npm run test:watchlist-17-horsepower-candidate-matrix`、`npm run test:watchlist-universe-tier`、`npm run test:17-horsepower-scanner`、`npm run test:project-handoff-summary`。
 - Current live-fetch state：approved provider remains `TWSE_TPEX`；approved channel remains `tse_3019.tw`；no new approved live-fetch symbol。
 - Current phase restrictions：no provider runtime change、no live fetch、no Yahoo、no new TPEx channel、no API route、no `/api/portfolio` switch、no Supabase runtime、no env key read、no DB write、no broker API、no buy/sell command、no order command、no auto order、no production trading ready。
-- Future allowed direction：future integration with 柯三弟、走多回檔甜蜜點、risk/reward model, scanner UI, and manual user decision after owner approval, staged validation, and manual sign-off。
+- Future allowed direction：future integration with 扣三低、走多回檔甜蜜點、risk/reward model, scanner UI, and manual user decision after owner approval, staged validation, and manual sign-off。
 
 ## Watchlist Universe Tier Spec Handoff Addendum
 
@@ -34,7 +53,7 @@
 - Current live-fetch state：approved provider remains `TWSE_TPEX`；approved live-fetch symbols remain exactly `["3019"]`；approved channel remains `tse_3019.tw`。
 - Boundary：watchlist universe symbol metadata is allowed；new approved live-fetch symbol is not allowed；universe metadata is not live fetch approval。
 - Standalone validators：`npm run test:watchlist-universe-tier`、`npm run test:17-horsepower-scanner`、`npm run test:project-handoff-summary`。
-- Future allowed direction：future integration with 17 Horsepower、柯三弟、走多回檔甜蜜點、candidate ranking、risk/reward reference, and manual user decision after owner approval, staged validation, and manual sign-off。
+- Future allowed direction：future integration with 17 Horsepower、扣三低、走多回檔甜蜜點、candidate ranking、risk/reward reference, and manual user decision after owner approval, staged validation, and manual sign-off。
 - Current phase restrictions：no provider runtime change、no live fetch、no Yahoo、no TPEx new channel、no API route、no `/api/portfolio` switch、no Supabase runtime、no env key read、no DB write、no broker API、no buy/sell command、no auto order、no production trading ready。
 
 本文件是 Allen Stock Dashboard 的最新交接摘要。每一版完成後，完成報告都必須附上一份

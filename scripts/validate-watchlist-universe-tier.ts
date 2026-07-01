@@ -231,7 +231,7 @@ pushCheck("30_doc_17_horsepower", [
 ]);
 
 pushCheck("31_doc_ko_san_di", [
-  { ok: docHas("柯三弟"), pass: "doc includes 柯三弟.", fail: "doc must include 柯三弟." },
+  { ok: docHas("扣三低"), pass: "doc includes 扣三低.", fail: "doc must include 扣三低." },
 ]);
 
 pushCheck("32_doc_pullback_sweet_spot", [

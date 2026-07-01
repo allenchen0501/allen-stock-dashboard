@@ -227,6 +227,45 @@ interface UiPositionPlan {
   highConfidenceConclusionAllowed: boolean;
 }
 
+interface UiHorsepowerGroupScore {
+  passed: number;
+  available: number;
+  ratio: number;
+}
+
+interface UiHorsepowerStock {
+  symbol: string;
+  name: string;
+  close: number;
+  horsepowerScore: number;
+  maxAvailable: number;
+  powerRatio: number;
+  weightedPower: number;
+  powerRating: string;
+  shortCostScore: UiHorsepowerGroupScore;
+  dailyMAScore: UiHorsepowerGroupScore;
+  weeklyScore: UiHorsepowerGroupScore;
+  monthlyScore: UiHorsepowerGroupScore;
+  nearestSupport: number | null;
+  nearestPressure: number | null;
+  isVolumeConfirmed: boolean;
+  isOverheated: boolean;
+  dataStatus: string;
+  candidateTag: string;
+  reliabilityNote: string;
+  notTradeAdvice: boolean;
+  notEntrySignal: boolean;
+}
+
+interface UiHorsepowerSummary {
+  fixtureVersion: string;
+  modelName: string;
+  totalStocks: number;
+  effectiveAttackCount: number;
+  strongButOverheatedCount: number;
+  overheatedCount: number;
+}
+
 interface UiSnapshot {
   snapshotId: string;
   generatedAt: string;
@@ -261,6 +300,17 @@ interface UiSnapshot {
   positionNoTouchPlans: UiPositionPlan[];
   positionDataInsufficientPlans: UiPositionPlan[];
   positionStrategyFixtureVersion: string;
+  // Allen 17-Line Power Score v1.1 fixture-only scanner.
+  horsepowerScannerItems: UiHorsepowerStock[];
+  horsepowerScannerSummary: UiHorsepowerSummary;
+  horsepowerScannerFixtureVersion: string;
+}
+
+/** dataStatus code → 繁中顯示。 */
+function dataStatusZh(status: string): string {
+  if (status === "confirmed_close") return "已確認收盤";
+  if (status === "intraday_estimated") return "盤中估算";
+  return status;
 }
 
 // ---------------------------------------------------------------------------
@@ -1150,6 +1200,56 @@ export function WarRoomDashboard() {
                 </div>
               )}
             </div>
+
+            {/* ============================================================ */}
+            {/* 17線馬力分數（Allen 17-Line Power Score v1.1）                  */}
+            {/* ============================================================ */}
+            {snapshot.horsepowerScannerItems && snapshot.horsepowerScannerItems.length > 0 ? (
+              <div>
+                <SectionLabel
+                  label={`17線馬力分數（Allen 17-Line Power Score v1.1）（${snapshot.horsepowerScannerItems.length}）`}
+                />
+                <div className="mb-2 rounded-lg border border-amber/15 bg-amber/[0.03] px-3 py-2 text-[9px] leading-5 text-amber">
+                  多週期趨勢強弱篩選器；fixture data 不是即時資料；非買賣建議、非進場訊號、不自動下單；量能確認與過熱濾網僅為觀察條件。
+                </div>
+                <div className="grid gap-2 sm:grid-cols-2 xl:grid-cols-3">
+                  {snapshot.horsepowerScannerItems.map((hp, i) => (
+                    <div
+                      key={hp.symbol ?? i}
+                      className="rounded-xl border border-line bg-white/[0.012] px-3 py-2 text-[10px] text-slate-300"
+                    >
+                      <div className="flex items-center justify-between">
+                        <span className="font-semibold text-slate-100">
+                          {hp.symbol}｜{hp.name}
+                        </span>
+                        <span className="text-slate-400">收盤 {hp.close}</span>
+                      </div>
+                      <div className="mt-1 grid grid-cols-2 gap-x-2 gap-y-0.5 font-mono text-[9px] text-slate-400">
+                        <span>原始馬力：{hp.horsepowerScore} / 17</span>
+                        <span>可用線數：{hp.horsepowerScore} / {hp.maxAvailable}</span>
+                        <span>強度比例：{(hp.powerRatio * 100).toFixed(1)}%</span>
+                        <span>加權馬力：{hp.weightedPower.toFixed(1)} / 100</span>
+                        <span>強度判讀：{hp.powerRating}</span>
+                        <span>候選標籤：{hp.candidateTag}</span>
+                        <span>短線成本：{hp.shortCostScore.passed}/{hp.shortCostScore.available}</span>
+                        <span>日線：{hp.dailyMAScore.passed}/{hp.dailyMAScore.available}</span>
+                        <span>週線：{hp.weeklyScore.passed}/{hp.weeklyScore.available}</span>
+                        <span>月線：{hp.monthlyScore.passed}/{hp.monthlyScore.available}</span>
+                        <span>最近支撐：{hp.nearestSupport ?? "—"}</span>
+                        <span>最近壓力：{hp.nearestPressure ?? "—"}</span>
+                        <span>量能狀態：{hp.isVolumeConfirmed ? "量能確認" : "量能未確認"}</span>
+                        <span>過熱狀態：{hp.isOverheated ? "過熱" : "未過熱"}</span>
+                        <span>資料狀態：{dataStatusZh(hp.dataStatus)}</span>
+                        <span>安全標籤：非買賣建議 / 非進場訊號</span>
+                      </div>
+                      {hp.reliabilityNote ? (
+                        <p className="mt-1 text-[9px] text-amber">資料可靠度提醒：{hp.reliabilityNote}</p>
+                      ) : null}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ) : null}
 
             {/* ============================================================ */}
             {/* Position Strategy Plans (V26)                                  */}

@@ -21,12 +21,15 @@
 import type {
   WarRoomAvoidItem,
   WarRoomDataQualitySummary,
+  WarRoomHorsepowerScannerSummary,
   WarRoomMode,
   WarRoomObservationPoint,
   WarRoomPortfolioRiskItem,
   WarRoomSectionAvailability,
   WarRoomSourceSummary,
 } from "./war-room-intelligence-contract";
+import type { HorsepowerStock } from "./build-17-horsepower-scanner-contract";
+import { build17HorsepowerScannerContract } from "./build-17-horsepower-scanner-contract";
 import type {
   ResearchStockSnapshot,
   ResearchTopPick,
@@ -70,6 +73,32 @@ export interface WarRoomEngineFixtureBundle {
   riskReductionPlans: PositionStrategyPlan[];
   positionNoTouchPlans: PositionStrategyPlan[];
   positionDataInsufficientPlans: PositionStrategyPlan[];
+  // Allen 17-Line Power Score v1.1 fixture-only scanner.
+  horsepowerScannerItems: HorsepowerStock[];
+  horsepowerScannerSummary: WarRoomHorsepowerScannerSummary;
+  horsepowerScannerFixtureVersion: "V1_1";
+}
+
+/** Maps the fixture-only 17-line power score scanner into the War Room bundle. */
+function horsepowerScanner(generatedAt: string): {
+  items: HorsepowerStock[];
+  summary: WarRoomHorsepowerScannerSummary;
+} {
+  const scanner = build17HorsepowerScannerContract({ generatedAt });
+  const items = scanner.stocks;
+  return {
+    items,
+    summary: {
+      fixtureVersion: "V1_1",
+      modelName: "Allen 17-Line Power Score v1.1",
+      totalStocks: items.length,
+      effectiveAttackCount: items.filter((s) => s.effectiveAttack).length,
+      strongButOverheatedCount: items.filter((s) => s.strongButOverheated).length,
+      overheatedCount: items.filter((s) => s.isOverheated).length,
+      notTradeAdvice: true,
+      notEntrySignal: true,
+    },
+  };
 }
 
 // ---------------------------------------------------------------------------
@@ -522,5 +551,13 @@ export function buildWarRoomEngineFixtureBundle(
     riskReductionPlans: positionBundle.riskReductionPlans,
     positionNoTouchPlans: positionBundle.noTouchPlans,
     positionDataInsufficientPlans: positionBundle.dataInsufficientPlans,
+    ...(() => {
+      const hp = horsepowerScanner(generatedAt);
+      return {
+        horsepowerScannerItems: hp.items,
+        horsepowerScannerSummary: hp.summary,
+        horsepowerScannerFixtureVersion: "V1_1" as const,
+      };
+    })(),
   };
 }
