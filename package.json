@@ -107,7 +107,8 @@
     "test:kou-san-di-scanner": "node --require ./scripts/register-typescript.cjs ./scripts/validate-kou-san-di-scanner.ts",
     "test:cross-module-consistency-governance": "node --require ./scripts/register-typescript.cjs ./scripts/validate-cross-module-consistency-governance.ts",
     "test:approved-live-quote-3019-mvp": "node --require ./scripts/register-typescript.cjs ./scripts/validate-approved-live-quote-3019-mvp.ts",
-    "test:approved-live-quote-3019-production-smoke": "node --require ./scripts/register-typescript.cjs ./scripts/validate-approved-live-quote-3019-production-smoke.ts"
+    "test:approved-live-quote-3019-production-smoke": "node --require ./scripts/register-typescript.cjs ./scripts/validate-approved-live-quote-3019-production-smoke.ts",
+    "test:approved-live-quote-3019-production-endpoint-cases": "node --require ./scripts/register-typescript.cjs ./scripts/validate-approved-live-quote-3019-production-endpoint-cases.ts"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.108.2",

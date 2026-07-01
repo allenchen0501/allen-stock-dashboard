@@ -28,7 +28,10 @@ export const dynamic = 'force-dynamic';
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
   const symbol = searchParams.get('symbol') ?? APPROVED_LIVE_QUOTE_SYMBOL;
-  const mode = searchParams.get('mode') ?? 'manual';
+  // Manual refresh only: `mode` must be EXPLICITLY "manual". A missing/absent mode is NOT
+  // defaulted to manual — it is rejected without a fetch, so only a deliberate manual
+  // refresh ever reaches the approved provider.
+  const mode = searchParams.get('mode');
 
   // Reject any non-approved symbol WITHOUT any fetch.
   // approved live-fetch symbols remain exactly ["3019"].
@@ -41,7 +44,7 @@ export async function GET(request: Request) {
     );
   }
 
-  // Reject any non-manual mode WITHOUT any fetch (manual refresh only).
+  // Reject any non-manual mode (including a missing mode) WITHOUT any fetch.
   if (mode !== 'manual') {
     return NextResponse.json(
       buildApproved3019RejectionResponse({

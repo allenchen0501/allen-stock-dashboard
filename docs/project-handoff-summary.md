@@ -1,5 +1,23 @@
 # Project Handoff Summary
 
+## 3019 Production Endpoint Case Evidence Backfill Handoff Addendum
+
+- 3019 Production Endpoint Case Evidence Backfill：直接對 production URL endpoint
+  `https://allen-stock-dashboard.vercel.app/api/war-room/approved-live-quote` 實跑 4 個 case（GET），
+  把實際回應記錄進 smoke report，deployment 執行當下為 `dpl_H4sZ3WRCNuGsqtDREP6JgubrQUuc`（commit dea7f4e，READY）。
+- production URL endpoint cases（4 case 皆 HTTP 200，實測、未假造）：
+  - Case A（3019 + manual）→ **verified**：live_verified、price 140、sourceTimestamp 2026-07-01T06:30:00.000Z、requestPerformed=true。
+  - Case B（4966 + manual）→ **rejected without fetch**：not_available、requestPerformed=false、price=null、reasonZh「非核准代號」。
+  - Case C（3019 缺 mode）→ 舊部署因 `mode ?? 'manual'` 預設而 fetch（如實記錄）；**本版收緊 route 為 mode 必須明確 manual**，缺 mode 改拒絕，收緊後將於下一次 deployment 生效驗證。
+  - Case D（3019 + auto）→ **rejected without fetch**：not_available、requestPerformed=false、price=null、reasonZh「僅允許手動刷新」。
+- 本版最小幅度收緊 route（`searchParams.get('mode')` 不再 `?? 'manual'`，缺少/非 manual 一律拒絕且不 fetch），
+  **未修改 provider runtime**、未擴大股票池；rejection 回傳可辨識 reasonZh。
+- no price fabrication；approved live-fetch symbols remain **3019 only**；no /api/portfolio switch、no Supabase、
+  no DB write、no broker、no buy/sell command、no auto order、no production data switch、no process.env、no Yahoo、no new provider。
+- Standalone validator：`npm run test:approved-live-quote-3019-production-endpoint-cases`（不納入 safety-chain）；
+  safety-chain remains 22 checks。endpoint case evidence not in safety-chain。
+- 不因 endpoint 測試成功就擴大到 core 5；4966／5347／4979／2455 需個別 owner approval。
+
 ## 3019 Approved Live Quote Production Smoke Verification Handoff Addendum
 
 - 3019 Approved Live Quote Production Smoke Verification：驗證 commit `36a7220` /
